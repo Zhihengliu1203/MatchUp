@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MatchUp — Discover activities near Montreal</title>
+  <meta
+    name="description"
+    content="MatchUp helps students discover activities, join communities, upload photos, and turn ideas into real meetups."
+  />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    document.documentElement.classList.add("js");
+  </script>
+
+  <style>
+    :root{
+      --bg:#f5f4f8;
+      --bg-soft:#ffffff;
+      --panel:#ffffff;
+      --panel-2:#f7f6fb;
+      --text:#17161b;
+      --muted:#696578;
+      --line:rgba(20,18,27,.08);
+      --line-strong:rgba(20,18,27,.14);
+
+      --brand:#7356ff;
+      --brand-2:#9f8cff;
+      --brand-3:#ff6a88;
+      --nexus:#ff7a18;
+      --nexus-2:#ffae52;
+      --ok:#1fa971;
+
+      --shadow:0 20px 50px rgba(26,23,36,.10);
+      --shadow-soft:0 10px 26px rgba(26,23,36,.07);
+
+      --radius-xl:32px;
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --max:1260px;
+      --header-offset:92px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html{
+      scroll-behavior:smooth;
+      scroll-padding-top:var(--header-offset);
+      background:var(--bg);
+    }
+
+    body{
+      margin:0;
+      font-family:"Inter", system-ui, sans-serif;
+      color:var(--text);
+      line-height:1.5;
+      background:
+        radial-gradient(560px 280px at 10% 0%, rgba(115,86,255,.08), transparent 60%),
+        radial-gradient(700px 340px at 100% 8%, rgba(255,106,136,.08), transparent 60%),
+        linear-gradient(180deg, #f7f6fb 0%, #f2f1f8 100%);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      opacity:0;
+      transition:opacity .24s ease;
+    }
+
+    body.loaded{ opacity:1; }
+    body.leaving{ opacity:0; }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ display:block; max-width:100%; }
+
+    .title-font,
+    h1,h2,h3,
+    .brand-name,
+    .btn,
+    nav a,
+    .eyebrow,
+    .event-title,
+    .card-title{
+      font-family:"Space Grotesk","Inter",system-ui,sans-serif;
+    }
+
+    .wrap{
+      width:min(var(--max), calc(100% - 28px));
+      margin:0 auto;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      background:rgba(247,246,251,.84);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(20,18,27,.05);
+    }
+
+    .nav{
+      min-height:84px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:18px;
+      align-items:center;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-mark{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      background:linear-gradient(135deg, var(--nexus), var(--brand));
+      box-shadow:0 0 0 7px rgba(115,86,255,.08);
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .brand-mark::after{
+      content:"";
+      position:absolute;
+      inset:4px;
+      border-radius:999px;
+      background:rgba(255,255,255,.32);
+    }
+
+    .brand-copy{
+      display:flex;
+      flex-direction:column;
+      gap:1px;
+    }
+
+    .brand-name{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:-.3px;
+    }
+
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    nav{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-width:0;
+      flex-wrap:wrap;
+    }
+
+    nav a{
+      color:var(--muted);
+      font-size:14px;
+      font-weight:700;
+      padding:10px 12px;
+      border-radius:999px;
+      transition:background .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    nav a:hover{
+      background:rgba(115,86,255,.08);
+      color:var(--text);
+      transform:translateY(-1px);
+    }
+
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:48px;
+      padding:12px 18px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:var(--shadow-soft);
+      transition:transform .2s ease, box-shadow .2s ease, background .2s ease, filter .2s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 16px 34px rgba(26,23,36,.11);
+    }
+
+    .btn:active{
+      transform:translateY(0) scale(.98);
+    }
+
+    .btn.primary{
+      border:none;
+      color:#fff;
+      background:linear-gradient(135deg, var(--brand), var(--brand-3));
+      box-shadow:0 18px 36px rgba(115,86,255,.22);
+    }
+
+    .btn.secondary{
+      border:1px solid rgba(255,122,24,.16);
+      background:linear-gradient(135deg, #fff8f2, #fff);
+      color:#3b250d;
+    }
+
+    .btn.small{
+      min-height:40px;
+      padding:10px 14px;
+      font-size:13px;
+    }
+
+    .hero{
+      padding:28px 0 14px;
+    }
+
+    .hero-shell{
+      border-radius:var(--radius-xl);
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.88));
+      border:1px solid rgba(20,18,27,.06);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .hero-top{
+      display:grid;
+      grid-template-columns:1.06fr .94fr;
+      gap:24px;
+      padding:28px;
+      align-items:stretch;
+    }
+
+    .hero-copy{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      width:fit-content;
+      padding:9px 14px;
+      border-radius:999px;
+      background:rgba(115,86,255,.08);
+      border:1px solid rgba(115,86,255,.10);
+      color:var(--brand);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.1px;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg, var(--nexus), var(--brand));
+      box-shadow:0 0 0 6px rgba(115,86,255,.08);
+    }
+
+    h1{
+      margin:16px 0 12px;
+      font-size:clamp(40px, 6vw, 72px);
+      line-height:.93;
+      letter-spacing:-2px;
+      max-width:11ch;
+    }
+
+    .headline-accent{
+      display:block;
+      background:linear-gradient(135deg, #191428 0%, var(--brand) 46%, var(--nexus) 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .hero-copy p{
+      margin:0;
+      max-width:58ch;
+      font-size:18px;
+      color:var(--muted);
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:24px;
+    }
+
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:#4a4657;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .hero-visual{
+      display:grid;
+      gap:14px;
+      min-width:0;
+    }
+
+    .search-panel,
+    .photo-panel,
+    .event-card,
+    .feature-card,
+    .spotlight,
+    .upload-card,
+    .cta-card,
+    .footer-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .search-panel{
+      padding:16px;
+    }
+
+    .search-row{
+      display:grid;
+      grid-template-columns:1.2fr .9fr auto;
+      gap:10px;
+      align-items:center;
+    }
+
+    .field{
+      min-height:54px;
+      width:100%;
+      border-radius:16px;
+      border:1px solid rgba(20,18,27,.08);
+      background:#fbfbfe;
+      padding:14px 16px;
+      color:var(--text);
+      font:inherit;
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .field::placeholder{ color:#9a97a8; }
+
+    .field:focus{
+      border-color:rgba(115,86,255,.34);
+      box-shadow:0 0 0 4px rgba(115,86,255,.10);
+      background:#fff;
+      transform:translateY(-1px);
+    }
+
+    .search-button{
+      width:56px;
+      min-width:56px;
+      min-height:54px;
+      border:none;
+      border-radius:18px;
+      background:linear-gradient(135deg, #262230, #111019);
+      color:#fff;
+      font-size:20px;
+      cursor:pointer;
+      box-shadow:0 14px 28px rgba(20,18,27,.18);
+      transition:transform .2s ease, filter .2s ease;
+    }
+
+    .search-button:hover{
+      transform:translateY(-2px);
+      filter:brightness(1.03);
+    }
+
+    .search-hint{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .search-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#faf8ff;
+      border:1px solid rgba(115,86,255,.10);
+      color:#6a53d7;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .photo-panel{
+      overflow:hidden;
+    }
+
+    .hero-image{
+      aspect-ratio: 1.16 / .86;
+      width:100%;
+      object-fit:cover;
+      background:linear-gradient(135deg, #d8d4e7, #c3bed6);
+    }
+
+    .photo-panel-body{
+      padding:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .photo-panel-title{
+      font-size:16px;
+      font-weight:800;
+      font-family:"Space Grotesk","Inter",sans-serif;
+    }
+
+    .photo-panel-text{
+      color:var(--muted);
+      font-size:14px;
+      margin-top:4px;
+    }
+
+    .section{
+      padding:34px 0;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:clamp(30px, 4vw, 54px);
+      line-height:.95;
+      letter-spacing:-1.4px;
+    }
+
+    .section-head p{
+      margin:0;
+      max-width:58ch;
+      color:var(--muted);
+      font-size:16px;
+    }
+
+    .events-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:16px;
+    }
+
+    .event-card{
+      overflow:hidden;
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+
+    .event-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 20px 40px rgba(26,23,36,.11);
+    }
+
+    .event-thumb-wrap{
+      position:relative;
+    }
+
+    .event-thumb{
+      width:100%;
+      aspect-ratio: 1 / .72;
+      object-fit:cover;
+      background:#ddd9ea;
+    }
+
+    .badge,
+    .floating-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid rgba(20,18,27,.08);
+      background:rgba(255,255,255,.92);
+      box-shadow:0 10px 22px rgba(20,18,27,.08);
+    }
+
+    .floating-badge{
+      position:absolute;
+      left:14px;
+      top:14px;
+    }
+
+    .event-body{
+      padding:16px;
+    }
+
+    .event-title{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.15;
+      margin:0 0 10px;
+      letter-spacing:-.3px;
+    }
+
+    .event-meta,
+    .event-host{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .event-meta{
+      margin-bottom:6px;
+    }
+
+    .event-host{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .avatar-dot{
+      width:26px;
+      height:26px;
+      display:grid;
+      place-items:center;
+      border-radius:999px;
+      background:linear-gradient(135deg, var(--brand), var(--nexus));
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+
+    .why-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:16px;
+    }
+
+    .feature-card{
+      padding:22px;
+    }
+
+    .feature-icon{
+      width:52px;
+      height:52px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(115,86,255,.12), rgba(255,122,24,.12));
+      border:1px solid rgba(115,86,255,.08);
+      font-size:22px;
+      margin-bottom:14px;
+    }
+
+    .card-title{
+      margin:0 0 10px;
+      font-size:20px;
+      letter-spacing:-.4px;
+    }
+
+    .feature-card p,
+    .spotlight p,
+    .upload-copy p,
+    .cta-copy p{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .dual-grid{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .spotlight,
+    .upload-card,
+    .cta-card{
+      padding:22px;
+    }
+
+    .spotlight{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      align-items:center;
+      background:linear-gradient(135deg, rgba(255,255,255,.98), rgba(247,244,255,.98));
+    }
+
+    .spotlight h3,
+    .upload-copy h3,
+    .cta-copy h3{
+      margin:0 0 10px;
+      font-size:28px;
+      line-height:1;
+      letter-spacing:-1px;
+    }
+
+    .spotlight-points{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .spotlight-point{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      color:#403b4d;
+      font-size:14px;
+    }
+
+    .spotlight-point strong{
+      color:var(--text);
+    }
+
+    .mini-gallery{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .mini-photo{
+      aspect-ratio:1 / .86;
+      width:100%;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#ddd9ea;
+    }
+
+    .upload-card{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+      background:linear-gradient(135deg, rgba(255,248,242,.98), rgba(255,255,255,.98));
+    }
+
+    .upload-demo{
+      border:2px dashed rgba(115,86,255,.18);
+      background:#fbfaff;
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .dropzone{
+      min-height:170px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(115,86,255,.06), rgba(255,122,24,.05));
+      color:#625e71;
+      text-align:center;
+      padding:18px;
+    }
+
+    .dropzone strong{
+      display:block;
+      color:var(--text);
+      font-size:17px;
+      margin-bottom:6px;
+      font-family:"Space Grotesk","Inter",sans-serif;
+    }
+
+    .dropzone span{
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    .upload-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .upload-list{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .upload-item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:12px 14px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid rgba(20,18,27,.08);
+      font-size:14px;
+    }
+
+    .upload-item small{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(31,169,113,.10);
+      border:1px solid rgba(31,169,113,.14);
+      color:#0a6d47;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .cta-card{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:18px;
+      align-items:center;
+      background:linear-gradient(135deg, #171320, #262036 68%, #2f2444 100%);
+      color:#fff;
+      border:none;
+      box-shadow:0 28px 60px rgba(36,23,59,.28);
+    }
+
+    .cta-copy p{
+      color:rgba(255,255,255,.76);
+    }
+
+    .cta-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .cta-badge{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      font-weight:700;
+      color:#f1eefe;
+    }
+
+    .cta-panel{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;
+      padding:18px;
+    }
+
+    .cta-panel h4{
+      margin:0 0 10px;
+      font-size:18px;
+      font-family:"Space Grotesk","Inter",sans-serif;
+    }
+
+    .cta-list{
+      display:grid;
+      gap:10px;
+      margin:0;
+      padding:0;
+      list-style:none;
+    }
+
+    .cta-list li{
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      font-size:14px;
+      color:rgba(255,255,255,.84);
+    }
+
+    footer{
+      padding:26px 0 40px;
+    }
+
+    .footer-card{
+      padding:20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .footer-links{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .footer-links a:hover{
+      color:var(--text);
+    }
+
+    @media (max-width: 1100px){
+      .hero-top,
+      .dual-grid,
+      .cta-card,
+      .spotlight{
+        grid-template-columns:1fr;
+      }
+
+      .events-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 920px){
+      .nav{
+        grid-template-columns:auto auto;
+        justify-content:space-between;
+      }
+
+      nav{ display:none; }
+
+      .why-grid{
+        grid-template-columns:1fr;
+      }
+
+      .search-row{
+        grid-template-columns:1fr;
+      }
+
+      .search-button{
+        width:100%;
+      }
+    }
+
+    @media (max-width: 720px){
+      .wrap{
+        width:min(var(--max), calc(100% - 20px));
+      }
+
+      .hero-top,
+      .search-panel,
+      .spotlight,
+      .upload-card,
+      .cta-card,
+      .footer-card,
+      .feature-card{
+        padding:18px;
+      }
+
+      .events-grid{
+        grid-template-columns:1fr;
+      }
+
+      .hero-tags,
+      .hero-actions,
+      .upload-actions,
+      .cta-badges{
+        gap:8px;
+      }
+
+      h1{
+        letter-spacing:-1.4px;
+      }
+
+      .mini-gallery{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior:auto; }
+      *, *::before, *::after{
+        transition:none !important;
+        animation:none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Back to top">
+        <div class="brand-mark"></div>
+        <div class="brand-copy">
+          <span class="brand-name">MatchUp</span>
+          <span class="brand-sub">Meet people through real activities</span>
+        </div>
+      </a>
+
+      <nav>
+        <a href="#events">Events</a>
+        <a href="#why">Why MatchUp</a>
+        <a href="#photos">Photos</a>
+        <a href="groups.html">Groups</a>
+        <a href="schedules.html">Schedules</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="btn" href="groups.html">Browse groups</a>
+        <a class="btn primary" href="#photos">Upload photos</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-shell">
+          <div class="hero-top">
+            <div class="hero-copy">
+              <div class="eyebrow">MatchUp homepage concept</div>
+
+              <h1>
+                Find the next
+                <span class="headline-accent">activity near you</span>
+              </h1>
+
+              <p>
+                MatchUp keeps the student, action-oriented identity of your project,
+                but adds a more discovery-driven event experience inspired by community platform:
+                clearer event cards, stronger social proof, and a dedicated place to upload activity photos.
+              </p>
+
+              <div class="hero-actions">
+                <a class="btn primary" href="#events">See events</a>
+                <a class="btn secondary" href="#photos">See photo area</a>
+              </div>
+
+              <div class="hero-tags">
+                <span class="tag">📍 Montreal-first</span>
+                <span class="tag">📸 activity photo uploads</span>
+                <span class="tag">🤝 student community</span>
+                <span class="tag">⚡ faster to join</span>
+              </div>
+            </div>
+
+            <div class="hero-visual">
+              <div class="search-panel">
+                <div class="search-row">
+                  <input class="field" type="text" placeholder="Search events, sports, clubs, communities…" />
+                  <input class="field" type="text" value="Montreal, QC" aria-label="Location" />
+                  <button class="search-button" aria-label="Search">⌕</button>
+                </div>
+
+                <div class="search-hint">
+                  <span class="search-chip">Free events</span>
+                  <span class="search-chip">Student-friendly</span>
+                  <span class="search-chip">Sports + social</span>
+                  <span class="search-chip">New this week</span>
+                </div>
+              </div>
+
+              <div class="photo-panel">
+                <img
+                  class="hero-image"
+                  src="https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=1200&q=80"
+                  alt="Students meeting outside during a group activity"
+                />
+                <div class="photo-panel-body">
+                  <div>
+                    <div class="photo-panel-title">Activity spotlight</div>
+                    <div class="photo-panel-text">A more visual homepage, with real event covers and community moments.</div>
+                  </div>
+                  <span class="badge">Featured today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="events">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Events near Montreal, QC</div>
+            <h2>Discover activities with MatchUp.</h2>
+          </div>
+          <p>
+            This homepage focuses on event discovery while staying aligned with MatchUp’s student-first, community-driven identity.
+          </p>
+        </div>
+
+        <div class="events-grid">
+          <article class="event-card">
+            <div class="event-thumb-wrap">
+              <img class="event-thumb" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=80" alt="Outdoor walking group" />
+              <span class="floating-badge">Free</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Walk &amp; Talk French at Mount Royal</h3>
+              <div class="event-meta">Sat, Apr 18 · 2:30 PM GMT-4</div>
+              <div class="event-host"><span class="avatar-dot">SC</span>Hosted by Walk &amp; Talk MatchUp Group</div>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-thumb-wrap">
+              <img class="event-thumb" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80" alt="Students socializing near a sunset" />
+              <span class="floating-badge">Popular</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Sunset Hike + Dinner Social</h3>
+              <div class="event-meta">Sat, Apr 18 · 4:00 PM GMT-4</div>
+              <div class="event-host"><span class="avatar-dot">NX</span>Hosted by MatchUp Social</div>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-thumb-wrap">
+              <img class="event-thumb" src="https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=900&q=80" alt="Friends playing board games" />
+              <span class="floating-badge">Community</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Board Games &amp; Chill at Velora Café</h3>
+              <div class="event-meta">Fri, Apr 24 · 7:00 PM GMT-4</div>
+              <div class="event-host"><span class="avatar-dot">VC</span>Hosted by MatchUp Café Circle</div>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-thumb-wrap">
+              <img class="event-thumb" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Workshop audience in a tech event" />
+              <span class="floating-badge">Learning</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Coding Agents Superpowers</h3>
+              <div class="event-meta">Thu, Apr 30 · 6:00 PM GMT-4</div>
+              <div class="event-host"><span class="avatar-dot">AI</span>Hosted by GenAI Montreal</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="why">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Why this direction works</div>
+            <h2>Better credibility, better discoverability.</h2>
+          </div>
+          <p>
+            Instead of feeling like a pure prototype, the homepage immediately shows activity, visual proof, and a clearer reason to trust the platform.
+          </p>
+        </div>
+
+        <div class="why-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🗂️</div>
+            <h3 class="card-title">Stronger event discovery</h3>
+            <p>
+              Users can instantly browse activities through clear cards with covers, dates, hosts, and short descriptions.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <h3 class="card-title">Real activity photos</h3>
+            <p>
+              A dedicated photo-upload area makes MatchUp feel active, social, and trustworthy instead of static.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3 class="card-title">Still aligned with MatchUp</h3>
+            <p>
+              The site remains focused on getting students into real-life activities, not just browsing content.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap dual-grid">
+        <div class="spotlight">
+          <div>
+            <div class="eyebrow">Homepage strategy</div>
+            <h3>What changes compared with your current landing page</h3>
+            <p>
+              The goal is to keep the MatchUp identity while making the homepage feel more alive and more instantly understandable.
+            </p>
+
+            <div class="spotlight-points">
+              <div class="spotlight-point">• <span><strong>More visual social proof:</strong> real covers and activity photos directly on the homepage.</span></div>
+              <div class="spotlight-point">• <span><strong>A clearer first action:</strong> discover events first, then join or upload.</span></div>
+              <div class="spotlight-point">• <span><strong>A better bridge to groups:</strong> event cards can later link to your existing groups logic.</span></div>
+            </div>
+          </div>
+
+          <div class="mini-gallery">
+            <img class="mini-photo" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80" alt="Group social event" />
+            <img class="mini-photo" src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80" alt="Students in a city meetup" />
+            <img class="mini-photo" src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80" alt="People walking outside" />
+            <img class="mini-photo" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80" alt="Students networking indoors" />
+          </div>
+        </div>
+
+        <div class="upload-card" id="photos">
+          <div class="upload-copy">
+            <div class="eyebrow">Activity photo uploads</div>
+            <h3>A dedicated place to upload event photos</h3>
+            <p>
+              This is the section you asked for: organizers or users can later upload photos from activities so the platform shows real memories and community proof.
+            </p>
+          </div>
+
+          <div class="upload-demo">
+            <div class="dropzone">
+              <div>
+                <strong>Drop photos here</strong>
+                <span>PNG, JPG, HEIC — later connected to GitHub, storage, or an external backend.</span>
+              </div>
+            </div>
+
+            <div class="upload-actions">
+              <button class="btn primary small" type="button">Upload photos</button>
+              <button class="btn small" type="button">Create gallery</button>
+            </div>
+
+            <div class="upload-list">
+              <div class="upload-item">
+                <div>
+                  Spring-hike-cover.jpg
+                  <small>Used as event cover</small>
+                </div>
+                <span class="status-pill">Ready</span>
+              </div>
+              <div class="upload-item">
+                <div>
+                  badminton-night-1.png
+                  <small>Activity album · 8 photos</small>
+                </div>
+                <span class="status-pill">Synced</span>
+              </div>
+              <div class="upload-item">
+                <div>
+                  downtown-walk-group.heic
+                  <small>Waiting for organizer review</small>
+                </div>
+                <span class="status-pill">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="cta-card">
+          <div class="cta-copy">
+            <div class="eyebrow" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.10); color:#fff;">Next build steps</div>
+            <h3>Ready for the next page after index</h3>
+            <p>
+              Once this homepage direction is approved, the next logical step is to connect each event card to a real event detail page and then integrate the groups / joining system.
+            </p>
+
+            <div class="cta-badges">
+              <span class="cta-badge">Event detail page</span>
+              <span class="cta-badge">Organizer profile</span>
+              <span class="cta-badge">Photo gallery modal</span>
+              <span class="cta-badge">Upload workflow</span>
+            </div>
+          </div>
+
+          <div class="cta-panel">
+            <h4>Suggested structure</h4>
+            <ul class="cta-list">
+              <li>1. index.html → discovery + social proof</li>
+              <li>2. event.html → full event page, event-focused</li>
+              <li>3. groups.html → your current MatchUp participation logic</li>
+              <li>4. gallery / upload logic → real photos tied to activities</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-card">
+        <div>© <span id="year"></span> MatchUp — English homepage concept</div>
+        <div class="footer-links">
+          <a href="#events">Events</a>
+          <a href="#why">Why MatchUp</a>
+          <a href="#photos">Photos</a>
+          <a href="groups.html">Groups</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.classList.add("loaded");
+    });
+
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a");
+      if(!a) return;
+
+      const href = a.getAttribute("href") || "";
+
+      if(href.startsWith("#")) return;
+      if(a.target === "_blank") return;
+      if(href.startsWith("http")) return;
+      if(href.startsWith("mailto:") || href.startsWith("tel:")) return;
+
+      e.preventDefault();
+      document.body.classList.add("leaving");
+      setTimeout(() => { window.location.href = href; }, 220);
+    });
+  </script>
+</body>
+</html>
