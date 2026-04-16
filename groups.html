@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MatchUp — Join a group</title>
+  <meta name="description" content="Discover activities, join groups, and upload your own activity photos on MatchUp." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
+
+  <style>
+    :root{
+      --bg:#f5f4f8;
+      --panel:#ffffff;
+      --panel-soft:#fbfafe;
+      --text:#18171d;
+      --muted:#6f6a7d;
+      --line:rgba(24,23,29,.08);
+      --line-strong:rgba(24,23,29,.14);
+      --brand:#7356ff;
+      --brand-2:#9b89ff;
+      --brand-3:#ff6c8e;
+      --warm:#ff8a2a;
+      --ok:#1ea971;
+      --warn:#ffb100;
+      --shadow:0 22px 50px rgba(33,28,47,.10);
+      --shadow-soft:0 10px 24px rgba(33,28,47,.07);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --max:1380px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html{
+      background:var(--bg);
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:"Inter", system-ui, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(540px 260px at 8% 0%, rgba(115,86,255,.08), transparent 60%),
+        radial-gradient(700px 320px at 100% 4%, rgba(255,108,142,.07), transparent 60%),
+        linear-gradient(180deg, #f8f7fb 0%, #f2f1f7 100%);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      opacity:0;
+      transition:opacity .24s ease;
+    }
+
+    body.loaded{ opacity:1; }
+    body.leaving{ opacity:0; }
+
+    a{ color:inherit; text-decoration:none; }
+    button, input, select{ font:inherit; }
+    img{ display:block; max-width:100%; }
+
+    h1,h2,h3,
+    .brand-name,
+    .btn,
+    .tab,
+    .chip,
+    .event-title,
+    .price-badge,
+    .status-badge,
+    .filter-btn,
+    .avatar,
+    .upload-title{
+      font-family:"Space Grotesk","Inter",system-ui,sans-serif;
+    }
+
+    .wrap{
+      width:min(var(--max), calc(100% - 30px));
+      margin:0 auto;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      background:rgba(248,247,251,.86);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(24,23,29,.05);
+    }
+
+    .nav{
+      min-height:92px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:18px;
+      align-items:center;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-mark{
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:linear-gradient(135deg, var(--brand), var(--warm));
+      box-shadow:0 0 0 8px rgba(115,86,255,.08);
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .brand-mark::after{
+      content:"";
+      position:absolute;
+      inset:4px;
+      border-radius:999px;
+      background:rgba(255,255,255,.34);
+    }
+
+    .brand-copy{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .brand-name{
+      font-size:21px;
+      font-weight:800;
+      letter-spacing:-.3px;
+    }
+
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .search-shell{
+      display:grid;
+      grid-template-columns:1.1fr .95fr auto;
+      gap:0;
+      align-items:center;
+      min-height:58px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:999px;
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+      max-width:700px;
+      justify-self:center;
+      width:100%;
+    }
+
+    .top-input{
+      width:100%;
+      min-height:58px;
+      border:none;
+      background:transparent;
+      padding:0 22px;
+      outline:none;
+      color:var(--text);
+    }
+
+    .top-input + .top-input{
+      border-left:1px solid var(--line);
+    }
+
+    .search-btn{
+      width:64px;
+      height:58px;
+      border:none;
+      background:linear-gradient(135deg, #22202b, #111018);
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+      transition:transform .2s ease, filter .2s ease;
+    }
+
+    .search-btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.03);
+    }
+
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .link-btn{
+      color:var(--text);
+      font-weight:700;
+      padding:10px 12px;
+      border-radius:999px;
+      transition:background .18s ease;
+    }
+
+    .link-btn:hover{ background:rgba(115,86,255,.08); }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:48px;
+      padding:12px 18px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:var(--shadow-soft);
+      transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 16px 34px rgba(33,28,47,.11);
+    }
+
+    .btn.primary{
+      border:none;
+      color:#fff;
+      background:linear-gradient(135deg, var(--brand), var(--brand-3));
+      box-shadow:0 18px 36px rgba(115,86,255,.20);
+    }
+
+    .btn.small{
+      min-height:42px;
+      padding:10px 14px;
+      font-size:13px;
+    }
+
+    main{ padding:26px 0 42px; }
+
+    .tabs{
+      display:flex;
+      gap:12px;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+
+    .tab{
+      min-height:46px;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--text);
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .tab.active{
+      background:#eceaf2;
+      border-color:rgba(24,23,29,.04);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .heading-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(34px, 4.8vw, 58px);
+      line-height:.95;
+      letter-spacing:-1.6px;
+    }
+
+    .filter-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .reset-btn{
+      color:var(--brand);
+      font-weight:800;
+      padding:10px 8px;
+    }
+
+    .filter-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:50px;
+      padding:12px 18px;
+      border-radius:999px;
+      background:var(--panel);
+      border:1px solid var(--line-strong);
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      box-shadow:var(--shadow-soft);
+      cursor:pointer;
+    }
+
+    .category-strip{
+      display:flex;
+      gap:18px;
+      overflow:auto;
+      padding:4px 2px 12px;
+      margin-bottom:20px;
+      border-bottom:1px solid rgba(24,23,29,.08);
+      scrollbar-width:none;
+    }
+
+    .category-strip::-webkit-scrollbar{ display:none; }
+
+    .category{
+      min-width:122px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      padding:10px 8px 14px;
+      color:var(--muted);
+      font-size:14px;
+      text-align:center;
+      position:relative;
+      cursor:pointer;
+    }
+
+    .category-icon{
+      width:42px;
+      height:42px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(115,86,255,.12), rgba(255,138,42,.12));
+      border:1px solid rgba(115,86,255,.08);
+      font-size:21px;
+    }
+
+    .category.active{
+      color:var(--text);
+      font-weight:800;
+    }
+
+    .category.active::after{
+      content:"";
+      position:absolute;
+      left:12px;
+      right:12px;
+      bottom:-13px;
+      height:3px;
+      border-radius:999px;
+      background:var(--text);
+    }
+
+    .content-grid{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 350px;
+      gap:20px;
+      align-items:start;
+    }
+
+    .cards-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:18px;
+    }
+
+    .event-card{
+      overflow:hidden;
+      transition:transform .22s ease, box-shadow .22s ease;
+    }
+
+    .event-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 22px 42px rgba(33,28,47,.11);
+    }
+
+    .event-image-wrap{
+      position:relative;
+      background:linear-gradient(135deg, #ece9f6, #f6f2ec);
+      aspect-ratio:1 / .60;
+      overflow:hidden;
+    }
+
+    .event-image{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .cover-placeholder{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      font-size:14px;
+      padding:18px;
+      text-align:center;
+      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,138,42,.10));
+    }
+
+    .cover-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.24));
+      pointer-events:none;
+    }
+
+    .cover-badges{
+      position:absolute;
+      left:14px;
+      top:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      z-index:2;
+    }
+
+    .price-badge,
+    .status-badge{
+      width:fit-content;
+      min-height:36px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.96);
+      border:1px solid rgba(24,23,29,.08);
+      font-size:13px;
+      font-weight:800;
+      box-shadow:0 10px 20px rgba(33,28,47,.08);
+    }
+
+    .status-badge.waitlist{ color:#825300; }
+    .status-badge.open{ color:#0d7b50; }
+
+    .card-body{ padding:16px 16px 18px; }
+
+    .event-title{
+      margin:0 0 10px;
+      font-size:20px;
+      line-height:1.15;
+      letter-spacing:-.5px;
+    }
+
+    .event-meta,
+    .event-host,
+    .attendees-row{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .event-meta{ margin-bottom:6px; }
+    .event-host{ margin-bottom:12px; }
+
+    .attendees-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .avatars{
+      display:flex;
+      align-items:center;
+    }
+
+    .avatar{
+      width:30px;
+      height:30px;
+      margin-right:-8px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      border:2px solid #fff;
+      background:linear-gradient(135deg, var(--brand), var(--warm));
+      color:#fff;
+      font-size:11px;
+      font-weight:800;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .card-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .join-btn{
+      flex:1 1 130px;
+    }
+
+    .upload-trigger{
+      flex:1 1 130px;
+    }
+
+    .sidebar{
+      position:sticky;
+      top:112px;
+      display:grid;
+      gap:18px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-soft);
+      padding:18px;
+    }
+
+    .panel h2,
+    .panel h3{
+      margin:0 0 10px;
+      font-size:22px;
+      line-height:1;
+      letter-spacing:-.7px;
+    }
+
+    .panel p,
+    .panel li,
+    .panel small{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .upload-title{
+      margin:0 0 8px;
+      font-size:22px;
+      line-height:1;
+      letter-spacing:-.7px;
+    }
+
+    .dropzone{
+      margin-top:14px;
+      min-height:170px;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding:18px;
+      border-radius:18px;
+      border:2px dashed rgba(115,86,255,.18);
+      background:linear-gradient(135deg, rgba(115,86,255,.06), rgba(255,138,42,.06));
+      transition:transform .18s ease, border-color .18s ease, background .18s ease;
+      cursor:pointer;
+    }
+
+    .dropzone.dragover{
+      transform:translateY(-1px);
+      border-color:rgba(115,86,255,.34);
+      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,138,42,.10));
+    }
+
+    .dropzone strong{
+      display:block;
+      font-size:18px;
+      margin-bottom:6px;
+      color:var(--text);
+    }
+
+    .hidden-input{ display:none; }
+
+    .mini-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .upload-list{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+      max-height:280px;
+      overflow:auto;
+      padding-right:4px;
+    }
+
+    .upload-item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:12px 12px;
+      border-radius:16px;
+      background:var(--panel-soft);
+      border:1px solid rgba(24,23,29,.06);
+    }
+
+    .upload-item-main{
+      min-width:0;
+    }
+
+    .upload-item-name{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .upload-item-meta{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .upload-tag{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:32px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(30,169,113,.10);
+      border:1px solid rgba(30,169,113,.14);
+      color:#0d7b50;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .stats .box{
+      padding:14px;
+      border-radius:16px;
+      background:var(--panel-soft);
+      border:1px solid rgba(24,23,29,.06);
+    }
+
+    .stats strong{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      margin-bottom:4px;
+    }
+
+    .checklist{
+      margin:12px 0 0;
+      padding-left:18px;
+    }
+
+    footer{
+      padding-top:16px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    @media (max-width: 1240px){
+      .content-grid{
+        grid-template-columns:1fr;
+      }
+
+      .sidebar{
+        position:static;
+      }
+    }
+
+    @media (max-width: 1080px){
+      .cards-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+
+      .nav{
+        grid-template-columns:1fr;
+        justify-items:stretch;
+        padding:14px 0;
+      }
+
+      .search-shell{
+        max-width:none;
+        justify-self:stretch;
+      }
+
+      .header-actions{
+        justify-content:flex-end;
+      }
+    }
+
+    @media (max-width: 760px){
+      .wrap{ width:min(var(--max), calc(100% - 20px)); }
+
+      .cards-grid,
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      .search-shell{
+        grid-template-columns:1fr;
+        border-radius:24px;
+      }
+
+      .top-input + .top-input{
+        border-left:none;
+        border-top:1px solid var(--line);
+      }
+
+      .search-btn{
+        width:100%;
+        height:54px;
+      }
+
+      .heading-row,
+      .filter-row,
+      .card-actions,
+      .header-actions{
+        align-items:stretch;
+      }
+
+      .btn,
+      .filter-btn,
+      .tab,
+      .link-btn{
+        justify-content:center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        transition:none !important;
+        animation:none !important;
+      }
+      html{ scroll-behavior:auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="index.html" aria-label="Go to MatchUp home page">
+        <div class="brand-mark"></div>
+        <div class="brand-copy">
+          <span class="brand-name">MatchUp</span>
+          <span class="brand-sub">Join activities with the right people</span>
+        </div>
+      </a>
+
+      <div class="search-shell">
+        <input class="top-input" id="searchInput" type="text" placeholder="activities" value="activities" />
+        <input class="top-input" id="locationInput" type="text" value="Montréal, QC" />
+        <button class="search-btn" id="searchBtn" aria-label="Search">⌕</button>
+      </div>
+
+      <div class="header-actions">
+        <a class="link-btn" href="index.html">Home</a>
+        <a class="btn primary" href="#uploadPanel">Add photos</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="tabs">
+      <button class="tab active" type="button">Events</button>
+      <button class="tab" type="button">Groups</button>
+    </div>
+
+    <div class="heading-row">
+      <h1>Activities events near Montréal, QC</h1>
+      <div class="filter-row" style="margin-bottom:0;">
+        <button class="reset-btn btn small" id="resetFilters" type="button">Reset</button>
+        <button class="filter-btn" type="button">🕒 Any day</button>
+        <button class="filter-btn" type="button">📍 Any type</button>
+        <button class="filter-btn" type="button">🗺️ Within 30 kilometers</button>
+      </div>
+    </div>
+
+    <div class="category-strip">
+      <button class="category" type="button" data-cat="all">
+        <span class="category-icon">✨</span>
+        <span>All events</span>
+      </button>
+      <button class="category" type="button" data-cat="new groups">
+        <span class="category-icon">👤</span>
+        <span>New Groups</span>
+      </button>
+      <button class="category" type="button" data-cat="social">
+        <span class="category-icon">🍕</span>
+        <span>Social Activities</span>
+      </button>
+      <button class="category" type="button" data-cat="hobbies">
+        <span class="category-icon">🎨</span>
+        <span>Hobbies &amp; Passions</span>
+      </button>
+      <button class="category active" type="button" data-cat="sports">
+        <span class="category-icon">⚽</span>
+        <span>Sports &amp; Fitness</span>
+      </button>
+      <button class="category" type="button" data-cat="outdoor">
+        <span class="category-icon">🌲</span>
+        <span>Travel &amp; Outdoor</span>
+      </button>
+      <button class="category" type="button" data-cat="career">
+        <span class="category-icon">💼</span>
+        <span>Career &amp; Business</span>
+      </button>
+      <button class="category" type="button" data-cat="technology">
+        <span class="category-icon">💻</span>
+        <span>Technology</span>
+      </button>
+      <button class="category" type="button" data-cat="community">
+        <span class="category-icon">🤝</span>
+        <span>Community</span>
+      </button>
+    </div>
+
+    <div class="content-grid">
+      <section>
+        <div class="cards-grid" id="cardsGrid"></div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel" id="uploadPanel">
+          <h2 class="upload-title">Upload activity photos</h2>
+          <p>
+            You can import photos from your computer and assign them to activity cards. This is useful for real event covers, organizer visuals, or atmosphere shots.
+          </p>
+
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Drop photos here or click to browse">
+            <div>
+              <strong>Drop photos here or click to browse</strong>
+              <span>JPG, PNG, WEBP and other image formats supported by your browser. Uploaded images stay in your browser for this demo.</span>
+            </div>
+          </div>
+
+          <div class="mini-actions">
+            <button class="btn primary small" id="browseBtn" type="button">Choose files</button>
+            <button class="btn small" id="clearUploadsBtn" type="button">Clear uploads</button>
+            <input class="hidden-input" id="fileInput" type="file" accept="image/*" multiple>
+          </div>
+
+          <div class="upload-list" id="uploadList"></div>
+        </section>
+
+        <section class="panel">
+          <h3>How to use the photos</h3>
+          <p>Each uploaded image can be attached to one of the 9 activity cards. Once attached, it becomes the card cover.</p>
+          <ul class="checklist">
+            <li>upload from your computer</li>
+            <li>pick a target activity</li>
+            <li>the cover updates instantly</li>
+            <li>changes stay saved in local storage</li>
+          </ul>
+        </section>
+
+        <section class="panel">
+          <h3>Page stats</h3>
+          <div class="stats">
+            <div class="box">
+              <strong>9</strong>
+              <small>example activities</small>
+            </div>
+            <div class="box">
+              <strong id="photoCount">0</strong>
+              <small>uploaded photos</small>
+            </div>
+            <div class="box">
+              <strong>1</strong>
+              <small>join page style</small>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      © <span id="year"></span> MatchUp — groups page concept
+    </footer>
+  </main>
+
+  <script>
+    const EVENTS_KEY = 'matchup_groups_page_events_v1';
+    const PHOTOS_KEY = 'matchup_groups_uploaded_photos_v1';
+    const MAX_UPLOADS = 18;
+
+    const defaultEvents = [
+      {
+        id:'pickleball-st-henri',
+        price:'CA$12.00',
+        status:'Waitlist',
+        statusClass:'waitlist',
+        title:'ST HENRI PICKLEBALL (racquet included) Sunday 4–6 PM',
+        date:'Every Sun · Apr 19 · 4:00 PM GMT-4',
+        host:'by MatchUp Sports Montreal · 4.7 ★',
+        attendees:18,
+        avatars:['AL','JM','KC'],
+        category:'sports',
+        emoji:'🏓'
+      },
+      {
+        id:'badminton-sunday-2',
+        price:'CA$10.00',
+        status:'Open',
+        statusClass:'open',
+        title:'6 courts — BADMINTON — Sunday 2–4 PM',
+        date:'Every Sun · Apr 19 · 2:00 PM GMT-4',
+        host:'by MatchUp Sports Montreal · 4.7 ★',
+        attendees:25,
+        avatars:['RS','PL','VD'],
+        category:'sports',
+        emoji:'🏸'
+      },
+      {
+        id:'volleyball-all-levels',
+        price:'CA$10.00',
+        status:'Waitlist',
+        statusClass:'waitlist',
+        title:'VOLLEYBALL All Levels — Sunday 4–6 PM',
+        date:'Every Sun · Apr 19 · 4:00 PM GMT-4',
+        host:'by MatchUp Volleyball Circle · 4.8 ★',
+        attendees:22,
+        avatars:['YT','MN','SA'],
+        category:'sports',
+        emoji:'🏐'
+      },
+      {
+        id:'walk-talk-french',
+        price:'Free',
+        status:'Open',
+        statusClass:'open',
+        title:'Walk & Talk French — Downtown to Mount Royal',
+        date:'Sat · Apr 18 · 2:30 PM GMT-4',
+        host:'by MatchUp Language Walks · 4.8 ★',
+        attendees:31,
+        avatars:['SC','IR','AM'],
+        category:'social',
+        emoji:'🗣️'
+      },
+      {
+        id:'sunset-hike-dinner',
+        price:'Free',
+        status:'Open',
+        statusClass:'open',
+        title:'Sunset Hike + Dinner Social',
+        date:'Sat · Apr 18 · 4:00 PM GMT-4',
+        host:'by MatchUp Social · 4.9 ★',
+        attendees:16,
+        avatars:['NX','EA','TH'],
+        category:'outdoor',
+        emoji:'🥾'
+      },
+      {
+        id:'board-games-velora',
+        price:'CA$8.00',
+        status:'Open',
+        statusClass:'open',
+        title:'Board Games & Chill at Velora Café',
+        date:'Fri · Apr 24 · 7:00 PM GMT-4',
+        host:'by MatchUp Café Circle · 4.6 ★',
+        attendees:14,
+        avatars:['VC','ML','JO'],
+        category:'hobbies',
+        emoji:'🎲'
+      },
+      {
+        id:'coding-agents',
+        price:'Free',
+        status:'Open',
+        statusClass:'open',
+        title:'Coding Agents Superpowers',
+        date:'Thu · Apr 30 · 6:00 PM GMT-4',
+        host:'by GenAI Montreal · 4.8 ★',
+        attendees:28,
+        avatars:['AI','GP','LV'],
+        category:'technology',
+        emoji:'💻'
+      },
+      {
+        id:'beginner-basketball',
+        price:'CA$9.00',
+        status:'Open',
+        statusClass:'open',
+        title:'Beginner Basketball — Friendly Run',
+        date:'Tue · Apr 21 · 7:30 PM GMT-4',
+        host:'by MatchUp Hoops · 4.5 ★',
+        attendees:20,
+        avatars:['BK','DL','OU'],
+        category:'sports',
+        emoji:'🏀'
+      },
+      {
+        id:'photo-walk-old-port',
+        price:'Free',
+        status:'Open',
+        statusClass:'open',
+        title:'Old Port Photo Walk for Creatives',
+        date:'Sun · Apr 26 · 1:00 PM GMT-4',
+        host:'by MatchUp Creators · 4.7 ★',
+        attendees:12,
+        avatars:['PH','LE','AN'],
+        category:'community',
+        emoji:'📷'
+      }
+    ];
+
+    const cardsGrid = document.getElementById('cardsGrid');
+    const uploadList = document.getElementById('uploadList');
+    const photoCount = document.getElementById('photoCount');
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const clearUploadsBtn = document.getElementById('clearUploadsBtn');
+    const dropzone = document.getElementById('dropzone');
+    const searchInput = document.getElementById('searchInput');
+    const locationInput = document.getElementById('locationInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resetFilters = document.getElementById('resetFilters');
+    const categories = Array.from(document.querySelectorAll('.category'));
+
+    let activeCategory = 'sports';
+
+    function cloneDefaults(){
+      return defaultEvents.map(event => ({ ...event, cover: '' }));
+    }
+
+    function loadEvents(){
+      try{
+        const parsed = JSON.parse(localStorage.getItem(EVENTS_KEY) || 'null');
+        return Array.isArray(parsed) && parsed.length ? parsed : cloneDefaults();
+      } catch {
+        return cloneDefaults();
+      }
+    }
+
+    function saveEvents(events){
+      localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+    }
+
+    function loadPhotos(){
+      try{
+        const parsed = JSON.parse(localStorage.getItem(PHOTOS_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function savePhotos(photos){
+      localStorage.setItem(PHOTOS_KEY, JSON.stringify(photos));
+    }
+
+    function formatSize(bytes){
+      if(bytes < 1024) return bytes + ' B';
+      if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function readFileAsDataURL(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getFilteredEvents(){
+      const allEvents = loadEvents();
+      const q = searchInput.value.trim().toLowerCase();
+      const loc = locationInput.value.trim().toLowerCase();
+
+      return allEvents.filter(event => {
+        const matchesCategory = activeCategory === 'all' || event.category === activeCategory || (activeCategory === 'new groups' && event.attendees <= 20);
+        const blob = `${event.title} ${event.host} ${event.category} montreal montréal qc`.toLowerCase();
+        const matchesQuery = !q || blob.includes(q);
+        const matchesLocation = !loc || 'montréal qc montreal quebec'.includes(loc) || blob.includes(loc);
+        return matchesCategory && matchesQuery && matchesLocation;
+      });
+    }
+
+    function renderCards(){
+      const events = getFilteredEvents();
+      cardsGrid.innerHTML = '';
+
+      events.forEach(event => {
+        const cover = event.cover
+          ? `<img class="event-image" src="${event.cover}" alt="${escapeHtml(event.title)}">`
+          : `<div class="cover-placeholder">No photo attached yet.<br>Upload one from the panel to the right.</div>`;
+
+        const card = document.createElement('article');
+        card.className = 'event-card';
+        card.innerHTML = `
+          <div class="event-image-wrap">
+            ${cover}
+            <div class="cover-overlay"></div>
+            <div class="cover-badges">
+              <span class="price-badge">${escapeHtml(event.price)}</span>
+              <span class="status-badge ${escapeHtml(event.statusClass)}">${escapeHtml(event.status)}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3 class="event-title">${escapeHtml(event.title)}</h3>
+            <div class="event-meta">${escapeHtml(event.date)}</div>
+            <div class="event-host">${escapeHtml(event.host)}</div>
+            <div class="attendees-row">
+              <div class="avatars">${event.avatars.map(a => `<span class="avatar">${escapeHtml(a)}</span>`).join('')}</div>
+              <strong>${event.attendees} attendees</strong>
+            </div>
+            <div class="card-actions">
+              <button class="btn primary small join-btn" type="button">Join group</button>
+              <button class="btn small upload-trigger" type="button" data-upload-target="${event.id}">Attach photo</button>
+            </div>
+          </div>
+        `;
+        cardsGrid.appendChild(card);
+      });
+
+      if(!events.length){
+        const empty = document.createElement('div');
+        empty.className = 'panel';
+        empty.innerHTML = `<h3>No activity found</h3><p>Try another keyword or category.</p>`;
+        cardsGrid.appendChild(empty);
+      }
+    }
+
+    function renderUploads(){
+      const photos = loadPhotos();
+      const events = loadEvents();
+      uploadList.innerHTML = '';
+      photoCount.textContent = String(photos.length);
+
+      if(!photos.length){
+        uploadList.innerHTML = `<div class="upload-item"><div class="upload-item-main"><div class="upload-item-name">No uploaded photo yet</div><div class="upload-item-meta">Choose files to start assigning covers.</div></div><span class="upload-tag">Empty</span></div>`;
+        return;
+      }
+
+      photos.forEach(photo => {
+        const assignedEvent = events.find(event => event.id === photo.assignedTo);
+        const wrap = document.createElement('div');
+        wrap.className = 'upload-item';
+        wrap.innerHTML = `
+          <div class="upload-item-main">
+            <div class="upload-item-name">${escapeHtml(photo.name)}</div>
+            <div class="upload-item-meta">${formatSize(photo.size || 0)} · ${assignedEvent ? `Attached to ${assignedEvent.title}` : 'Not attached yet'}</div>
+          </div>
+          <span class="upload-tag">Ready</span>
+        `;
+        uploadList.appendChild(wrap);
+      });
+    }
+
+    function escapeHtml(value){
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function handleFiles(fileList){
+      const currentPhotos = loadPhotos();
+      const imageFiles = Array.from(fileList).filter(file => file.type.startsWith('image/'));
+      const remainingSlots = Math.max(0, MAX_UPLOADS - currentPhotos.length);
+      const selectedFiles = imageFiles.slice(0, remainingSlots);
+      if(!selectedFiles.length) return;
+
+      const newPhotos = [];
+      for(const file of selectedFiles){
+        const data = await readFileAsDataURL(file);
+        newPhotos.push({
+          id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data,
+          assignedTo: ''
+        });
+      }
+
+      savePhotos([...currentPhotos, ...newPhotos]);
+      renderUploads();
+    }
+
+    function attachPhotoToEvent(eventId){
+      const photos = loadPhotos();
+      if(!photos.length){
+        alert('Upload at least one photo first.');
+        return;
+      }
+
+      const options = photos.map((photo, index) => `${index + 1}. ${photo.name}`).join('\n');
+      const choice = prompt(`Choose a photo number to attach to this activity:\n\n${options}`);
+      if(choice === null) return;
+
+      const index = Number(choice) - 1;
+      if(!Number.isInteger(index) || index < 0 || index >= photos.length){
+        alert('Invalid selection.');
+        return;
+      }
+
+      const selectedPhoto = photos[index];
+      const events = loadEvents();
+      const updatedEvents = events.map(event => event.id === eventId ? { ...event, cover: selectedPhoto.data } : event);
+      const updatedPhotos = photos.map((photo, photoIndex) => photoIndex === index ? { ...photo, assignedTo: eventId } : photo);
+
+      saveEvents(updatedEvents);
+      savePhotos(updatedPhotos);
+      renderCards();
+      renderUploads();
+    }
+
+    function clearAllUploads(){
+      localStorage.removeItem(PHOTOS_KEY);
+      const resetEvents = loadEvents().map(event => ({ ...event, cover: '' }));
+      saveEvents(resetEvents);
+      renderCards();
+      renderUploads();
+    }
+
+    function resetPageFilters(){
+      searchInput.value = 'activities';
+      locationInput.value = 'Montréal, QC';
+      activeCategory = 'sports';
+      categories.forEach(category => {
+        category.classList.toggle('active', category.dataset.cat === activeCategory);
+      });
+      renderCards();
+    }
+
+    browseBtn.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      await handleFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    ['dragenter','dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave','dragend','drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', async (e) => {
+      await handleFiles(e.dataTransfer.files);
+    });
+
+    clearUploadsBtn.addEventListener('click', clearAllUploads);
+    resetFilters.addEventListener('click', resetPageFilters);
+    searchBtn.addEventListener('click', renderCards);
+    searchInput.addEventListener('input', renderCards);
+    locationInput.addEventListener('input', renderCards);
+
+    categories.forEach(category => {
+      category.addEventListener('click', () => {
+        activeCategory = category.dataset.cat;
+        categories.forEach(item => item.classList.toggle('active', item === category));
+        renderCards();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      const uploadBtn = e.target.closest('[data-upload-target]');
+      if(uploadBtn){
+        attachPhotoToEvent(uploadBtn.dataset.uploadTarget);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      document.body.classList.add('loaded');
+
+      if(!localStorage.getItem(EVENTS_KEY)){
+        saveEvents(cloneDefaults());
+      }
+
+      renderCards();
+      renderUploads();
+    });
+
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if(!a) return;
+      const href = a.getAttribute('href') || '';
+      if(href.startsWith('#')) return;
+      if(a.target === '_blank') return;
+      if(href.startsWith('http')) return;
+      if(href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+      e.preventDefault();
+      document.body.classList.add('leaving');
+      setTimeout(() => { window.location.href = href; }, 220);
+    });
+  </script>
+</body>
+</html>
