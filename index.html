@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MatchUp — Discover activities near Montreal</title>
+  <title>MatchUp — Find people for real activities</title>
   <meta
     name="description"
-    content="MatchUp helps students discover activities, join communities, upload photos, and turn ideas into real meetups."
+    content="MatchUp helps students discover activities, find compatible people, and turn interest into real-life meetups and games."
   />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,24 +20,18 @@
   <style>
     :root{
       --bg:#f5f4f8;
-      --bg-soft:#ffffff;
       --panel:#ffffff;
-      --panel-2:#f7f6fb;
+      --panel-2:#f8f7fc;
       --text:#17161b;
       --muted:#696578;
       --line:rgba(20,18,27,.08);
-      --line-strong:rgba(20,18,27,.14);
-
       --brand:#7356ff;
       --brand-2:#9f8cff;
       --brand-3:#ff6a88;
-      --nexus:#ff7a18;
-      --nexus-2:#ffae52;
+      --warm:#ff7a18;
       --ok:#1fa971;
-
       --shadow:0 20px 50px rgba(26,23,36,.10);
       --shadow-soft:0 10px 26px rgba(26,23,36,.07);
-
       --radius-xl:32px;
       --radius-lg:24px;
       --radius-md:18px;
@@ -73,16 +67,17 @@
     body.leaving{ opacity:0; }
 
     a{ color:inherit; text-decoration:none; }
-    img{ display:block; max-width:100%; }
 
-    .title-font,
     h1,h2,h3,
     .brand-name,
     .btn,
     nav a,
     .eyebrow,
     .event-title,
-    .card-title{
+    .card-title,
+    .match-title,
+    .pill,
+    .stats-card strong{
       font-family:"Space Grotesk","Inter",system-ui,sans-serif;
     }
 
@@ -119,7 +114,7 @@
       width:18px;
       height:18px;
       border-radius:999px;
-      background:linear-gradient(135deg, var(--nexus), var(--brand));
+      background:linear-gradient(135deg, var(--warm), var(--brand));
       box-shadow:0 0 0 7px rgba(115,86,255,.08);
       position:relative;
       flex:0 0 auto;
@@ -230,17 +225,31 @@
       padding:28px 0 14px;
     }
 
+    .hero-shell,
+    .search-panel,
+    .hero-side,
+    .event-card,
+    .feature-card,
+    .match-card,
+    .upload-card,
+    .cta-card,
+    .footer-card,
+    .stats-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-soft);
+    }
+
     .hero-shell{
       border-radius:var(--radius-xl);
-      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.88));
-      border:1px solid rgba(20,18,27,.06);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
 
     .hero-top{
       display:grid;
-      grid-template-columns:1.06fr .94fr;
+      grid-template-columns:1.04fr .96fr;
       gap:24px;
       padding:28px;
       align-items:stretch;
@@ -273,7 +282,7 @@
       width:8px;
       height:8px;
       border-radius:999px;
-      background:linear-gradient(135deg, var(--nexus), var(--brand));
+      background:linear-gradient(135deg, var(--warm), var(--brand));
       box-shadow:0 0 0 6px rgba(115,86,255,.08);
     }
 
@@ -287,7 +296,7 @@
 
     .headline-accent{
       display:block;
-      background:linear-gradient(135deg, #191428 0%, var(--brand) 46%, var(--nexus) 100%);
+      background:linear-gradient(135deg, #191428 0%, var(--brand) 50%, var(--warm) 100%);
       -webkit-background-clip:text;
       background-clip:text;
       color:transparent;
@@ -314,7 +323,8 @@
       margin-top:18px;
     }
 
-    .tag{
+    .tag,
+    .pill{
       display:inline-flex;
       align-items:center;
       gap:8px;
@@ -335,20 +345,7 @@
     }
 
     .search-panel,
-    .photo-panel,
-    .event-card,
-    .feature-card,
-    .spotlight,
-    .upload-card,
-    .cta-card,
-    .footer-card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-soft);
-    }
-
-    .search-panel{
+    .hero-side{
       padding:16px;
     }
 
@@ -400,7 +397,8 @@
       filter:brightness(1.03);
     }
 
-    .search-hint{
+    .search-hint,
+    .mini-pills{
       margin-top:10px;
       display:flex;
       flex-wrap:wrap;
@@ -420,36 +418,41 @@
       font-weight:700;
     }
 
-    .photo-panel{
-      overflow:hidden;
-    }
-
-    .hero-image{
-      aspect-ratio: 1.16 / .86;
-      width:100%;
-      object-fit:cover;
-      background:linear-gradient(135deg, #d8d4e7, #c3bed6);
-    }
-
-    .photo-panel-body{
-      padding:16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .photo-panel-title{
-      font-size:16px;
+    .hero-side-title{
+      font-size:18px;
       font-weight:800;
-      font-family:"Space Grotesk","Inter",sans-serif;
+      margin-bottom:6px;
     }
 
-    .photo-panel-text{
+    .hero-side-text{
       color:var(--muted);
       font-size:14px;
-      margin-top:4px;
+      margin-bottom:14px;
+    }
+
+    .stats-mini{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+    }
+
+    .stats-mini .box{
+      padding:14px;
+      border-radius:18px;
+      background:var(--panel-2);
+      border:1px solid rgba(20,18,27,.06);
+    }
+
+    .stats-mini strong{
+      display:block;
+      font-size:24px;
+      line-height:1;
+      margin-bottom:6px;
+    }
+
+    .stats-mini span{
+      color:var(--muted);
+      font-size:12px;
     }
 
     .section{
@@ -495,36 +498,26 @@
       box-shadow:0 20px 40px rgba(26,23,36,.11);
     }
 
-    .event-thumb-wrap{
-      position:relative;
+    .event-top{
+      padding:18px;
+      min-height:150px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,122,24,.08));
+      border-bottom:1px solid rgba(20,18,27,.06);
     }
 
-    .event-thumb{
-      width:100%;
-      aspect-ratio: 1 / .72;
-      object-fit:cover;
-      background:#ddd9ea;
-    }
-
-    .badge,
-    .floating-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:34px;
-      padding:7px 12px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:800;
+    .event-icon{
+      width:54px;
+      height:54px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      background:#fff;
       border:1px solid rgba(20,18,27,.08);
-      background:rgba(255,255,255,.92);
-      box-shadow:0 10px 22px rgba(20,18,27,.08);
-    }
-
-    .floating-badge{
-      position:absolute;
-      left:14px;
-      top:14px;
+      font-size:26px;
+      box-shadow:var(--shadow-soft);
     }
 
     .event-body{
@@ -561,20 +554,22 @@
       display:grid;
       place-items:center;
       border-radius:999px;
-      background:linear-gradient(135deg, var(--brand), var(--nexus));
+      background:linear-gradient(135deg, var(--brand), var(--warm));
       color:#fff;
       font-size:11px;
       font-weight:900;
       flex:0 0 auto;
     }
 
-    .why-grid{
+    .why-grid,
+    .stats-grid{
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:16px;
     }
 
-    .feature-card{
+    .feature-card,
+    .stats-card{
       padding:22px;
     }
 
@@ -597,9 +592,10 @@
     }
 
     .feature-card p,
-    .spotlight p,
-    .upload-copy p,
-    .cta-copy p{
+    .match-card p,
+    .upload-card p,
+    .cta-copy p,
+    .stats-card p{
       margin:0;
       color:var(--muted);
       font-size:15px;
@@ -607,27 +603,23 @@
 
     .dual-grid{
       display:grid;
-      grid-template-columns:1.05fr .95fr;
+      grid-template-columns:1.02fr .98fr;
       gap:18px;
       align-items:stretch;
     }
 
-    .spotlight,
+    .match-card,
     .upload-card,
     .cta-card{
       padding:22px;
     }
 
-    .spotlight{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:18px;
-      align-items:center;
+    .match-card{
       background:linear-gradient(135deg, rgba(255,255,255,.98), rgba(247,244,255,.98));
     }
 
-    .spotlight h3,
-    .upload-copy h3,
+    .match-title,
+    .upload-card h3,
     .cta-copy h3{
       margin:0 0 10px;
       font-size:28px;
@@ -635,75 +627,96 @@
       letter-spacing:-1px;
     }
 
-    .spotlight-points{
-      display:grid;
-      gap:10px;
-      margin-top:14px;
-    }
-
-    .spotlight-point{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      color:#403b4d;
-      font-size:14px;
-    }
-
-    .spotlight-point strong{
-      color:var(--text);
-    }
-
-    .mini-gallery{
+    .match-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:10px;
+      gap:12px;
+      margin-top:16px;
     }
 
-    .mini-photo{
-      aspect-ratio:1 / .86;
-      width:100%;
-      object-fit:cover;
+    .person-card{
+      padding:16px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(20,18,27,.08);
+    }
+
+    .person-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .person-avatar{
+      width:52px;
+      height:52px;
       border-radius:16px;
-      border:1px solid var(--line);
-      background:#ddd9ea;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg, var(--brand), var(--brand-3));
+      font-family:"Space Grotesk","Inter",sans-serif;
+      flex:0 0 auto;
+    }
+
+    .person-name{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-.3px;
+      font-family:"Space Grotesk","Inter",sans-serif;
+    }
+
+    .person-role{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:2px;
     }
 
     .upload-card{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:16px;
       background:linear-gradient(135deg, rgba(255,248,242,.98), rgba(255,255,255,.98));
     }
 
-    .upload-demo{
-      border:2px dashed rgba(115,86,255,.18);
-      background:#fbfaff;
-      border-radius:20px;
+    .upload-area{
+      margin-top:16px;
       padding:18px;
+      border-radius:22px;
+      border:2px dashed rgba(115,86,255,.18);
+      background:rgba(255,255,255,.65);
     }
 
     .dropzone{
-      min-height:170px;
+      min-height:190px;
       display:grid;
       place-items:center;
+      text-align:center;
+      padding:20px;
       border-radius:18px;
       background:linear-gradient(135deg, rgba(115,86,255,.06), rgba(255,122,24,.05));
-      color:#625e71;
-      text-align:center;
-      padding:18px;
+      color:var(--muted);
+      border:1px solid rgba(20,18,27,.06);
+      transition:border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .dropzone.dragover{
+      border-color:rgba(115,86,255,.28);
+      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,122,24,.08));
+      transform:translateY(-1px);
     }
 
     .dropzone strong{
       display:block;
       color:var(--text);
-      font-size:17px;
+      font-size:18px;
       margin-bottom:6px;
-      font-family:"Space Grotesk","Inter",sans-serif;
     }
 
     .dropzone span{
+      display:block;
       font-size:14px;
-      color:var(--muted);
+      max-width:42ch;
+      margin:0 auto;
     }
 
     .upload-actions{
@@ -713,43 +726,71 @@
       margin-top:14px;
     }
 
-    .upload-list{
-      display:grid;
-      gap:10px;
-      margin-top:14px;
+    .hidden-input{ display:none; }
+
+    .upload-help{
+      margin-top:12px;
+      font-size:13px;
+      color:var(--muted);
     }
 
-    .upload-item{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
+    .preview-grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:12px;
+    }
+
+    .preview-card{
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(20,18,27,.08);
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .preview-media{
+      width:100%;
+      aspect-ratio:1 / .78;
+      object-fit:cover;
+      background:linear-gradient(135deg, #ece9f7, #f7f3ee);
+      display:block;
+    }
+
+    .preview-body{
       padding:12px 14px;
-      border-radius:14px;
+    }
+
+    .preview-name{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .preview-meta{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .empty-state{
+      margin-top:16px;
+      padding:18px;
+      border-radius:18px;
       background:#fff;
       border:1px solid rgba(20,18,27,.08);
+      color:var(--muted);
       font-size:14px;
     }
 
-    .upload-item small{
+    .stats-card strong{
       display:block;
-      color:var(--muted);
-      font-size:12px;
-      margin-top:2px;
-    }
-
-    .status-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(31,169,113,.10);
-      border:1px solid rgba(31,169,113,.14);
-      color:#0a6d47;
-      font-size:12px;
-      font-weight:800;
-      white-space:nowrap;
+      font-size:42px;
+      line-height:.9;
+      letter-spacing:-1.4px;
+      margin-bottom:10px;
+      color:var(--text);
     }
 
     .cta-card{
@@ -841,8 +882,7 @@
     @media (max-width: 1100px){
       .hero-top,
       .dual-grid,
-      .cta-card,
-      .spotlight{
+      .cta-card{
         grid-template-columns:1fr;
       }
 
@@ -859,16 +899,13 @@
 
       nav{ display:none; }
 
-      .why-grid{
+      .why-grid,
+      .stats-grid,
+      .search-row,
+      .match-grid,
+      .stats-mini,
+      .preview-grid{
         grid-template-columns:1fr;
-      }
-
-      .search-row{
-        grid-template-columns:1fr;
-      }
-
-      .search-button{
-        width:100%;
       }
     }
 
@@ -879,11 +916,13 @@
 
       .hero-top,
       .search-panel,
-      .spotlight,
+      .hero-side,
+      .feature-card,
+      .match-card,
       .upload-card,
+      .stats-card,
       .cta-card,
-      .footer-card,
-      .feature-card{
+      .footer-card{
         padding:18px;
       }
 
@@ -893,17 +932,13 @@
 
       .hero-tags,
       .hero-actions,
-      .upload-actions,
-      .cta-badges{
+      .cta-badges,
+      .upload-actions{
         gap:8px;
       }
 
       h1{
         letter-spacing:-1.4px;
-      }
-
-      .mini-gallery{
-        grid-template-columns:1fr 1fr;
       }
     }
 
@@ -923,21 +958,21 @@
         <div class="brand-mark"></div>
         <div class="brand-copy">
           <span class="brand-name">MatchUp</span>
-          <span class="brand-sub">Meet people through real activities</span>
+          <span class="brand-sub">Find the right people for real activities</span>
         </div>
       </a>
 
       <nav>
         <a href="#events">Events</a>
-        <a href="#why">Why MatchUp</a>
-        <a href="#photos">Photos</a>
+        <a href="#matching">Matching</a>
+        <a href="#media">Media</a>
         <a href="groups.html">Groups</a>
         <a href="schedules.html">Schedules</a>
       </nav>
 
       <div class="header-actions">
         <a class="btn" href="groups.html">Browse groups</a>
-        <a class="btn primary" href="#photos">Upload photos</a>
+        <a class="btn primary" href="#media">Add media</a>
       </div>
     </div>
   </header>
@@ -948,60 +983,72 @@
         <div class="hero-shell">
           <div class="hero-top">
             <div class="hero-copy">
-              <div class="eyebrow">MatchUp homepage concept</div>
+              <div class="eyebrow">Activities near Montreal, QC</div>
 
               <h1>
-                Find the next
-                <span class="headline-accent">activity near you</span>
+                Find people for your
+                <span class="headline-accent">next real activity</span>
               </h1>
 
               <p>
-                MatchUp keeps the student, action-oriented identity of your project,
-                but adds a more discovery-driven event experience inspired by community platform:
-                clearer event cards, stronger social proof, and a dedicated place to upload activity photos.
+                MatchUp is built to connect people with compatible interests, level, vibe, and schedule.
+                The goal is not just to browse events. It is to make the right match and actually meet.
               </p>
 
               <div class="hero-actions">
-                <a class="btn primary" href="#events">See events</a>
-                <a class="btn secondary" href="#photos">See photo area</a>
+                <a class="btn primary" href="#events">Explore activities</a>
+                <a class="btn secondary" href="#matching">See matching logic</a>
               </div>
 
               <div class="hero-tags">
-                <span class="tag">📍 Montreal-first</span>
-                <span class="tag">📸 activity photo uploads</span>
-                <span class="tag">🤝 student community</span>
-                <span class="tag">⚡ faster to join</span>
+                <span class="tag">🤝 people-first</span>
+                <span class="tag">📍 local activities</span>
+                <span class="tag">🎯 better fit</span>
+                <span class="tag">⚡ easier to join</span>
               </div>
             </div>
 
             <div class="hero-visual">
               <div class="search-panel">
                 <div class="search-row">
-                  <input class="field" type="text" placeholder="Search events, sports, clubs, communities…" />
+                  <input class="field" type="text" placeholder="Search sports, activities, interests, communities..." />
                   <input class="field" type="text" value="Montreal, QC" aria-label="Location" />
                   <button class="search-button" aria-label="Search">⌕</button>
                 </div>
 
                 <div class="search-hint">
-                  <span class="search-chip">Free events</span>
-                  <span class="search-chip">Student-friendly</span>
-                  <span class="search-chip">Sports + social</span>
-                  <span class="search-chip">New this week</span>
+                  <span class="search-chip">French practice</span>
+                  <span class="search-chip">Beginner-friendly</span>
+                  <span class="search-chip">After school</span>
+                  <span class="search-chip">Social + active</span>
                 </div>
               </div>
 
-              <div class="photo-panel">
-                <img
-                  class="hero-image"
-                  src="https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=1200&q=80"
-                  alt="Students meeting outside during a group activity"
-                />
-                <div class="photo-panel-body">
-                  <div>
-                    <div class="photo-panel-title">Activity spotlight</div>
-                    <div class="photo-panel-text">A more visual homepage, with real event covers and community moments.</div>
+              <div class="hero-side">
+                <div class="hero-side-title">What users should understand immediately</div>
+                <div class="hero-side-text">
+                  MatchUp is for joining the right activity with the right people, not for endlessly scrolling random content.
+                </div>
+
+                <div class="stats-mini">
+                  <div class="box">
+                    <strong>Fit</strong>
+                    <span>level, vibe, schedule</span>
                   </div>
-                  <span class="badge">Featured today</span>
+                  <div class="box">
+                    <strong>Trust</strong>
+                    <span>real groups, real hosts</span>
+                  </div>
+                  <div class="box">
+                    <strong>Action</strong>
+                    <span>join faster</span>
+                  </div>
+                </div>
+
+                <div class="mini-pills">
+                  <span class="pill">Small groups</span>
+                  <span class="pill">Student-friendly</span>
+                  <span class="pill">Verified organizers</span>
                 </div>
               </div>
             </div>
@@ -1014,19 +1061,19 @@
       <div class="wrap">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Events near Montreal, QC</div>
-            <h2>Discover activities with MatchUp.</h2>
+            <div class="eyebrow">Featured activities</div>
+            <h2>Find activities that attract the right people.</h2>
           </div>
           <p>
-            This homepage focuses on event discovery while staying aligned with MatchUp’s student-first, community-driven identity.
+            Each activity should help users understand not only what the event is, but also what kind of people they are likely to meet there.
           </p>
         </div>
 
         <div class="events-grid">
           <article class="event-card">
-            <div class="event-thumb-wrap">
-              <img class="event-thumb" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=80" alt="Outdoor walking group" />
-              <span class="floating-badge">Free</span>
+            <div class="event-top">
+              <span class="pill">Free</span>
+              <div class="event-icon">🗣️</div>
             </div>
             <div class="event-body">
               <h3 class="event-title">Walk &amp; Talk French at Mount Royal</h3>
@@ -1036,21 +1083,21 @@
           </article>
 
           <article class="event-card">
-            <div class="event-thumb-wrap">
-              <img class="event-thumb" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80" alt="Students socializing near a sunset" />
-              <span class="floating-badge">Popular</span>
+            <div class="event-top">
+              <span class="pill">Popular</span>
+              <div class="event-icon">🥾</div>
             </div>
             <div class="event-body">
               <h3 class="event-title">Sunset Hike + Dinner Social</h3>
               <div class="event-meta">Sat, Apr 18 · 4:00 PM GMT-4</div>
-              <div class="event-host"><span class="avatar-dot">NX</span>Hosted by MatchUp Social</div>
+              <div class="event-host"><span class="avatar-dot">MX</span>Hosted by MatchUp Social</div>
             </div>
           </article>
 
           <article class="event-card">
-            <div class="event-thumb-wrap">
-              <img class="event-thumb" src="https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=900&q=80" alt="Friends playing board games" />
-              <span class="floating-badge">Community</span>
+            <div class="event-top">
+              <span class="pill">Community</span>
+              <div class="event-icon">🎲</div>
             </div>
             <div class="event-body">
               <h3 class="event-title">Board Games &amp; Chill at Velora Café</h3>
@@ -1060,9 +1107,9 @@
           </article>
 
           <article class="event-card">
-            <div class="event-thumb-wrap">
-              <img class="event-thumb" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Workshop audience in a tech event" />
-              <span class="floating-badge">Learning</span>
+            <div class="event-top">
+              <span class="pill">Learning</span>
+              <div class="event-icon">💻</div>
             </div>
             <div class="event-body">
               <h3 class="event-title">Coding Agents Superpowers</h3>
@@ -1074,40 +1121,40 @@
       </div>
     </section>
 
-    <section class="section" id="why">
+    <section class="section" id="matching">
       <div class="wrap">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Why this direction works</div>
-            <h2>Better credibility, better discoverability.</h2>
+            <div class="eyebrow">Core value</div>
+            <h2>MatchUp should match people, not just list events.</h2>
           </div>
           <p>
-            Instead of feeling like a pure prototype, the homepage immediately shows activity, visual proof, and a clearer reason to trust the platform.
+            The homepage should immediately communicate that the platform helps users find the right people based on level, intention, atmosphere, and availability.
           </p>
         </div>
 
         <div class="why-grid">
           <div class="feature-card">
-            <div class="feature-icon">🗂️</div>
-            <h3 class="card-title">Stronger event discovery</h3>
-            <p>
-              Users can instantly browse activities through clear cards with covers, dates, hosts, and short descriptions.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📸</div>
-            <h3 class="card-title">Real activity photos</h3>
-            <p>
-              A dedicated photo-upload area makes MatchUp feel active, social, and trustworthy instead of static.
-            </p>
-          </div>
-
-          <div class="feature-card">
             <div class="feature-icon">🎯</div>
-            <h3 class="card-title">Still aligned with MatchUp</h3>
+            <h3 class="card-title">Better fit</h3>
             <p>
-              The site remains focused on getting students into real-life activities, not just browsing content.
+              Show level, activity style, and group vibe so users know whether an activity fits them before joining.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🕒</div>
+            <h3 class="card-title">Easier coordination</h3>
+            <p>
+              Let people match around real schedules and real availability instead of wasting time with endless back-and-forth.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🤝</div>
+            <h3 class="card-title">Real social compatibility</h3>
+            <p>
+              Match users with people who want the same kind of experience: casual, competitive, beginner-friendly, or purely social.
             </p>
           </div>
         </div>
@@ -1116,74 +1163,107 @@
 
     <section class="section">
       <div class="wrap dual-grid">
-        <div class="spotlight">
-          <div>
-            <div class="eyebrow">Homepage strategy</div>
-            <h3>What changes compared with your current landing page</h3>
-            <p>
-              The goal is to keep the MatchUp identity while making the homepage feel more alive and more instantly understandable.
-            </p>
+        <div class="match-card">
+          <div class="eyebrow">Example matching block</div>
+          <h3 class="match-title">Who would you match with?</h3>
+          <p>
+            This kind of section makes the product direction clearer: MatchUp connects people with compatible profiles for a specific activity.
+          </p>
 
-            <div class="spotlight-points">
-              <div class="spotlight-point">• <span><strong>More visual social proof:</strong> real covers and activity photos directly on the homepage.</span></div>
-              <div class="spotlight-point">• <span><strong>A clearer first action:</strong> discover events first, then join or upload.</span></div>
-              <div class="spotlight-point">• <span><strong>A better bridge to groups:</strong> event cards can later link to your existing groups logic.</span></div>
+          <div class="match-grid">
+            <div class="person-card">
+              <div class="person-top">
+                <div class="person-avatar">AL</div>
+                <div>
+                  <div class="person-name">Alex</div>
+                  <div class="person-role">Intermediate · French practice · weekends</div>
+                </div>
+              </div>
+              <div class="mini-pills">
+                <span class="pill">Hiking</span>
+                <span class="pill">Social</span>
+                <span class="pill">Downtown</span>
+              </div>
+              <p>Looking for relaxed outdoor activities and people open to conversation.</p>
             </div>
-          </div>
 
-          <div class="mini-gallery">
-            <img class="mini-photo" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80" alt="Group social event" />
-            <img class="mini-photo" src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80" alt="Students in a city meetup" />
-            <img class="mini-photo" src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80" alt="People walking outside" />
-            <img class="mini-photo" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80" alt="Students networking indoors" />
+            <div class="person-card">
+              <div class="person-top">
+                <div class="person-avatar">JM</div>
+                <div>
+                  <div class="person-name">Jasmine</div>
+                  <div class="person-role">Beginner · board games · evenings</div>
+                </div>
+              </div>
+              <div class="mini-pills">
+                <span class="pill">Café vibe</span>
+                <span class="pill">Friendly</span>
+                <span class="pill">Small group</span>
+              </div>
+              <p>Prefers easygoing meetups with conversation, light games, and a calm atmosphere.</p>
+            </div>
           </div>
         </div>
 
-        <div class="upload-card" id="photos">
-          <div class="upload-copy">
-            <div class="eyebrow">Activity photo uploads</div>
-            <h3>A dedicated place to upload event photos</h3>
-            <p>
-              This is the section you asked for: organizers or users can later upload photos from activities so the platform shows real memories and community proof.
-            </p>
-          </div>
+        <div class="upload-card" id="media">
+          <div class="eyebrow">Activity media</div>
+          <h3>Upload images from your computer</h3>
+          <p>
+            No default photos are shown anymore. Instead, you can import your own images from your computer and preview them directly on the page.
+          </p>
 
-          <div class="upload-demo">
-            <div class="dropzone">
+          <div class="upload-area">
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload images by clicking or dragging files here">
               <div>
-                <strong>Drop photos here</strong>
-                <span>PNG, JPG, HEIC — later connected to GitHub, storage, or an external backend.</span>
+                <strong>Drop images here or click to browse</strong>
+                <span>Accepted: JPG, PNG, WEBP, HEIC if supported by the browser. Images are stored locally in the browser for this demo.</span>
               </div>
             </div>
 
             <div class="upload-actions">
-              <button class="btn primary small" type="button">Upload photos</button>
-              <button class="btn small" type="button">Create gallery</button>
+              <button class="btn primary small" id="browseBtn" type="button">Choose files</button>
+              <button class="btn small" id="clearBtn" type="button">Clear all</button>
+              <input class="hidden-input" id="fileInput" type="file" accept="image/*" multiple />
             </div>
 
-            <div class="upload-list">
-              <div class="upload-item">
-                <div>
-                  Spring-hike-cover.jpg
-                  <small>Used as event cover</small>
-                </div>
-                <span class="status-pill">Ready</span>
-              </div>
-              <div class="upload-item">
-                <div>
-                  badminton-night-1.png
-                  <small>Activity album · 8 photos</small>
-                </div>
-                <span class="status-pill">Synced</span>
-              </div>
-              <div class="upload-item">
-                <div>
-                  downtown-walk-group.heic
-                  <small>Waiting for organizer review</small>
-                </div>
-                <span class="status-pill">Pending</span>
-              </div>
+            <div class="upload-help">
+              Use this area for organizer visuals, activity atmosphere, or event covers — not as a social photo-posting feed.
             </div>
+
+            <div class="empty-state" id="emptyState">
+              No images uploaded yet.
+            </div>
+
+            <div class="preview-grid" id="previewGrid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Why this version is cleaner</div>
+            <h2>No random stock photos. Your own media only.</h2>
+          </div>
+          <p>
+            The interface now stays focused on matching and activities, while still giving you a way to add your own visuals when you want them.
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stats-card">
+            <strong>1</strong>
+            <p>The homepage is centered on matching people and activities, not on generic images.</p>
+          </div>
+          <div class="stats-card">
+            <strong>2</strong>
+            <p>You can upload images directly from your computer and instantly preview them on the page.</p>
+          </div>
+          <div class="stats-card">
+            <strong>3</strong>
+            <p>The visuals area now supports trust and branding without turning MatchUp into a photo-posting platform.</p>
           </div>
         </div>
       </div>
@@ -1194,26 +1274,26 @@
         <div class="cta-card">
           <div class="cta-copy">
             <div class="eyebrow" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.10); color:#fff;">Next build steps</div>
-            <h3>Ready for the next page after index</h3>
+            <h3>Next page to build after index</h3>
             <p>
-              Once this homepage direction is approved, the next logical step is to connect each event card to a real event detail page and then integrate the groups / joining system.
+              The most logical next step is an event detail page that shows who the event is for, what vibe to expect, how many people joined, and why it is a good match.
             </p>
 
             <div class="cta-badges">
               <span class="cta-badge">Event detail page</span>
-              <span class="cta-badge">Organizer profile</span>
-              <span class="cta-badge">Photo gallery modal</span>
-              <span class="cta-badge">Upload workflow</span>
+              <span class="cta-badge">Compatibility tags</span>
+              <span class="cta-badge">Organizer trust signals</span>
+              <span class="cta-badge">Join flow</span>
             </div>
           </div>
 
           <div class="cta-panel">
             <h4>Suggested structure</h4>
             <ul class="cta-list">
-              <li>1. index.html → discovery + social proof</li>
-              <li>2. event.html → full event page, event-focused</li>
-              <li>3. groups.html → your current MatchUp participation logic</li>
-              <li>4. gallery / upload logic → real photos tied to activities</li>
+              <li>1. index.html → discovery + matching message</li>
+              <li>2. event.html → event page with vibe, level, and participant fit</li>
+              <li>3. groups.html → actual participation and group logic</li>
+              <li>4. organizer page → credibility, custom images, and hosted activities</li>
             </ul>
           </div>
         </div>
@@ -1227,8 +1307,8 @@
         <div>© <span id="year"></span> MatchUp — English homepage concept</div>
         <div class="footer-links">
           <a href="#events">Events</a>
-          <a href="#why">Why MatchUp</a>
-          <a href="#photos">Photos</a>
+          <a href="#matching">Matching</a>
+          <a href="#media">Media</a>
           <a href="groups.html">Groups</a>
         </div>
       </div>
@@ -1236,10 +1316,136 @@
   </footer>
 
   <script>
+    const STORAGE_KEY = "matchup_uploaded_media_v1";
+    const MAX_FILES = 8;
+
+    const fileInput = document.getElementById("fileInput");
+    const browseBtn = document.getElementById("browseBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const dropzone = document.getElementById("dropzone");
+    const previewGrid = document.getElementById("previewGrid");
+    const emptyState = document.getElementById("emptyState");
+
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    function formatSize(bytes){
+      if(bytes < 1024) return bytes + " B";
+      if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function loadSavedImages(){
+      try{
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveImages(images){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(images));
+    }
+
+    function renderImages(){
+      const images = loadSavedImages();
+      previewGrid.innerHTML = "";
+
+      if(!images.length){
+        emptyState.style.display = "block";
+        return;
+      }
+
+      emptyState.style.display = "none";
+
+      images.forEach((img, index) => {
+        const card = document.createElement("article");
+        card.className = "preview-card";
+        card.innerHTML = `
+          <img class="preview-media" src="${img.data}" alt="Uploaded activity visual ${index + 1}">
+          <div class="preview-body">
+            <div class="preview-name">${img.name}</div>
+            <div class="preview-meta">${img.type || "image"} • ${formatSize(img.size || 0)}</div>
+          </div>
+        `;
+        previewGrid.appendChild(card);
+      });
+    }
+
+    function readFileAsDataURL(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleFiles(fileList){
+      const files = Array.from(fileList).filter(file => file.type.startsWith("image/"));
+      if(!files.length) return;
+
+      const current = loadSavedImages();
+      const remainingSlots = Math.max(0, MAX_FILES - current.length);
+      const limitedFiles = files.slice(0, remainingSlots);
+
+      if(!limitedFiles.length) return;
+
+      const newItems = [];
+      for(const file of limitedFiles){
+        const data = await readFileAsDataURL(file);
+        newItems.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data
+        });
+      }
+
+      saveImages([...current, ...newItems]);
+      renderImages();
+    }
+
+    browseBtn.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      handleFiles(e.target.files);
+      e.target.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "dragend", "drop"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      const files = e.dataTransfer.files;
+      handleFiles(files);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      renderImages();
+    });
 
     window.addEventListener("DOMContentLoaded", () => {
       document.body.classList.add("loaded");
+      renderImages();
     });
 
     document.addEventListener("click", (e) => {
