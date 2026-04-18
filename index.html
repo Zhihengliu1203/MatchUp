@@ -1,1468 +1,844 @@
-<!doctype html>
-<html lang="en-CA">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MatchUp — Find people for real activities</title>
-  <meta
-    name="description"
-    content="MatchUp helps students discover activities, find compatible people, and turn interest into real-life meetups and games."
-  />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
-
-  <script>
-    document.documentElement.classList.add("js");
-  </script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MatchUp — Find Your Game, Find Your People</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg:#f5f4f8;
-      --panel:#ffffff;
-      --panel-2:#f8f7fc;
-      --text:#17161b;
-      --muted:#696578;
-      --line:rgba(20,18,27,.08);
-      --brand:#7356ff;
-      --brand-2:#9f8cff;
-      --brand-3:#ff6a88;
-      --warm:#ff7a18;
-      --ok:#1fa971;
-      --shadow:0 20px 50px rgba(26,23,36,.10);
-      --shadow-soft:0 10px 26px rgba(26,23,36,.07);
-      --radius-xl:32px;
-      --radius-lg:24px;
-      --radius-md:18px;
-      --radius-sm:14px;
-      --max:1260px;
-      --header-offset:92px;
-    }
-
-    *{ box-sizing:border-box; }
-
-    html{
-      scroll-behavior:smooth;
-      scroll-padding-top:var(--header-offset);
-      background:var(--bg);
-    }
-
-    body{
-      margin:0;
-      font-family:"Inter", system-ui, sans-serif;
-      color:var(--text);
-      line-height:1.5;
-      background:
-        radial-gradient(560px 280px at 10% 0%, rgba(115,86,255,.08), transparent 60%),
-        radial-gradient(700px 340px at 100% 8%, rgba(255,106,136,.08), transparent 60%),
-        linear-gradient(180deg, #f7f6fb 0%, #f2f1f8 100%);
-      -webkit-font-smoothing:antialiased;
-      text-rendering:optimizeLegibility;
-      opacity:0;
-      transition:opacity .24s ease;
-    }
-
-    body.loaded{ opacity:1; }
-    body.leaving{ opacity:0; }
-
-    a{ color:inherit; text-decoration:none; }
-
-    h1,h2,h3,
-    .brand-name,
-    .btn,
-    nav a,
-    .eyebrow,
-    .event-title,
-    .card-title,
-    .match-title,
-    .pill,
-    .stats-card strong{
-      font-family:"Space Grotesk","Inter",system-ui,sans-serif;
-    }
-
-    .wrap{
-      width:min(var(--max), calc(100% - 28px));
-      margin:0 auto;
-    }
-
-    header{
-      position:sticky;
-      top:0;
-      z-index:40;
-      background:rgba(247,246,251,.84);
-      backdrop-filter:blur(16px);
-      border-bottom:1px solid rgba(20,18,27,.05);
-    }
-
-    .nav{
-      min-height:84px;
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:18px;
-      align-items:center;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .brand-mark{
-      width:18px;
-      height:18px;
-      border-radius:999px;
-      background:linear-gradient(135deg, var(--warm), var(--brand));
-      box-shadow:0 0 0 7px rgba(115,86,255,.08);
-      position:relative;
-      flex:0 0 auto;
-    }
-
-    .brand-mark::after{
-      content:"";
-      position:absolute;
-      inset:4px;
-      border-radius:999px;
-      background:rgba(255,255,255,.32);
-    }
-
-    .brand-copy{
-      display:flex;
-      flex-direction:column;
-      gap:1px;
-    }
-
-    .brand-name{
-      font-size:20px;
-      font-weight:800;
-      letter-spacing:-.3px;
-    }
-
-    .brand-sub{
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    nav{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      min-width:0;
-      flex-wrap:wrap;
-    }
-
-    nav a{
-      color:var(--muted);
-      font-size:14px;
-      font-weight:700;
-      padding:10px 12px;
-      border-radius:999px;
-      transition:background .18s ease, color .18s ease, transform .18s ease;
-    }
-
-    nav a:hover{
-      background:rgba(115,86,255,.08);
-      color:var(--text);
-      transform:translateY(-1px);
-    }
-
-    .header-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      min-height:48px;
-      padding:12px 18px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--text);
-      font-size:14px;
-      font-weight:800;
-      cursor:pointer;
-      box-shadow:var(--shadow-soft);
-      transition:transform .2s ease, box-shadow .2s ease, background .2s ease, filter .2s ease;
-    }
-
-    .btn:hover{
-      transform:translateY(-2px);
-      box-shadow:0 16px 34px rgba(26,23,36,.11);
-    }
-
-    .btn:active{
-      transform:translateY(0) scale(.98);
-    }
-
-    .btn.primary{
-      border:none;
-      color:#fff;
-      background:linear-gradient(135deg, var(--brand), var(--brand-3));
-      box-shadow:0 18px 36px rgba(115,86,255,.22);
-    }
-
-    .btn.secondary{
-      border:1px solid rgba(255,122,24,.16);
-      background:linear-gradient(135deg, #fff8f2, #fff);
-      color:#3b250d;
-    }
-
-    .btn.small{
-      min-height:40px;
-      padding:10px 14px;
-      font-size:13px;
-    }
-
-    .hero{
-      padding:28px 0 14px;
-    }
-
-    .hero-shell,
-    .search-panel,
-    .hero-side,
-    .event-card,
-    .feature-card,
-    .match-card,
-    .upload-card,
-    .cta-card,
-    .footer-card,
-    .stats-card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-soft);
-    }
-
-    .hero-shell{
-      border-radius:var(--radius-xl);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .hero-top{
-      display:grid;
-      grid-template-columns:1.04fr .96fr;
-      gap:24px;
-      padding:28px;
-      align-items:stretch;
-    }
-
-    .hero-copy{
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      min-width:0;
-    }
-
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:9px;
-      width:fit-content;
-      padding:9px 14px;
-      border-radius:999px;
-      background:rgba(115,86,255,.08);
-      border:1px solid rgba(115,86,255,.10);
-      color:var(--brand);
-      font-size:13px;
-      font-weight:800;
-      letter-spacing:.1px;
-    }
-
-    .eyebrow::before{
-      content:"";
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:linear-gradient(135deg, var(--warm), var(--brand));
-      box-shadow:0 0 0 6px rgba(115,86,255,.08);
-    }
-
-    h1{
-      margin:16px 0 12px;
-      font-size:clamp(40px, 6vw, 72px);
-      line-height:.93;
-      letter-spacing:-2px;
-      max-width:11ch;
-    }
-
-    .headline-accent{
-      display:block;
-      background:linear-gradient(135deg, #191428 0%, var(--brand) 50%, var(--warm) 100%);
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
-    }
-
-    .hero-copy p{
-      margin:0;
-      max-width:58ch;
-      font-size:18px;
-      color:var(--muted);
-    }
-
-    .hero-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:24px;
-    }
-
-    .hero-tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:18px;
-    }
-
-    .tag,
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid var(--line);
-      color:#4a4657;
-      font-size:13px;
-      font-weight:700;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .hero-visual{
-      display:grid;
-      gap:14px;
-      min-width:0;
-    }
-
-    .search-panel,
-    .hero-side{
-      padding:16px;
-    }
-
-    .search-row{
-      display:grid;
-      grid-template-columns:1.2fr .9fr auto;
-      gap:10px;
-      align-items:center;
-    }
-
-    .field{
-      min-height:54px;
-      width:100%;
-      border-radius:16px;
-      border:1px solid rgba(20,18,27,.08);
-      background:#fbfbfe;
-      padding:14px 16px;
-      color:var(--text);
-      font:inherit;
-      outline:none;
-      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
-    }
-
-    .field::placeholder{ color:#9a97a8; }
-
-    .field:focus{
-      border-color:rgba(115,86,255,.34);
-      box-shadow:0 0 0 4px rgba(115,86,255,.10);
-      background:#fff;
-      transform:translateY(-1px);
-    }
-
-    .search-button{
-      width:56px;
-      min-width:56px;
-      min-height:54px;
-      border:none;
-      border-radius:18px;
-      background:linear-gradient(135deg, #262230, #111019);
-      color:#fff;
-      font-size:20px;
-      cursor:pointer;
-      box-shadow:0 14px 28px rgba(20,18,27,.18);
-      transition:transform .2s ease, filter .2s ease;
-    }
-
-    .search-button:hover{
-      transform:translateY(-2px);
-      filter:brightness(1.03);
-    }
-
-    .search-hint,
-    .mini-pills{
-      margin-top:10px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .search-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:#faf8ff;
-      border:1px solid rgba(115,86,255,.10);
-      color:#6a53d7;
-      font-size:12px;
-      font-weight:700;
-    }
-
-    .hero-side-title{
-      font-size:18px;
-      font-weight:800;
-      margin-bottom:6px;
-    }
-
-    .hero-side-text{
-      color:var(--muted);
-      font-size:14px;
-      margin-bottom:14px;
-    }
-
-    .stats-mini{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:10px;
-    }
-
-    .stats-mini .box{
-      padding:14px;
-      border-radius:18px;
-      background:var(--panel-2);
-      border:1px solid rgba(20,18,27,.06);
-    }
-
-    .stats-mini strong{
-      display:block;
-      font-size:24px;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .stats-mini span{
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .section{
-      padding:34px 0;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:end;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-
-    .section-head h2{
-      margin:0;
-      font-size:clamp(30px, 4vw, 54px);
-      line-height:.95;
-      letter-spacing:-1.4px;
-    }
-
-    .section-head p{
-      margin:0;
-      max-width:58ch;
-      color:var(--muted);
-      font-size:16px;
-    }
-
-    .events-grid{
-      display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:16px;
-    }
-
-    .event-card{
-      overflow:hidden;
-      transition:transform .2s ease, box-shadow .2s ease;
-    }
-
-    .event-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 20px 40px rgba(26,23,36,.11);
-    }
-
-    .event-top{
-      padding:18px;
-      min-height:150px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,122,24,.08));
-      border-bottom:1px solid rgba(20,18,27,.06);
-    }
-
-    .event-icon{
-      width:54px;
-      height:54px;
-      display:grid;
-      place-items:center;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid rgba(20,18,27,.08);
-      font-size:26px;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .event-body{
-      padding:16px;
-    }
-
-    .event-title{
-      font-size:18px;
-      font-weight:800;
-      line-height:1.15;
-      margin:0 0 10px;
-      letter-spacing:-.3px;
-    }
-
-    .event-meta,
-    .event-host{
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .event-meta{
-      margin-bottom:6px;
-    }
-
-    .event-host{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .avatar-dot{
-      width:26px;
-      height:26px;
-      display:grid;
-      place-items:center;
-      border-radius:999px;
-      background:linear-gradient(135deg, var(--brand), var(--warm));
-      color:#fff;
-      font-size:11px;
-      font-weight:900;
-      flex:0 0 auto;
-    }
-
-    .why-grid,
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:16px;
-    }
-
-    .feature-card,
-    .stats-card{
-      padding:22px;
-    }
-
-    .feature-icon{
-      width:52px;
-      height:52px;
-      display:grid;
-      place-items:center;
-      border-radius:18px;
-      background:linear-gradient(135deg, rgba(115,86,255,.12), rgba(255,122,24,.12));
-      border:1px solid rgba(115,86,255,.08);
-      font-size:22px;
-      margin-bottom:14px;
-    }
-
-    .card-title{
-      margin:0 0 10px;
-      font-size:20px;
-      letter-spacing:-.4px;
-    }
-
-    .feature-card p,
-    .match-card p,
-    .upload-card p,
-    .cta-copy p,
-    .stats-card p{
-      margin:0;
-      color:var(--muted);
-      font-size:15px;
-    }
-
-    .dual-grid{
-      display:grid;
-      grid-template-columns:1.02fr .98fr;
-      gap:18px;
-      align-items:stretch;
-    }
-
-    .match-card,
-    .upload-card,
-    .cta-card{
-      padding:22px;
-    }
-
-    .match-card{
-      background:linear-gradient(135deg, rgba(255,255,255,.98), rgba(247,244,255,.98));
-    }
-
-    .match-title,
-    .upload-card h3,
-    .cta-copy h3{
-      margin:0 0 10px;
-      font-size:28px;
-      line-height:1;
-      letter-spacing:-1px;
-    }
-
-    .match-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-top:16px;
-    }
-
-    .person-card{
-      padding:16px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid rgba(20,18,27,.08);
-    }
-
-    .person-top{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:10px;
-    }
-
-    .person-avatar{
-      width:52px;
-      height:52px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      font-weight:900;
-      color:#fff;
-      background:linear-gradient(135deg, var(--brand), var(--brand-3));
-      font-family:"Space Grotesk","Inter",sans-serif;
-      flex:0 0 auto;
-    }
-
-    .person-name{
-      font-size:18px;
-      font-weight:800;
-      letter-spacing:-.3px;
-      font-family:"Space Grotesk","Inter",sans-serif;
-    }
-
-    .person-role{
-      color:var(--muted);
-      font-size:13px;
-      margin-top:2px;
-    }
-
-    .upload-card{
-      background:linear-gradient(135deg, rgba(255,248,242,.98), rgba(255,255,255,.98));
-    }
-
-    .upload-area{
-      margin-top:16px;
-      padding:18px;
-      border-radius:22px;
-      border:2px dashed rgba(115,86,255,.18);
-      background:rgba(255,255,255,.65);
-    }
-
-    .dropzone{
-      min-height:190px;
-      display:grid;
-      place-items:center;
-      text-align:center;
-      padding:20px;
-      border-radius:18px;
-      background:linear-gradient(135deg, rgba(115,86,255,.06), rgba(255,122,24,.05));
-      color:var(--muted);
-      border:1px solid rgba(20,18,27,.06);
-      transition:border-color .18s ease, background .18s ease, transform .18s ease;
-    }
-
-    .dropzone.dragover{
-      border-color:rgba(115,86,255,.28);
-      background:linear-gradient(135deg, rgba(115,86,255,.10), rgba(255,122,24,.08));
-      transform:translateY(-1px);
-    }
-
-    .dropzone strong{
-      display:block;
-      color:var(--text);
-      font-size:18px;
-      margin-bottom:6px;
-    }
-
-    .dropzone span{
-      display:block;
-      font-size:14px;
-      max-width:42ch;
-      margin:0 auto;
-    }
-
-    .upload-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-
-    .hidden-input{ display:none; }
-
-    .upload-help{
-      margin-top:12px;
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .preview-grid{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:12px;
-    }
-
-    .preview-card{
-      overflow:hidden;
-      border-radius:18px;
-      border:1px solid rgba(20,18,27,.08);
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .preview-media{
-      width:100%;
-      aspect-ratio:1 / .78;
-      object-fit:cover;
-      background:linear-gradient(135deg, #ece9f7, #f7f3ee);
-      display:block;
-    }
-
-    .preview-body{
-      padding:12px 14px;
-    }
-
-    .preview-name{
-      font-size:14px;
-      font-weight:800;
-      color:var(--text);
-      word-break:break-word;
-    }
-
-    .preview-meta{
-      margin-top:4px;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .empty-state{
-      margin-top:16px;
-      padding:18px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid rgba(20,18,27,.08);
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .stats-card strong{
-      display:block;
-      font-size:42px;
-      line-height:.9;
-      letter-spacing:-1.4px;
-      margin-bottom:10px;
-      color:var(--text);
-    }
-
-    .cta-card{
-      display:grid;
-      grid-template-columns:1.05fr .95fr;
-      gap:18px;
-      align-items:center;
-      background:linear-gradient(135deg, #171320, #262036 68%, #2f2444 100%);
-      color:#fff;
-      border:none;
-      box-shadow:0 28px 60px rgba(36,23,59,.28);
-    }
-
-    .cta-copy p{
-      color:rgba(255,255,255,.76);
-    }
-
-    .cta-badges{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:16px;
-    }
-
-    .cta-badge{
-      padding:9px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:13px;
-      font-weight:700;
-      color:#f1eefe;
-    }
-
-    .cta-panel{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:24px;
-      padding:18px;
-    }
-
-    .cta-panel h4{
-      margin:0 0 10px;
-      font-size:18px;
-      font-family:"Space Grotesk","Inter",sans-serif;
-    }
-
-    .cta-list{
-      display:grid;
-      gap:10px;
-      margin:0;
-      padding:0;
-      list-style:none;
-    }
-
-    .cta-list li{
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(255,255,255,.08);
-      font-size:14px;
-      color:rgba(255,255,255,.84);
-    }
-
-    footer{
-      padding:26px 0 40px;
-    }
-
-    .footer-card{
-      padding:20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .footer-links{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .footer-links a:hover{
-      color:var(--text);
-    }
-
-    @media (max-width: 1100px){
-      .hero-top,
-      .dual-grid,
-      .cta-card{
-        grid-template-columns:1fr;
-      }
-
-      .events-grid{
-        grid-template-columns:repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 920px){
-      .nav{
-        grid-template-columns:auto auto;
-        justify-content:space-between;
-      }
-
-      nav{ display:none; }
-
-      .why-grid,
-      .stats-grid,
-      .search-row,
-      .match-grid,
-      .stats-mini,
-      .preview-grid{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width: 720px){
-      .wrap{
-        width:min(var(--max), calc(100% - 20px));
-      }
-
-      .hero-top,
-      .search-panel,
-      .hero-side,
-      .feature-card,
-      .match-card,
-      .upload-card,
-      .stats-card,
-      .cta-card,
-      .footer-card{
-        padding:18px;
-      }
-
-      .events-grid{
-        grid-template-columns:1fr;
-      }
-
-      .hero-tags,
-      .hero-actions,
-      .cta-badges,
-      .upload-actions{
-        gap:8px;
-      }
-
-      h1{
-        letter-spacing:-1.4px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      html{ scroll-behavior:auto; }
-      *, *::before, *::after{
-        transition:none !important;
-        animation:none !important;
-      }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange:     #FF5722;
+      --orange-lt:  #FF7043;
+      --orange-bg:  #FFF3EF;
+      --blue:       #1565C0;
+      --blue-lt:    #1E88E5;
+      --blue-bg:    #E3F2FD;
+      --white:      #FFFFFF;
+      --off:        #F8F9FA;
+      --text:       #1A1A2E;
+      --muted:      #6B7280;
+      --border:     #E5E7EB;
+      --radius:     16px;
+      --shadow:     0 4px 24px rgba(0,0,0,.08);
+      --shadow-h:   0 12px 40px rgba(0,0,0,.14);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--orange); text-align: center;
+      padding: 9px 16px; font-size: .82rem; font-weight: 700; color: #fff; letter-spacing: .03em;
+    }
+    .topbar a { color: #fff; text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
+      color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--orange);
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff;
+    }
+    .search-bar {
+      flex: 1; max-width: 540px; display: flex;
+      border: 2px solid var(--border); border-radius: 100px; overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-bar:focus-within { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
+    .search-bar input {
+      flex: 1; padding: 10px 18px; font-family: 'Nunito', sans-serif;
+      font-size: .9rem; border: none; outline: none; background: transparent; color: var(--text);
+    }
+    .sb-divider { width: 1px; background: var(--border); margin: 8px 0; }
+    .search-bar .loc {
+      padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem;
+      border: none; outline: none; background: transparent; color: var(--muted); min-width: 130px;
+    }
+    .search-btn {
+      width: 42px; height: 42px; margin: 4px; background: var(--orange);
+      border: none; border-radius: 100px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff;
+      transition: background .2s, transform .15s; flex-shrink: 0;
+    }
+    .search-btn:hover { background: var(--orange-lt); transform: scale(1.05); }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto; }
+    .nav-links a {
+      padding: 8px 14px; border-radius: 100px; font-size: .88rem; font-weight: 700;
+      color: var(--muted); text-decoration: none; transition: background .15s, color .15s;
+    }
+    .nav-links a:hover { background: var(--off); color: var(--text); }
+    .nav-links .btn-su {
+      background: var(--blue); color: #fff !important; padding: 9px 22px !important;
+      transition: background .2s, transform .15s !important;
+    }
+    .nav-links .btn-su:hover { background: var(--blue-lt) !important; transform: translateY(-1px); }
+
+    /* HERO */
+    #hero {
+      background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%);
+      padding: 72px 40px 80px; display: flex; align-items: center; gap: 56px;
+      position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: ''; position: absolute; top: -140px; right: -140px;
+      width: 520px; height: 520px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,87,34,.1), transparent 70%); pointer-events: none;
+    }
+    #hero::after {
+      content: ''; position: absolute; bottom: -80px; left: 42%;
+      width: 360px; height: 360px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(21,101,192,.07), transparent 70%); pointer-events: none;
+    }
+    .hero-text { flex: 1; position: relative; z-index: 1; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange-bg); border: 1.5px solid rgba(255,87,34,.25);
+      color: var(--orange); font-size: .78rem; font-weight: 800;
+      letter-spacing: .06em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 22px;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+    .hero-h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(2.4rem, 4vw, 3.8rem); line-height: 1.08; margin-bottom: 20px;
+    }
+    .hero-h1 .oc { color: var(--orange); }
+    .hero-h1 .bc { color: var(--blue); }
+    .hero-sub {
+      font-size: 1.05rem; line-height: 1.75; color: var(--muted);
+      max-width: 440px; margin-bottom: 34px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+    .btn-orange {
+      background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform .18s, box-shadow .2s, background .2s; display: inline-block;
+    }
+    .btn-orange:hover { background: var(--orange-lt); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,87,34,.35); }
+    .btn-ob {
+      border: 2px solid var(--blue); color: var(--blue);
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
+      padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent;
+      transition: background .18s, transform .18s; display: inline-block;
+    }
+    .btn-ob:hover { background: var(--blue-bg); transform: translateY(-2px); }
+    .hero-trust { display: flex; align-items: center; gap: 16px; }
+    .trust-av { display: flex; }
+    .trust-av img {
+      width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff;
+      margin-left: -8px; object-fit: cover;
+    }
+    .trust-av img:first-child { margin-left: 0; }
+    .trust-txt { font-size: .84rem; font-weight: 700; color: var(--muted); }
+    .trust-txt strong { color: var(--text); }
+    .hero-visual { flex: 1; position: relative; z-index: 1; min-width: 0; }
+    .hgrid {
+      display: grid; grid-template-columns: 1.2fr 1fr;
+      grid-template-rows: 205px 175px; gap: 12px;
+    }
+    .hgi { border-radius: 18px; overflow: hidden; position: relative; }
+    .hgi:first-child { grid-row: span 2; }
+    .hgi img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+    .hgi:hover img { transform: scale(1.06); }
+    .hgi-pill {
+      position: absolute; bottom: 10px; left: 10px;
+      background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+      border-radius: 100px; padding: 5px 12px;
+      font-size: .74rem; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .hgi-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+
+    /* CATEGORY STRIP */
+    .cat-strip { border-bottom: 1px solid var(--border); padding: 0 40px; background: #fff; }
+    .cat-inner { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 4px 0; }
+    .cat-inner::-webkit-scrollbar { display: none; }
+    .cat-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 12px 20px 10px; border: none; background: transparent; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: .76rem; font-weight: 700;
+      color: var(--muted); white-space: nowrap;
+      border-bottom: 2.5px solid transparent; transition: color .15s, border-color .15s;
+    }
+    .cat-btn .ci { font-size: 1.4rem; }
+    .cat-btn:hover { color: var(--text); border-bottom-color: var(--text); }
+    .cat-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+    /* MAIN */
+    .main-wrap { max-width: 1180px; margin: 0 auto; padding: 40px 40px 80px; }
+    .filters-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 30px; flex-wrap: wrap; gap: 12px;
+    }
+    .filters-row h2 { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; }
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .fpill {
+      display: flex; align-items: center; gap: 6px;
+      border: 1.5px solid var(--border); border-radius: 100px; padding: 7px 16px;
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700;
+      color: var(--muted); background: #fff; cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .fpill:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-bg); }
+    .fpill.on { border-color: var(--blue); background: var(--blue); color: #fff; }
+    .fpill .chev { font-size: .65rem; }
+    .reset-btn {
+      background: none; border: none; font-family: 'Nunito', sans-serif;
+      font-size: .85rem; font-weight: 700; color: var(--blue); cursor: pointer; text-decoration: underline;
+    }
+
+    /* EVENT CARDS */
+    .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .event-card {
+      background: #fff; border-radius: 20px; border: 1px solid var(--border);
+      overflow: hidden; transition: transform .25s, box-shadow .25s;
+      cursor: pointer; text-decoration: none; color: inherit; display: block;
+    }
+    .event-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-h); }
+    .card-img { position: relative; height: 198px; overflow: hidden; background: var(--off); }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .event-card:hover .card-img img { transform: scale(1.07); }
+    .card-price {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(255,255,255,.93); backdrop-filter: blur(6px);
+      border-radius: 100px; padding: 4px 12px; font-size: .8rem; font-weight: 800; color: var(--text);
+    }
+    .card-price.free { background: var(--orange); color: #fff; }
+    .card-waitlist {
+      position: absolute; top: 42px; left: 12px;
+      background: rgba(255,255,255,.93); backdrop-filter: blur(6px);
+      border-radius: 100px; padding: 4px 12px; font-size: .74rem; font-weight: 700; color: var(--muted);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .card-sport {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--blue); color: #fff; border-radius: 100px;
+      padding: 4px 11px; font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+    }
+    .card-body { padding: 18px 20px 20px; }
+    .card-rec { font-size: .74rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .97rem; line-height: 1.35; margin-bottom: 7px; }
+    .card-meta { font-size: .79rem; color: var(--muted); margin-bottom: 14px; line-height: 1.55; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .card-avs { display: flex; }
+    .card-avs img {
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
+      margin-left: -6px; object-fit: cover;
+    }
+    .card-avs img:first-child { margin-left: 0; }
+    .card-rating { font-size: .74rem; color: var(--muted); margin-top: 2px; }
+    .card-rating .s { color: var(--orange); }
+    .card-going {
+      font-size: .77rem; font-weight: 800; color: var(--blue);
+      background: var(--blue-bg); padding: 4px 10px; border-radius: 100px;
+    }
+
+    /* INLINE BANNER */
+    .inline-banner {
+      grid-column: span 3; background: linear-gradient(118deg, var(--orange), #FF8A65);
+      border-radius: 20px; padding: 34px 38px;
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #fff;
+    }
+    .inline-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; margin-bottom: 5px; }
+    .inline-banner p { font-size: .88rem; opacity: .85; }
+    .btn-white {
+      background: #fff; color: var(--orange); font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .9rem; padding: 12px 26px; border-radius: 100px;
+      text-decoration: none; white-space: nowrap;
+      transition: transform .18s, box-shadow .18s; display: inline-block;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+
+    /* MARQUEE */
+    .marquee-wrap {
+      background: var(--off); border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); padding: 13px 0; overflow: hidden;
+    }
+    .marquee-track { display: flex; gap: 48px; width: max-content; animation: marquee 32s linear infinite; }
+    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+    .mitem {
+      display: flex; align-items: center; gap: 9px;
+      font-size: .77rem; font-weight: 800; color: var(--muted);
+      letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+    }
+    .mitem .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
+
+    /* HOW IT WORKS */
+    #how { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 80px 40px; }
+    .how-inner { max-width: 1100px; margin: 0 auto; }
+    .sec-eye { font-size: .77rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
+    .sec-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.8rem); margin-bottom: 52px; }
+    .sec-title span { color: var(--blue); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .step {
+      background: #fff; border-radius: 20px; padding: 34px 26px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .step:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
+    .step-num { font-family: 'Syne', sans-serif; font-size: 4.2rem; font-weight: 800; color: rgba(255,87,34,.07); line-height: 1; margin-bottom: 16px; }
+    .step-icon {
+      width: 50px; height: 50px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.45rem; margin-bottom: 18px;
+    }
+    .si-o { background: var(--orange-bg); }
+    .si-b { background: var(--blue-bg); }
+    .step h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 9px; }
+    .step p { font-size: .88rem; line-height: 1.7; color: var(--muted); }
+
+    /* SPORTS */
+    #sports { max-width: 1180px; margin: 0 auto; padding: 80px 40px; }
+    .sports-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .sc {
+      border-radius: 16px; overflow: hidden; aspect-ratio: 3/4;
+      position: relative; cursor: pointer;
+    }
+    .sc img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .sc:hover img { transform: scale(1.08); }
+    .sc .sco { position: absolute; inset: 0; background: linear-gradient(to top, rgba(21,101,192,.75), transparent 55%); }
+    .sc .sci { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 12px; }
+    .sc .scn { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; display: block; margin-bottom: 2px; color: #fff; }
+    .sc .scc { font-size: .7rem; font-weight: 700; color: rgba(255,255,255,.7); }
+    .sc.feat { grid-column: span 2; aspect-ratio: unset; min-height: 270px; }
+    .sc.feat .scn { font-size: 1.55rem; }
+    .sc .shot { position: absolute; top: 10px; right: 10px; background: var(--orange); color: #fff; font-size: .67rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
+
+    /* TESTIMONIALS */
+    #testimonials { background: var(--off); padding: 80px 40px; }
+    .testi-inner { max-width: 1100px; margin: 0 auto; }
+    .tgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+    .tc {
+      background: #fff; border-radius: 20px; padding: 26px 24px;
+      border: 1px solid var(--border); transition: transform .25s, box-shadow .25s;
+    }
+    .tc:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
+    .tc .stars { font-size: .84rem; letter-spacing: 2px; color: var(--orange); margin-bottom: 12px; }
+    .tc blockquote { font-size: .9rem; line-height: 1.7; color: #444; font-style: italic; margin-bottom: 18px; }
+    .tc .author { display: flex; align-items: center; gap: 11px; }
+    .tc .av { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); flex-shrink: 0; }
+    .tc .av img { width: 100%; height: 100%; object-fit: cover; }
+    .tc .aname { font-weight: 800; font-size: .86rem; }
+    .tc .asport { font-size: .74rem; color: var(--muted); }
+
+    /* CTA */
+    #cta {
+      background: linear-gradient(120deg, var(--blue), #1976D2);
+      padding: 80px 40px; text-align: center; color: #fff; position: relative; overflow: hidden;
+    }
+    #cta::before { content:'⚡'; position: absolute; font-size: 22rem; opacity: .04; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+    #cta h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 14px; position: relative; }
+    #cta p { font-size: 1.02rem; opacity: .8; max-width: 460px; margin: 0 auto 34px; line-height: 1.7; position: relative; }
+    .cta-btns { display: flex; justify-content: center; gap: 13px; flex-wrap: wrap; position: relative; }
+    .btn-ws {
+      background: #fff; color: var(--blue); font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px;
+      text-decoration: none; transition: transform .18s, box-shadow .2s; display: inline-block;
+    }
+    .btn-ws:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+    .btn-gw {
+      border: 2px solid rgba(255,255,255,.4); color: #fff;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
+      padding: 13px 28px; border-radius: 100px; text-decoration: none;
+      background: transparent; transition: background .18s, transform .18s; display: inline-block;
+    }
+    .btn-gw:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
+
+    /* FOOTER */
+    footer { background: #111827; padding: 60px 40px 0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+    .f-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--orange); display: block; margin-bottom: 12px; }
+    .f-brand p { font-size: .87rem; line-height: 1.7; color: rgba(255,255,255,.38); max-width: 260px; }
+    .f-social { display: flex; gap: 8px; margin-top: 18px; }
+    .f-social a {
+      width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .84rem; text-decoration: none; color: rgba(255,255,255,.45);
+      transition: border-color .2s, color .2s;
+    }
+    .f-social a:hover { border-color: var(--orange); color: var(--orange); }
+    .f-col h4 { font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.28); margin-bottom: 16px; }
+    .f-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .f-col a { font-size: .85rem; color: rgba(255,255,255,.48); text-decoration: none; transition: color .15s; }
+    .f-col a:hover { color: #fff; }
+    .foot-bottom {
+      padding: 22px 40px; display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827;
+    }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 960px) {
+      nav { padding: 0 20px; gap: 10px; }
+      .nav-links li:not(:last-child) { display: none; }
+      #hero { flex-direction: column; padding: 48px 24px 56px; }
+      .hero-visual { width: 100%; }
+      .events-grid { grid-template-columns: 1fr 1fr; }
+      .inline-banner { grid-column: span 2; }
+      .steps, .sports-grid { grid-template-columns: 1fr 1fr; }
+      .sc.feat { grid-column: span 2; }
+      .tgrid { grid-template-columns: 1fr; }
+      footer { grid-template-columns: 1fr 1fr; padding: 40px 24px 0; }
+      .main-wrap, #sports, .how-inner, .testi-inner { padding-left: 20px; padding-right: 20px; }
+      .cat-strip, #how, #testimonials { padding-left: 20px; padding-right: 20px; }
+    }
+    @media (max-width: 600px) {
+      .events-grid, .steps { grid-template-columns: 1fr; }
+      .inline-banner { grid-column: span 1; flex-direction: column; }
+      .sports-grid { grid-template-columns: 1fr 1fr; }
+      footer { grid-template-columns: 1fr; }
+      .foot-bottom { flex-direction: column; gap: 6px; text-align: center; }
+      .sb-divider, .loc { display: none; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap nav">
-      <a class="brand" href="#top" aria-label="Back to top">
-        <div class="brand-mark"></div>
-        <div class="brand-copy">
-          <span class="brand-name">MatchUp</span>
-          <span class="brand-sub">Find the right people for real activities</span>
+
+  <div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a href="#cta">Claim your spot →</a></div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <span class="logo-icon">🏆</span>MatchUp
+    </a>
+    <div class="search-bar">
+      <input type="text" placeholder="Search sports, events, players…" />
+      <div class="sb-divider"></div>
+      <input class="loc" type="text" value="Montréal, QC" />
+      <button class="search-btn">🔍</button>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#sports">Sports</a></li>
+      <li><a href="#cta">Log in</a></li>
+      <li><a class="btn-su" href="#cta">Sign up</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-text">
+      <div class="hero-badge"><span class="live-dot"></span>Live in Montréal, Toronto &amp; Vancouver</div>
+      <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
+      <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
+      <div class="hero-actions">
+        <a class="btn-orange" href="#cta">Join for free</a>
+        <a class="btn-ob" href="#how">How it works</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-av">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+          <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+        </div>
+        <span class="trust-txt"><strong>12,400+</strong> active players already matched</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hgrid">
+        <div class="hgi">
+          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=700&fit=crop&auto=format" alt="Basketball" />
+          <div class="hgi-pill"><span class="dot"></span>34 joining today</div>
+        </div>
+        <div class="hgi">
+          <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format" alt="Tennis" />
+          <div class="hgi-pill"><span class="dot"></span>Court booked</div>
+        </div>
+        <div class="hgi">
+          <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format" alt="Volleyball" />
+          <div class="hgi-pill"><span class="dot"></span>⚡ Starting soon</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <div class="cat-strip">
+    <div class="cat-inner">
+      <button class="cat-btn"><span class="ci">✨</span>All Events</button>
+      <button class="cat-btn active"><span class="ci">⚽</span>Sports &amp; Fitness</button>
+      <button class="cat-btn"><span class="ci">🤝</span>Social Activities</button>
+      <button class="cat-btn"><span class="ci">🏕️</span>Outdoor &amp; Hiking</button>
+      <button class="cat-btn"><span class="ci">🎨</span>Hobbies &amp; Passions</button>
+      <button class="cat-btn"><span class="ci">🌍</span>New Groups</button>
+      <button class="cat-btn"><span class="ci">💼</span>Career &amp; Business</button>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="main-wrap">
+    <div class="filters-row">
+      <h2>Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
+      <div class="filter-pills">
+        <button class="fpill">⏰ Any day <span class="chev">▾</span></button>
+        <button class="fpill on">📍 In person <span class="chev">▾</span></button>
+        <button class="fpill">🗺️ Within 30 km <span class="chev">▾</span></button>
+        <button class="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="events-grid">
+
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format" alt="Football" loading="lazy" />
+          <span class="card-price free">FREE</span>
+          <span class="card-sport">⚽ Football</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Every Saturday</div>
+          <div class="card-title">5v5 Pickup Football — Mont-Royal Park</div>
+          <div class="card-meta">Apr 19 · 10:00 AM EDT<br>by Plein Air Montréal · Mont-Royal</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.8</div>
+            </div>
+            <span class="card-going">22 going</span>
+          </div>
         </div>
       </a>
 
-      <nav>
-        <a href="#events">Events</a>
-        <a href="#matching">Matching</a>
-        <a href="#media">Media</a>
-        <a href="groups.html">Groups</a>
-        <a href="schedules.html">Schedules</a>
-      </nav>
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format" alt="Badminton" loading="lazy" />
+          <span class="card-price">CA$13.00</span>
+          <span class="card-waitlist">📋 Waitlist</span>
+          <span class="card-sport">🏸 Badminton</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Every Saturday</div>
+          <div class="card-title">Badminton Doubles #Downtown — All levels welcome!</div>
+          <div class="card-meta">Apr 19 · 3:00 PM EDT<br>by Downtown Badminton MTL</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.9</div>
+            </div>
+            <span class="card-going">31 going</span>
+          </div>
+        </div>
+      </a>
 
-      <div class="header-actions">
-        <a class="btn" href="groups.html">Browse groups</a>
-        <a class="btn primary" href="#media">Add media</a>
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format" alt="Ping Pong" loading="lazy" />
+          <span class="card-price">CA$10.00</span>
+          <span class="card-sport">🏓 Ping-Pong</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Every Sunday</div>
+          <div class="card-title">🏓 Ping-Pong Fun — Tous niveaux bienvenus!</div>
+          <div class="card-meta">Apr 20 · 1:30 PM EDT<br>by Volley Urbain · Plateau Mont-Royal</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.7</div>
+            </div>
+            <span class="card-going">9 going</span>
+          </div>
+        </div>
+      </a>
+
+      <div class="inline-banner reveal">
+        <div>
+          <h3>🏆 Create your own event</h3>
+          <p>Organize a pickup game, a league, or a one-off session. Open it to the community.</p>
+        </div>
+        <a class="btn-white" href="#cta">Start for free →</a>
+      </div>
+
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+          <span class="card-price free">FREE</span>
+          <span class="card-sport">🏀 Basketball</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Weekly · Thursdays</div>
+          <div class="card-title">3v3 Basketball Open Run — Parc Jarry</div>
+          <div class="card-meta">Apr 24 · 6:30 PM EDT<br>by MTL Ballers Collective</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+                <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.6</div>
+            </div>
+            <span class="card-going">18 going</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
+          <span class="card-price free">FREE</span>
+          <span class="card-sport">🏃 Running</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Every Sunday Morning</div>
+          <div class="card-title">Group Run — Lachine Canal 10K (Beginner-friendly!)</div>
+          <div class="card-meta">Apr 20 · 8:00 AM EDT<br>by Run MTL Community</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.9</div>
+            </div>
+            <span class="card-going">44 going</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="event-card reveal" href="#cta">
+        <div class="card-img">
+          <img src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&h=400&fit=crop&auto=format" alt="Tennis" loading="lazy" />
+          <span class="card-price">CA$8.00</span>
+          <span class="card-sport">🎾 Tennis</span>
+        </div>
+        <div class="card-body">
+          <div class="card-rec">Biweekly · Saturdays</div>
+          <div class="card-title">Tennis Mixte — Parc Lafontaine · Niveau intermédiaire</div>
+          <div class="card-meta">Apr 26 · 9:00 AM EDT<br>by Tennis Montréal</div>
+          <div class="card-footer">
+            <div>
+              <div class="card-avs">
+                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              </div>
+              <div class="card-rating"><span class="s">★</span> 4.8</div>
+            </div>
+            <span class="card-going">12 going</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="mitem"><span class="dot"></span>Football</span>
+      <span class="mitem"><span class="dot"></span>Basketball</span>
+      <span class="mitem"><span class="dot"></span>Tennis</span>
+      <span class="mitem"><span class="dot"></span>Volleyball</span>
+      <span class="mitem"><span class="dot"></span>Badminton</span>
+      <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+      <span class="mitem"><span class="dot"></span>Swimming</span>
+      <span class="mitem"><span class="dot"></span>Yoga</span>
+      <span class="mitem"><span class="dot"></span>Cycling</span>
+      <span class="mitem"><span class="dot"></span>Boxing</span>
+      <span class="mitem"><span class="dot"></span>Running</span>
+      <span class="mitem"><span class="dot"></span>Padel</span>
+      <span class="mitem"><span class="dot"></span>Football</span>
+      <span class="mitem"><span class="dot"></span>Basketball</span>
+      <span class="mitem"><span class="dot"></span>Tennis</span>
+      <span class="mitem"><span class="dot"></span>Volleyball</span>
+      <span class="mitem"><span class="dot"></span>Badminton</span>
+      <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+      <span class="mitem"><span class="dot"></span>Swimming</span>
+      <span class="mitem"><span class="dot"></span>Yoga</span>
+      <span class="mitem"><span class="dot"></span>Cycling</span>
+      <span class="mitem"><span class="dot"></span>Boxing</span>
+      <span class="mitem"><span class="dot"></span>Running</span>
+      <span class="mitem"><span class="dot"></span>Padel</span>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="how-inner">
+      <p class="sec-eye">Simple by design</p>
+      <h2 class="sec-title">How <span>MatchUp</span> works</h2>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <div class="step-icon si-o">🎯</div>
+          <h3>Pick your sport</h3>
+          <p>Tell us what you love to play. We cover 18+ sports — filter by level, schedule, and distance from home.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02</div>
+          <div class="step-icon si-b">⚡</div>
+          <h3>Get matched instantly</h3>
+          <p>Our smart algorithm surfaces compatible players and events near you in seconds — no guesswork, no waiting.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03</div>
+          <div class="step-icon si-o">📍</div>
+          <h3>Play, book &amp; repeat</h3>
+          <p>Book a court, join a group session, or create your own event. Split costs automatically — no clubs, no contracts.</p>
+        </div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main id="top">
-    <section class="hero">
-      <div class="wrap">
-        <div class="hero-shell">
-          <div class="hero-top">
-            <div class="hero-copy">
-              <div class="eyebrow">Activities near Montreal, QC</div>
+  <!-- SPORTS -->
+  <section id="sports">
+    <p class="sec-eye">All your favourites</p>
+    <h2 class="sec-title" style="margin-bottom:28px">Sports for <span style="color:var(--orange)">everyone</span></h2>
+    <div class="sports-grid">
+      <div class="sc feat reveal">
+        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=900&h=600&fit=crop&auto=format" alt="Football" loading="lazy" />
+        <div class="sco"></div>
+        <div class="sci"><span class="scn">Football</span><span class="scc">4,200 players near you</span></div>
+        <span class="shot">🔥 #1 sport</span>
+      </div>
+      <div class="sc reveal">
+        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=600&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+        <div class="sco"></div>
+        <div class="sci"><span class="scn">Basketball</span><span class="scc">1,850 players</span></div>
+      </div>
+      <div class="sc reveal">
+        <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=600&fit=crop&auto=format" alt="Tennis" loading="lazy" />
+        <div class="sco"></div>
+        <div class="sci"><span class="scn">Tennis</span><span class="scc">2,100 players</span></div>
+      </div>
+      <div class="sc reveal">
+        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=600&fit=crop&auto=format" alt="Swimming" loading="lazy" />
+        <div class="sco"></div>
+        <div class="sci"><span class="scn">Swimming</span><span class="scc">980 players</span></div>
+      </div>
+      <div class="sc reveal">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop&auto=format" alt="Running" loading="lazy" />
+        <div class="sco"></div>
+        <div class="sci"><span class="scn">Running</span><span class="scc">3,400 players</span></div>
+      </div>
+    </div>
+  </section>
 
-              <h1>
-                Find people for your
-                <span class="headline-accent">next real activity</span>
-              </h1>
-
-              <p>
-                MatchUp is built to connect people with compatible interests, level, vibe, and schedule.
-                The goal is not just to browse events. It is to make the right match and actually meet.
-              </p>
-
-              <div class="hero-actions">
-                <a class="btn primary" href="#events">Explore activities</a>
-                <a class="btn secondary" href="#matching">See matching logic</a>
-              </div>
-
-              <div class="hero-tags">
-                <span class="tag">🤝 people-first</span>
-                <span class="tag">📍 local activities</span>
-                <span class="tag">🎯 better fit</span>
-                <span class="tag">⚡ easier to join</span>
-              </div>
-            </div>
-
-            <div class="hero-visual">
-              <div class="search-panel">
-                <div class="search-row">
-                  <input class="field" type="text" placeholder="Search sports, activities, interests, communities..." />
-                  <input class="field" type="text" value="Montreal, QC" aria-label="Location" />
-                  <button class="search-button" aria-label="Search">⌕</button>
-                </div>
-
-                <div class="search-hint">
-                  <span class="search-chip">French practice</span>
-                  <span class="search-chip">Beginner-friendly</span>
-                  <span class="search-chip">After school</span>
-                  <span class="search-chip">Social + active</span>
-                </div>
-              </div>
-
-              <div class="hero-side">
-                <div class="hero-side-title">What users should understand immediately</div>
-                <div class="hero-side-text">
-                  MatchUp is for joining the right activity with the right people, not for endlessly scrolling random content.
-                </div>
-
-                <div class="stats-mini">
-                  <div class="box">
-                    <strong>Fit</strong>
-                    <span>level, vibe, schedule</span>
-                  </div>
-                  <div class="box">
-                    <strong>Trust</strong>
-                    <span>real groups, real hosts</span>
-                  </div>
-                  <div class="box">
-                    <strong>Action</strong>
-                    <span>join faster</span>
-                  </div>
-                </div>
-
-                <div class="mini-pills">
-                  <span class="pill">Small groups</span>
-                  <span class="pill">Student-friendly</span>
-                  <span class="pill">Verified organizers</span>
-                </div>
-              </div>
-            </div>
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="testi-inner">
+      <p class="sec-eye">Real players, real stories</p>
+      <h2 class="sec-title">They found <span style="color:var(--blue)">their team</span></h2>
+      <div class="tgrid">
+        <div class="tc reveal">
+          <div class="stars">★★★★★</div>
+          <blockquote>"I moved to Montréal not knowing anyone. Within a week I had a regular football crew thanks to MatchUp. Absolute game-changer."</blockquote>
+          <div class="author">
+            <div class="av"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=84&h=84&fit=crop&crop=face&auto=format" alt="Thomas" /></div>
+            <div><div class="aname">Thomas R.</div><div class="asport">⚽ Football · Montréal</div></div>
+          </div>
+        </div>
+        <div class="tc reveal">
+          <div class="stars">★★★★★</div>
+          <blockquote>"Finally an app that gets it — no expensive club memberships. MatchUp lets me play tennis 3× a week for a fraction of the cost."</blockquote>
+          <div class="author">
+            <div class="av"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=84&h=84&fit=crop&crop=face&auto=format" alt="Camille" /></div>
+            <div><div class="aname">Camille D.</div><div class="asport">🎾 Tennis · Québec City</div></div>
+          </div>
+        </div>
+        <div class="tc reveal">
+          <div class="stars">★★★★★</div>
+          <blockquote>"Organized our 5v5 tournament in under 20 minutes. The cost-split feature is brilliantly simple. Our whole crew uses it now."</blockquote>
+          <div class="author">
+            <div class="av"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=84&h=84&fit=crop&crop=face&auto=format" alt="Marcus" /></div>
+            <div><div class="aname">Marcus K.</div><div class="asport">🏀 Basketball · Toronto</div></div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section" id="events">
-      <div class="wrap">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Featured activities</div>
-            <h2>Find activities that attract the right people.</h2>
-          </div>
-          <p>
-            Each activity should help users understand not only what the event is, but also what kind of people they are likely to meet there.
-          </p>
-        </div>
+  <!-- CTA -->
+  <section id="cta">
+    <h2>Ready to play?</h2>
+    <p>Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
+    <div class="cta-btns">
+      <a class="btn-ws" href="#">Create your free account →</a>
+      <a class="btn-gw" href="#how">Learn more</a>
+    </div>
+  </section>
 
-        <div class="events-grid">
-          <article class="event-card">
-            <div class="event-top">
-              <span class="pill">Free</span>
-              <div class="event-icon">🗣️</div>
-            </div>
-            <div class="event-body">
-              <h3 class="event-title">Walk &amp; Talk French at Mount Royal</h3>
-              <div class="event-meta">Sat, Apr 18 · 2:30 PM GMT-4</div>
-              <div class="event-host"><span class="avatar-dot">SC</span>Hosted by Walk &amp; Talk MatchUp Group</div>
-            </div>
-          </article>
-
-          <article class="event-card">
-            <div class="event-top">
-              <span class="pill">Popular</span>
-              <div class="event-icon">🥾</div>
-            </div>
-            <div class="event-body">
-              <h3 class="event-title">Sunset Hike + Dinner Social</h3>
-              <div class="event-meta">Sat, Apr 18 · 4:00 PM GMT-4</div>
-              <div class="event-host"><span class="avatar-dot">MX</span>Hosted by MatchUp Social</div>
-            </div>
-          </article>
-
-          <article class="event-card">
-            <div class="event-top">
-              <span class="pill">Community</span>
-              <div class="event-icon">🎲</div>
-            </div>
-            <div class="event-body">
-              <h3 class="event-title">Board Games &amp; Chill at Velora Café</h3>
-              <div class="event-meta">Fri, Apr 24 · 7:00 PM GMT-4</div>
-              <div class="event-host"><span class="avatar-dot">VC</span>Hosted by MatchUp Café Circle</div>
-            </div>
-          </article>
-
-          <article class="event-card">
-            <div class="event-top">
-              <span class="pill">Learning</span>
-              <div class="event-icon">💻</div>
-            </div>
-            <div class="event-body">
-              <h3 class="event-title">Coding Agents Superpowers</h3>
-              <div class="event-meta">Thu, Apr 30 · 6:00 PM GMT-4</div>
-              <div class="event-host"><span class="avatar-dot">AI</span>Hosted by GenAI Montreal</div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="matching">
-      <div class="wrap">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Core value</div>
-            <h2>MatchUp should match people, not just list events.</h2>
-          </div>
-          <p>
-            The homepage should immediately communicate that the platform helps users find the right people based on level, intention, atmosphere, and availability.
-          </p>
-        </div>
-
-        <div class="why-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🎯</div>
-            <h3 class="card-title">Better fit</h3>
-            <p>
-              Show level, activity style, and group vibe so users know whether an activity fits them before joining.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🕒</div>
-            <h3 class="card-title">Easier coordination</h3>
-            <p>
-              Let people match around real schedules and real availability instead of wasting time with endless back-and-forth.
-            </p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🤝</div>
-            <h3 class="card-title">Real social compatibility</h3>
-            <p>
-              Match users with people who want the same kind of experience: casual, competitive, beginner-friendly, or purely social.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap dual-grid">
-        <div class="match-card">
-          <div class="eyebrow">Example matching block</div>
-          <h3 class="match-title">Who would you match with?</h3>
-          <p>
-            This kind of section makes the product direction clearer: MatchUp connects people with compatible profiles for a specific activity.
-          </p>
-
-          <div class="match-grid">
-            <div class="person-card">
-              <div class="person-top">
-                <div class="person-avatar">AL</div>
-                <div>
-                  <div class="person-name">Alex</div>
-                  <div class="person-role">Intermediate · French practice · weekends</div>
-                </div>
-              </div>
-              <div class="mini-pills">
-                <span class="pill">Hiking</span>
-                <span class="pill">Social</span>
-                <span class="pill">Downtown</span>
-              </div>
-              <p>Looking for relaxed outdoor activities and people open to conversation.</p>
-            </div>
-
-            <div class="person-card">
-              <div class="person-top">
-                <div class="person-avatar">JM</div>
-                <div>
-                  <div class="person-name">Jasmine</div>
-                  <div class="person-role">Beginner · board games · evenings</div>
-                </div>
-              </div>
-              <div class="mini-pills">
-                <span class="pill">Café vibe</span>
-                <span class="pill">Friendly</span>
-                <span class="pill">Small group</span>
-              </div>
-              <p>Prefers easygoing meetups with conversation, light games, and a calm atmosphere.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="upload-card" id="media">
-          <div class="eyebrow">Activity media</div>
-          <h3>Upload images from your computer</h3>
-          <p>
-            No default photos are shown anymore. Instead, you can import your own images from your computer and preview them directly on the page.
-          </p>
-
-          <div class="upload-area">
-            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload images by clicking or dragging files here">
-              <div>
-                <strong>Drop images here or click to browse</strong>
-                <span>Accepted: JPG, PNG, WEBP, HEIC if supported by the browser. Images are stored locally in the browser for this demo.</span>
-              </div>
-            </div>
-
-            <div class="upload-actions">
-              <button class="btn primary small" id="browseBtn" type="button">Choose files</button>
-              <button class="btn small" id="clearBtn" type="button">Clear all</button>
-              <input class="hidden-input" id="fileInput" type="file" accept="image/*" multiple />
-            </div>
-
-            <div class="upload-help">
-              Use this area for organizer visuals, activity atmosphere, or event covers — not as a social photo-posting feed.
-            </div>
-
-            <div class="empty-state" id="emptyState">
-              No images uploaded yet.
-            </div>
-
-            <div class="preview-grid" id="previewGrid"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Why this version is cleaner</div>
-            <h2>No random stock photos. Your own media only.</h2>
-          </div>
-          <p>
-            The interface now stays focused on matching and activities, while still giving you a way to add your own visuals when you want them.
-          </p>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stats-card">
-            <strong>1</strong>
-            <p>The homepage is centered on matching people and activities, not on generic images.</p>
-          </div>
-          <div class="stats-card">
-            <strong>2</strong>
-            <p>You can upload images directly from your computer and instantly preview them on the page.</p>
-          </div>
-          <div class="stats-card">
-            <strong>3</strong>
-            <p>The visuals area now supports trust and branding without turning MatchUp into a photo-posting platform.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="cta-card">
-          <div class="cta-copy">
-            <div class="eyebrow" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.10); color:#fff;">Next build steps</div>
-            <h3>Next page to build after index</h3>
-            <p>
-              The most logical next step is an event detail page that shows who the event is for, what vibe to expect, how many people joined, and why it is a good match.
-            </p>
-
-            <div class="cta-badges">
-              <span class="cta-badge">Event detail page</span>
-              <span class="cta-badge">Compatibility tags</span>
-              <span class="cta-badge">Organizer trust signals</span>
-              <span class="cta-badge">Join flow</span>
-            </div>
-          </div>
-
-          <div class="cta-panel">
-            <h4>Suggested structure</h4>
-            <ul class="cta-list">
-              <li>1. index.html → discovery + matching message</li>
-              <li>2. event.html → event page with vibe, level, and participant fit</li>
-              <li>3. groups.html → actual participation and group logic</li>
-              <li>4. organizer page → credibility, custom images, and hosted activities</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
+  <!-- FOOTER -->
   <footer>
-    <div class="wrap">
-      <div class="footer-card">
-        <div>© <span id="year"></span> MatchUp — English homepage concept</div>
-        <div class="footer-links">
-          <a href="#events">Events</a>
-          <a href="#matching">Matching</a>
-          <a href="#media">Media</a>
-          <a href="groups.html">Groups</a>
-        </div>
+    <div class="f-brand">
+      <span class="f-logo">🏆 MatchUp</span>
+      <p>Find your game, find your people. Sport shouldn't be complicated or expensive — we're here to change that.</p>
+      <div class="f-social">
+        <a href="#" aria-label="Instagram">📸</a>
+        <a href="#" aria-label="X">𝕏</a>
+        <a href="#" aria-label="TikTok">🎵</a>
+        <a href="#" aria-label="LinkedIn">💼</a>
       </div>
+    </div>
+    <div class="f-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#">How it works</a></li>
+        <li><a href="#">Browse sports</a></li>
+        <li><a href="#">Find courts</a></li>
+        <li><a href="#">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About us</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy policy</a></li>
+        <li><a href="#">Terms of use</a></li>
+        <li><a href="#">Cookies</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
     </div>
   </footer>
+  <div class="foot-bottom">
+    <span>© 2025 MatchUp Inc. — Built with ❤️ for players everywhere</span>
+    <span>🇨🇦 Made in Canada</span>
+  </div>
 
   <script>
-    const STORAGE_KEY = "matchup_uploaded_media_v1";
-    const MAX_FILES = 8;
-
-    const fileInput = document.getElementById("fileInput");
-    const browseBtn = document.getElementById("browseBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const dropzone = document.getElementById("dropzone");
-    const previewGrid = document.getElementById("previewGrid");
-    const emptyState = document.getElementById("emptyState");
-
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    function formatSize(bytes){
-      if(bytes < 1024) return bytes + " B";
-      if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-    }
-
-    function loadSavedImages(){
-      try{
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      } catch {
-        return [];
-      }
-    }
-
-    function saveImages(images){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(images));
-    }
-
-    function renderImages(){
-      const images = loadSavedImages();
-      previewGrid.innerHTML = "";
-
-      if(!images.length){
-        emptyState.style.display = "block";
-        return;
-      }
-
-      emptyState.style.display = "none";
-
-      images.forEach((img, index) => {
-        const card = document.createElement("article");
-        card.className = "preview-card";
-        card.innerHTML = `
-          <img class="preview-media" src="${img.data}" alt="Uploaded activity visual ${index + 1}">
-          <div class="preview-body">
-            <div class="preview-name">${img.name}</div>
-            <div class="preview-meta">${img.type || "image"} • ${formatSize(img.size || 0)}</div>
-          </div>
-        `;
-        previewGrid.appendChild(card);
-      });
-    }
-
-    function readFileAsDataURL(file){
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function handleFiles(fileList){
-      const files = Array.from(fileList).filter(file => file.type.startsWith("image/"));
-      if(!files.length) return;
-
-      const current = loadSavedImages();
-      const remainingSlots = Math.max(0, MAX_FILES - current.length);
-      const limitedFiles = files.slice(0, remainingSlots);
-
-      if(!limitedFiles.length) return;
-
-      const newItems = [];
-      for(const file of limitedFiles){
-        const data = await readFileAsDataURL(file);
-        newItems.push({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data
-        });
-      }
-
-      saveImages([...current, ...newItems]);
-      renderImages();
-    }
-
-    browseBtn.addEventListener("click", () => fileInput.click());
-    dropzone.addEventListener("click", () => fileInput.click());
-    dropzone.addEventListener("keydown", (e) => {
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        fileInput.click();
-      }
-    });
-
-    fileInput.addEventListener("change", (e) => {
-      handleFiles(e.target.files);
-      e.target.value = "";
-    });
-
-    ["dragenter", "dragover"].forEach(evt => {
-      dropzone.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzone.classList.add("dragover");
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
       });
     });
-
-    ["dragleave", "dragend", "drop"].forEach(evt => {
-      dropzone.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove("dragover");
+    document.querySelectorAll('.fpill').forEach(pill => {
+      pill.addEventListener('click', () => pill.classList.toggle('on'));
+    });
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 75);
+          obs.unobserve(e.target);
+        }
       });
-    });
-
-    dropzone.addEventListener("drop", (e) => {
-      const files = e.dataTransfer.files;
-      handleFiles(files);
-    });
-
-    clearBtn.addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      renderImages();
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.body.classList.add("loaded");
-      renderImages();
-    });
-
-    document.addEventListener("click", (e) => {
-      const a = e.target.closest("a");
-      if(!a) return;
-
-      const href = a.getAttribute("href") || "";
-
-      if(href.startsWith("#")) return;
-      if(a.target === "_blank") return;
-      if(href.startsWith("http")) return;
-      if(href.startsWith("mailto:") || href.startsWith("tel:")) return;
-
-      e.preventDefault();
-      document.body.classList.add("leaving");
-      setTimeout(() => { window.location.href = href; }, 220);
-    });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   </script>
 </body>
 </html>
