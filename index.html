@@ -10,40 +10,37 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --orange:     #FF5722;
-      --orange-lt:  #FF7043;
-      --orange-bg:  #FFF3EF;
-      --blue:       #1565C0;
-      --blue-lt:    #1E88E5;
-      --blue-bg:    #E3F2FD;
-      --white:      #FFFFFF;
-      --off:        #F8F9FA;
-      --text:       #1A1A2E;
-      --muted:      #6B7280;
-      --border:     #E5E7EB;
-      --radius:     16px;
-      --shadow:     0 4px 24px rgba(0,0,0,.08);
-      --shadow-h:   0 12px 40px rgba(0,0,0,.14);
+      --orange:    #FF5722;
+      --orange-lt: #FF7043;
+      --orange-bg: #FFF3EF;
+      --blue:      #1565C0;
+      --blue-lt:   #1E88E5;
+      --blue-bg:   #E3F2FD;
+      --white:     #FFFFFF;
+      --off:       #F8F9FA;
+      --text:      #1A1A2E;
+      --muted:     #6B7280;
+      --border:    #E5E7EB;
+      --shadow:    0 4px 24px rgba(0,0,0,.08);
+      --shadow-h:  0 14px 44px rgba(0,0,0,.14);
     }
     html { scroll-behavior: smooth; }
     body { font-family: 'Nunito', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; }
 
-    /* TOPBAR */
-    .topbar {
-      background: var(--orange); text-align: center;
-      padding: 9px 16px; font-size: .82rem; font-weight: 700; color: #fff; letter-spacing: .03em;
-    }
-    .topbar a { color: #fff; text-decoration: underline; }
+    /* ── TOPBAR ── */
+    .topbar { background: var(--orange); text-align: center; padding: 9px 16px; font-size: .82rem; font-weight: 700; color: #fff; letter-spacing: .03em; }
+    .topbar a { color: #fff; text-decoration: underline; cursor: pointer; }
 
-    /* NAV */
+    /* ── NAV ── */
     nav {
-      position: sticky; top: 0; z-index: 200;
+      position: sticky; top: 0; z-index: 300;
       background: #fff; border-bottom: 1px solid var(--border);
       padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px;
     }
     .nav-logo {
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
-      color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      color: var(--orange); text-decoration: none;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
     }
     .logo-icon {
       width: 36px; height: 36px; border-radius: 10px; background: var(--orange);
@@ -59,7 +56,7 @@
       flex: 1; padding: 10px 18px; font-family: 'Nunito', sans-serif;
       font-size: .9rem; border: none; outline: none; background: transparent; color: var(--text);
     }
-    .sb-divider { width: 1px; background: var(--border); margin: 8px 0; }
+    .sb-div { width: 1px; background: var(--border); margin: 8px 0; }
     .search-bar .loc {
       padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem;
       border: none; outline: none; background: transparent; color: var(--muted); min-width: 130px;
@@ -74,7 +71,8 @@
     .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto; }
     .nav-links a {
       padding: 8px 14px; border-radius: 100px; font-size: .88rem; font-weight: 700;
-      color: var(--muted); text-decoration: none; transition: background .15s, color .15s;
+      color: var(--muted); text-decoration: none; cursor: pointer;
+      transition: background .15s, color .15s;
     }
     .nav-links a:hover { background: var(--off); color: var(--text); }
     .nav-links .btn-su {
@@ -83,7 +81,7 @@
     }
     .nav-links .btn-su:hover { background: var(--blue-lt) !important; transform: translateY(-1px); }
 
-    /* HERO */
+    /* ── HERO ── */
     #hero {
       background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%);
       padding: 72px 40px 80px; display: flex; align-items: center; gap: 56px;
@@ -94,11 +92,6 @@
       width: 520px; height: 520px; border-radius: 50%;
       background: radial-gradient(circle, rgba(255,87,34,.1), transparent 70%); pointer-events: none;
     }
-    #hero::after {
-      content: ''; position: absolute; bottom: -80px; left: 42%;
-      width: 360px; height: 360px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(21,101,192,.07), transparent 70%); pointer-events: none;
-    }
     .hero-text { flex: 1; position: relative; z-index: 1; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
@@ -108,16 +101,10 @@
     }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: blink 1.4s infinite; }
     @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-    .hero-h1 {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: clamp(2.4rem, 4vw, 3.8rem); line-height: 1.08; margin-bottom: 20px;
-    }
+    .hero-h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 4vw, 3.8rem); line-height: 1.08; margin-bottom: 20px; }
     .hero-h1 .oc { color: var(--orange); }
     .hero-h1 .bc { color: var(--blue); }
-    .hero-sub {
-      font-size: 1.05rem; line-height: 1.75; color: var(--muted);
-      max-width: 440px; margin-bottom: 34px;
-    }
+    .hero-sub { font-size: 1.05rem; line-height: 1.75; color: var(--muted); max-width: 440px; margin-bottom: 34px; }
     .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
     .btn-orange {
       background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif;
@@ -127,26 +114,20 @@
     }
     .btn-orange:hover { background: var(--orange-lt); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,87,34,.35); }
     .btn-ob {
-      border: 2px solid var(--blue); color: var(--blue);
-      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
-      padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent;
+      border: 2px solid var(--blue); color: var(--blue); font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px;
+      text-decoration: none; background: transparent; cursor: pointer;
       transition: background .18s, transform .18s; display: inline-block;
     }
     .btn-ob:hover { background: var(--blue-bg); transform: translateY(-2px); }
     .hero-trust { display: flex; align-items: center; gap: 16px; }
     .trust-av { display: flex; }
-    .trust-av img {
-      width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff;
-      margin-left: -8px; object-fit: cover;
-    }
+    .trust-av img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; margin-left: -8px; object-fit: cover; }
     .trust-av img:first-child { margin-left: 0; }
     .trust-txt { font-size: .84rem; font-weight: 700; color: var(--muted); }
     .trust-txt strong { color: var(--text); }
     .hero-visual { flex: 1; position: relative; z-index: 1; min-width: 0; }
-    .hgrid {
-      display: grid; grid-template-columns: 1.2fr 1fr;
-      grid-template-rows: 205px 175px; gap: 12px;
-    }
+    .hgrid { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 205px 175px; gap: 12px; }
     .hgi { border-radius: 18px; overflow: hidden; position: relative; }
     .hgi:first-child { grid-row: span 2; }
     .hgi img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
@@ -160,45 +141,50 @@
     }
     .hgi-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
 
-    /* CATEGORY STRIP */
-    .cat-strip { border-bottom: 1px solid var(--border); padding: 0 40px; background: #fff; }
-    .cat-inner { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 4px 0; }
+    /* ── SPORT CATEGORY TABS ── */
+    .cat-strip { border-bottom: 2px solid var(--border); padding: 0 40px; background: #fff; }
+    .cat-inner { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
     .cat-inner::-webkit-scrollbar { display: none; }
     .cat-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-      padding: 12px 20px 10px; border: none; background: transparent; cursor: pointer;
-      font-family: 'Nunito', sans-serif; font-size: .76rem; font-weight: 700;
-      color: var(--muted); white-space: nowrap;
-      border-bottom: 2.5px solid transparent; transition: color .15s, border-color .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 28px 12px; border: none; background: transparent; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700;
+      color: #555; white-space: nowrap;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: color .18s, border-color .18s;
     }
-    .cat-btn .ci { font-size: 1.4rem; }
-    .cat-btn:hover { color: var(--text); border-bottom-color: var(--text); }
-    .cat-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+    .cat-btn .ci { font-size: 1.6rem; line-height: 1; }
+    .cat-btn:hover { color: var(--text); }
+    .cat-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 800; }
 
-    /* MAIN */
-    .main-wrap { max-width: 1180px; margin: 0 auto; padding: 40px 40px 80px; }
+    /* ── MAIN CONTENT ── */
+    .main-wrap { max-width: 1180px; margin: 0 auto; padding: 36px 40px 80px; }
+
+    /* Filter pills — styled like screenshot */
     .filters-row {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 30px; flex-wrap: wrap; gap: 12px;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 14px;
     }
     .filters-row h2 { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; }
-    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .fpill {
-      display: flex; align-items: center; gap: 6px;
-      border: 1.5px solid var(--border); border-radius: 100px; padding: 7px 16px;
-      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700;
-      color: var(--muted); background: #fff; cursor: pointer;
-      transition: border-color .15s, color .15s, background .15s;
+      display: flex; align-items: center; gap: 7px;
+      border: 1.5px solid var(--border); border-radius: 100px; padding: 8px 18px;
+      font-family: 'Nunito', sans-serif; font-size: .85rem; font-weight: 700;
+      color: var(--text); background: #fff; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      transition: border-color .15s, box-shadow .15s;
+      white-space: nowrap;
     }
-    .fpill:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-bg); }
-    .fpill.on { border-color: var(--blue); background: var(--blue); color: #fff; }
-    .fpill .chev { font-size: .65rem; }
+    .fpill:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .fpill .chev { font-size: .7rem; color: var(--muted); margin-left: 2px; }
     .reset-btn {
       background: none; border: none; font-family: 'Nunito', sans-serif;
-      font-size: .85rem; font-weight: 700; color: var(--blue); cursor: pointer; text-decoration: underline;
+      font-size: .88rem; font-weight: 800; color: var(--blue); cursor: pointer;
+      text-decoration: underline; padding: 4px 0;
     }
 
-    /* EVENT CARDS */
+    /* ── EVENT CARDS ── */
     .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
     .event-card {
       background: #fff; border-radius: 20px; border: 1px solid var(--border);
@@ -206,6 +192,8 @@
       cursor: pointer; text-decoration: none; color: inherit; display: block;
     }
     .event-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-h); }
+    .event-card[data-sport] { transition: transform .25s, box-shadow .25s, opacity .3s; }
+    .event-card.hidden { display: none; }
     .card-img { position: relative; height: 198px; overflow: hidden; background: var(--off); }
     .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
     .event-card:hover .card-img img { transform: scale(1.07); }
@@ -224,87 +212,70 @@
     .card-sport {
       position: absolute; top: 12px; right: 12px;
       background: var(--blue); color: #fff; border-radius: 100px;
-      padding: 4px 11px; font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+      padding: 4px 11px; font-size: .72rem; font-weight: 800;
     }
-    .card-body { padding: 18px 20px 20px; }
+    .card-body { padding: 16px 18px 18px; }
     .card-rec { font-size: .74rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
-    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .97rem; line-height: 1.35; margin-bottom: 7px; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .96rem; line-height: 1.35; margin-bottom: 7px; }
     .card-meta { font-size: .79rem; color: var(--muted); margin-bottom: 14px; line-height: 1.55; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; }
     .card-avs { display: flex; }
-    .card-avs img {
-      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
-      margin-left: -6px; object-fit: cover;
-    }
+    .card-avs img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; margin-left: -6px; object-fit: cover; }
     .card-avs img:first-child { margin-left: 0; }
     .card-rating { font-size: .74rem; color: var(--muted); margin-top: 2px; }
     .card-rating .s { color: var(--orange); }
-    .card-going {
-      font-size: .77rem; font-weight: 800; color: var(--blue);
-      background: var(--blue-bg); padding: 4px 10px; border-radius: 100px;
-    }
+    .card-going { font-size: .77rem; font-weight: 800; color: var(--blue); background: var(--blue-bg); padding: 4px 10px; border-radius: 100px; }
 
-    /* INLINE BANNER */
+    /* No results message */
+    .no-results {
+      grid-column: span 3; text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 1rem; font-weight: 600; display: none;
+    }
+    .no-results .icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+    /* Inline banner */
     .inline-banner {
       grid-column: span 3; background: linear-gradient(118deg, var(--orange), #FF8A65);
       border-radius: 20px; padding: 34px 38px;
       display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #fff;
     }
-    .inline-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; margin-bottom: 5px; }
+    .inline-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 5px; }
     .inline-banner p { font-size: .88rem; opacity: .85; }
     .btn-white {
       background: #fff; color: var(--orange); font-family: 'Nunito', sans-serif;
       font-weight: 800; font-size: .9rem; padding: 12px 26px; border-radius: 100px;
-      text-decoration: none; white-space: nowrap;
+      text-decoration: none; white-space: nowrap; border: none; cursor: pointer;
       transition: transform .18s, box-shadow .18s; display: inline-block;
     }
     .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
 
-    /* MARQUEE */
-    .marquee-wrap {
-      background: var(--off); border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border); padding: 13px 0; overflow: hidden;
-    }
+    /* ── MARQUEE ── */
+    .marquee-wrap { background: var(--off); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 13px 0; overflow: hidden; }
     .marquee-track { display: flex; gap: 48px; width: max-content; animation: marquee 32s linear infinite; }
     @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
-    .mitem {
-      display: flex; align-items: center; gap: 9px;
-      font-size: .77rem; font-weight: 800; color: var(--muted);
-      letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
-    }
+    .mitem { display: flex; align-items: center; gap: 9px; font-size: .77rem; font-weight: 800; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
     .mitem .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
 
-    /* HOW IT WORKS */
+    /* ── HOW IT WORKS ── */
     #how { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 80px 40px; }
     .how-inner { max-width: 1100px; margin: 0 auto; }
     .sec-eye { font-size: .77rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
     .sec-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.8rem); margin-bottom: 52px; }
     .sec-title span { color: var(--blue); }
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .step {
-      background: #fff; border-radius: 20px; padding: 34px 26px;
-      border: 1px solid var(--border); position: relative; overflow: hidden;
-      transition: transform .25s, box-shadow .25s;
-    }
+    .step { background: #fff; border-radius: 20px; padding: 34px 26px; border: 1px solid var(--border); transition: transform .25s, box-shadow .25s; }
     .step:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
-    .step-num { font-family: 'Syne', sans-serif; font-size: 4.2rem; font-weight: 800; color: rgba(255,87,34,.07); line-height: 1; margin-bottom: 16px; }
-    .step-icon {
-      width: 50px; height: 50px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.45rem; margin-bottom: 18px;
-    }
+    .step-num { font-family: 'Syne', sans-serif; font-size: 4rem; font-weight: 800; color: rgba(255,87,34,.07); line-height: 1; margin-bottom: 16px; }
+    .step-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; margin-bottom: 18px; }
     .si-o { background: var(--orange-bg); }
     .si-b { background: var(--blue-bg); }
     .step h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 9px; }
     .step p { font-size: .88rem; line-height: 1.7; color: var(--muted); }
 
-    /* SPORTS */
+    /* ── SPORTS SECTION ── */
     #sports { max-width: 1180px; margin: 0 auto; padding: 80px 40px; }
     .sports-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-    .sc {
-      border-radius: 16px; overflow: hidden; aspect-ratio: 3/4;
-      position: relative; cursor: pointer;
-    }
+    .sc { border-radius: 16px; overflow: hidden; aspect-ratio: 3/4; position: relative; cursor: pointer; }
     .sc img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
     .sc:hover img { transform: scale(1.08); }
     .sc .sco { position: absolute; inset: 0; background: linear-gradient(to top, rgba(21,101,192,.75), transparent 55%); }
@@ -315,14 +286,11 @@
     .sc.feat .scn { font-size: 1.55rem; }
     .sc .shot { position: absolute; top: 10px; right: 10px; background: var(--orange); color: #fff; font-size: .67rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
 
-    /* TESTIMONIALS */
+    /* ── TESTIMONIALS ── */
     #testimonials { background: var(--off); padding: 80px 40px; }
     .testi-inner { max-width: 1100px; margin: 0 auto; }
     .tgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
-    .tc {
-      background: #fff; border-radius: 20px; padding: 26px 24px;
-      border: 1px solid var(--border); transition: transform .25s, box-shadow .25s;
-    }
+    .tc { background: #fff; border-radius: 20px; padding: 26px 24px; border: 1px solid var(--border); transition: transform .25s, box-shadow .25s; }
     .tc:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
     .tc .stars { font-size: .84rem; letter-spacing: 2px; color: var(--orange); margin-bottom: 12px; }
     .tc blockquote { font-size: .9rem; line-height: 1.7; color: #444; font-style: italic; margin-bottom: 18px; }
@@ -332,62 +300,166 @@
     .tc .aname { font-weight: 800; font-size: .86rem; }
     .tc .asport { font-size: .74rem; color: var(--muted); }
 
-    /* CTA */
-    #cta {
-      background: linear-gradient(120deg, var(--blue), #1976D2);
-      padding: 80px 40px; text-align: center; color: #fff; position: relative; overflow: hidden;
-    }
+    /* ── CTA ── */
+    #cta { background: linear-gradient(120deg, var(--blue), #1976D2); padding: 80px 40px; text-align: center; color: #fff; position: relative; overflow: hidden; }
     #cta::before { content:'⚡'; position: absolute; font-size: 22rem; opacity: .04; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
-    #cta h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 14px; position: relative; }
-    #cta p { font-size: 1.02rem; opacity: .8; max-width: 460px; margin: 0 auto 34px; line-height: 1.7; position: relative; }
+    #cta h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 14px; position: relative; }
+    #cta p { font-size: 1.02rem; opacity: .85; max-width: 460px; margin: 0 auto 34px; line-height: 1.7; position: relative; }
     .cta-btns { display: flex; justify-content: center; gap: 13px; flex-wrap: wrap; position: relative; }
-    .btn-ws {
-      background: #fff; color: var(--blue); font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px;
-      text-decoration: none; transition: transform .18s, box-shadow .2s; display: inline-block;
-    }
+    .btn-ws { background: #fff; color: var(--blue); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px; text-decoration: none; border: none; cursor: pointer; transition: transform .18s, box-shadow .2s; display: inline-block; }
     .btn-ws:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.25); }
-    .btn-gw {
-      border: 2px solid rgba(255,255,255,.4); color: #fff;
-      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
-      padding: 13px 28px; border-radius: 100px; text-decoration: none;
-      background: transparent; transition: background .18s, transform .18s; display: inline-block;
-    }
+    .btn-gw { border: 2px solid rgba(255,255,255,.4); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent; cursor: pointer; transition: background .18s, transform .18s; display: inline-block; }
     .btn-gw:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
 
-    /* FOOTER */
+    /* ── FOOTER ── */
     footer { background: #111827; padding: 60px 40px 0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
     .f-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--orange); display: block; margin-bottom: 12px; }
     .f-brand p { font-size: .87rem; line-height: 1.7; color: rgba(255,255,255,.38); max-width: 260px; }
     .f-social { display: flex; gap: 8px; margin-top: 18px; }
-    .f-social a {
-      width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .84rem; text-decoration: none; color: rgba(255,255,255,.45);
-      transition: border-color .2s, color .2s;
-    }
+    .f-social a { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: .84rem; text-decoration: none; color: rgba(255,255,255,.45); transition: border-color .2s, color .2s; cursor: pointer; }
     .f-social a:hover { border-color: var(--orange); color: var(--orange); }
     .f-col h4 { font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.28); margin-bottom: 16px; }
     .f-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .f-col a { font-size: .85rem; color: rgba(255,255,255,.48); text-decoration: none; transition: color .15s; }
+    .f-col a { font-size: .85rem; color: rgba(255,255,255,.48); text-decoration: none; cursor: pointer; transition: color .15s; }
     .f-col a:hover { color: #fff; }
-    .foot-bottom {
-      padding: 22px 40px; display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827;
-    }
+    .foot-bottom { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827; }
 
-    /* REVEAL */
+    /* ── REVEAL ── */
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* RESPONSIVE */
+    /* ══════════════════════════════════════════
+       MODAL — AUTH (Sign up / Log in)
+    ══════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(10,10,30,.55); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #fff; border-radius: 28px;
+      width: 100%; max-width: 460px;
+      padding: 44px 40px 40px;
+      position: relative;
+      transform: translateY(20px) scale(.97);
+      transition: transform .28s cubic-bezier(.34,1.3,.64,1);
+      box-shadow: 0 24px 80px rgba(0,0,0,.22);
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-close {
+      position: absolute; top: 18px; right: 18px;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--off); border: none; cursor: pointer;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: background .15s, color .15s;
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+    .modal-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); margin-bottom: 6px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.55rem; margin-bottom: 6px; }
+    .modal-sub { font-size: .9rem; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+    .modal-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+    .mtab {
+      flex: 1; padding: 10px; text-align: center;
+      font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800;
+      color: var(--muted); background: none; border: none; cursor: pointer;
+      border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+      transition: color .18s, border-color .18s;
+    }
+    .mtab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+    /* Social buttons */
+    .social-auth { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 12px; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: .92rem; font-weight: 700;
+      cursor: pointer; border: 1.5px solid var(--border); background: #fff;
+      transition: background .15s, border-color .15s, box-shadow .15s;
+    }
+    .btn-social:hover { background: var(--off); border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .btn-social .si { font-size: 1.1rem; }
+
+    /* Divider */
+    .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .auth-divider span { font-size: .78rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+    /* Form fields */
+    .form-group { margin-bottom: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .82rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 16px; border-radius: 12px;
+      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
+      font-size: .92rem; color: var(--text); background: #fff; outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12);
+    }
+    .form-group input.error { border-color: #e53e3e; }
+    .field-error { font-size: .75rem; color: #e53e3e; font-weight: 700; margin-top: 4px; display: none; }
+    .field-error.show { display: block; }
+    .sport-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+    .sport-opt {
+      padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 700;
+      text-align: center; cursor: pointer; background: #fff;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+    .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); }
+    .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
+    .form-submit {
+      width: 100%; padding: 14px; border-radius: 100px;
+      background: var(--orange); color: #fff;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
+      border: none; cursor: pointer; margin-top: 6px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .form-submit:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
+    .form-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+    .switch-auth { text-align: center; margin-top: 18px; font-size: .85rem; color: var(--muted); }
+    .switch-auth a { color: var(--orange); font-weight: 800; cursor: pointer; text-decoration: none; }
+    .switch-auth a:hover { text-decoration: underline; }
+    .privacy-note { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 14px; line-height: 1.5; }
+    .privacy-note a { color: var(--blue); }
+
+    /* Success state */
+    .modal-success { text-align: center; display: none; padding: 20px 0; }
+    .modal-success.show { display: block; }
+    .modal-form-wrap.hide { display: none; }
+    .success-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
+    .modal-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 8px; }
+    .modal-success p { font-size: .92rem; color: var(--muted); line-height: 1.6; }
+
+    /* Loading spinner */
+    .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .form-submit.loading .spinner { display: inline-block; }
+    .form-submit.loading .btn-label { display: none; }
+
+    /* Alert banner inside modal */
+    .auth-alert {
+      padding: 10px 14px; border-radius: 10px; font-size: .82rem; font-weight: 700;
+      margin-bottom: 16px; display: none;
+    }
+    .auth-alert.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .auth-alert.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+    .auth-alert.show { display: block; }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 960px) {
       nav { padding: 0 20px; gap: 10px; }
       .nav-links li:not(:last-child) { display: none; }
       #hero { flex-direction: column; padding: 48px 24px 56px; }
       .hero-visual { width: 100%; }
       .events-grid { grid-template-columns: 1fr 1fr; }
-      .inline-banner { grid-column: span 2; }
+      .inline-banner, .no-results { grid-column: span 2; }
       .steps, .sports-grid { grid-template-columns: 1fr 1fr; }
       .sc.feat { grid-column: span 2; }
       .tgrid { grid-template-columns: 1fr; }
@@ -397,448 +469,842 @@
     }
     @media (max-width: 600px) {
       .events-grid, .steps { grid-template-columns: 1fr; }
-      .inline-banner { grid-column: span 1; flex-direction: column; }
+      .inline-banner, .no-results { grid-column: span 1; }
+      .inline-banner { flex-direction: column; }
       .sports-grid { grid-template-columns: 1fr 1fr; }
       footer { grid-template-columns: 1fr; }
       .foot-bottom { flex-direction: column; gap: 6px; text-align: center; }
-      .sb-divider, .loc { display: none; }
+      .sb-div, .loc { display: none; }
+      .modal { padding: 36px 24px 28px; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a href="#cta">Claim your spot →</a></div>
+<!-- ═══════════════════════════════
+     AUTH MODAL
+═══════════════════════════════ -->
+<div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-label="Sign up or Log in">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <div class="modal-logo">🏆 MatchUp</div>
 
-  <!-- NAV -->
-  <nav>
-    <a class="nav-logo" href="#">
-      <span class="logo-icon">🏆</span>MatchUp
-    </a>
-    <div class="search-bar">
-      <input type="text" placeholder="Search sports, events, players…" />
-      <div class="sb-divider"></div>
-      <input class="loc" type="text" value="Montréal, QC" />
-      <button class="search-btn">🔍</button>
+    <!-- Success state -->
+    <div class="modal-success" id="modalSuccess">
+      <span class="success-icon">🎉</span>
+      <h3 id="successTitle">Welcome aboard!</h3>
+      <p id="successMsg">Your account is ready. Check your email to confirm, then start finding your game!</p>
     </div>
-    <ul class="nav-links">
+
+    <!-- Form -->
+    <div class="modal-form-wrap" id="modalFormWrap">
+      <div class="modal-tabs">
+        <button class="mtab active" id="tabSignup" onclick="switchTab('signup')">Create account</button>
+        <button class="mtab" id="tabLogin" onclick="switchTab('login')">Log in</button>
+      </div>
+
+      <!-- Alert -->
+      <div class="auth-alert" id="authAlert"></div>
+
+      <!-- Social -->
+      <div class="social-auth">
+        <button class="btn-social" onclick="socialAuth('google')">
+          <span class="si">🔵</span> Continue with Google
+        </button>
+        <button class="btn-social" onclick="socialAuth('apple')">
+          <span class="si">🍎</span> Continue with Apple
+        </button>
+      </div>
+      <div class="auth-divider"><span>or with email</span></div>
+
+      <!-- SIGNUP FORM -->
+      <form id="signupForm" autocomplete="on" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="su-fname">First name</label>
+            <input type="text" id="su-fname" placeholder="Alex" autocomplete="given-name" />
+            <div class="field-error" id="err-fname">Required</div>
+          </div>
+          <div class="form-group">
+            <label for="su-lname">Last name</label>
+            <input type="text" id="su-lname" placeholder="Tremblay" autocomplete="family-name" />
+            <div class="field-error" id="err-lname">Required</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="su-email">Email address</label>
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" />
+          <div class="field-error" id="err-email">Enter a valid email</div>
+        </div>
+        <div class="form-group">
+          <label for="su-password">Password</label>
+          <input type="password" id="su-password" placeholder="At least 8 characters" autocomplete="new-password" />
+          <div class="field-error" id="err-password">At least 8 characters</div>
+        </div>
+        <div class="form-group">
+          <label>Your favourite sport(s)</label>
+          <div class="sport-picker">
+            <button type="button" class="sport-opt" data-sport="football">⚽ Football</button>
+            <button type="button" class="sport-opt" data-sport="basketball">🏀 Basketball</button>
+            <button type="button" class="sport-opt" data-sport="tennis">🎾 Tennis</button>
+            <button type="button" class="sport-opt" data-sport="badminton">🏸 Badminton</button>
+            <button type="button" class="sport-opt" data-sport="running">🏃 Running</button>
+            <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
+          </div>
+        </div>
+        <button type="submit" class="form-submit" id="signupBtn">
+          <span class="btn-label">Join MatchUp — It's Free 🚀</span>
+          <span class="spinner"></span>
+        </button>
+        <p class="privacy-note">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+      </form>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" style="display:none" autocomplete="on" novalidate>
+        <div class="form-group">
+          <label for="li-email">Email address</label>
+          <input type="email" id="li-email" placeholder="you@example.com" autocomplete="email" />
+          <div class="field-error" id="err-li-email">Enter a valid email</div>
+        </div>
+        <div class="form-group">
+          <label for="li-password">Password</label>
+          <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password" />
+          <div class="field-error" id="err-li-password">Required</div>
+        </div>
+        <div style="text-align:right;margin-bottom:16px;">
+          <a style="font-size:.8rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="showAlert('A reset link will be sent to your email.','success')">Forgot password?</a>
+        </div>
+        <button type="submit" class="form-submit" id="loginBtn">
+          <span class="btn-label">Log in →</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+      <div class="switch-auth" id="switchAuthText">
+        Already have an account? <a onclick="switchTab('login')">Log in</a>
+      </div>
+    </div><!-- /modal-form-wrap -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     PAGE
+═══════════════════════════════ -->
+<div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a onclick="openModal()">Claim your spot →</a></div>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <span class="logo-icon">🏆</span>MatchUp
+  </a>
+  <div class="search-bar">
+    <input type="text" placeholder="Search sports, events, players…" />
+    <div class="sb-div"></div>
+    <input class="loc" type="text" value="Montréal, QC" />
+    <button class="search-btn">🔍</button>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#sports">Sports</a></li>
+    <li><a onclick="openModal(); switchTab('login')">Log in</a></li>
+    <li><a class="btn-su" onclick="openModal()">Sign up</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-text">
+    <div class="hero-badge"><span class="live-dot"></span>Live in Montréal, Toronto &amp; Vancouver</div>
+    <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
+    <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
+    <div class="hero-actions">
+      <button class="btn-orange" onclick="openModal()">Join for free</button>
+      <a class="btn-ob" href="#how">How it works</a>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-av">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+      </div>
+      <span class="trust-txt"><strong>12,400+</strong> active players already matched</span>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hgrid">
+      <div class="hgi">
+        <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=700&fit=crop&auto=format" alt="Basketball" />
+        <div class="hgi-pill"><span class="dot"></span>34 joining today</div>
+      </div>
+      <div class="hgi">
+        <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format" alt="Tennis" />
+        <div class="hgi-pill"><span class="dot"></span>Court booked</div>
+      </div>
+      <div class="hgi">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format" alt="Volleyball" />
+        <div class="hgi-pill"><span class="dot"></span>⚡ Starting soon</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPORT CATEGORY TABS -->
+<div class="cat-strip">
+  <div class="cat-inner">
+    <button class="cat-btn active" data-filter="all"><span class="ci">✨</span>All Sports</button>
+    <button class="cat-btn" data-filter="football"><span class="ci">⚽</span>Football</button>
+    <button class="cat-btn" data-filter="basketball"><span class="ci">🏀</span>Basketball</button>
+    <button class="cat-btn" data-filter="tennis"><span class="ci">🎾</span>Tennis</button>
+    <button class="cat-btn" data-filter="badminton"><span class="ci">🏸</span>Badminton</button>
+    <button class="cat-btn" data-filter="running"><span class="ci">🏃</span>Running</button>
+    <button class="cat-btn" data-filter="pingpong"><span class="ci">🏓</span>Ping-Pong</button>
+    <button class="cat-btn" data-filter="swimming"><span class="ci">🏊</span>Swimming</button>
+    <button class="cat-btn" data-filter="volleyball"><span class="ci">🏐</span>Volleyball</button>
+    <button class="cat-btn" data-filter="yoga"><span class="ci">🧘</span>Yoga</button>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<div class="main-wrap">
+  <div class="filters-row">
+    <h2 id="sectionTitle">Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
+    <div class="filter-pills">
+      <button class="fpill">⏰ Any day <span class="chev">▾</span></button>
+      <button class="fpill">📍 In person <span class="chev">▾</span></button>
+      <button class="fpill">🗺️ Within 30 km <span class="chev">▾</span></button>
+      <button class="reset-btn" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <div class="events-grid" id="eventsGrid">
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="football">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format" alt="Football" loading="lazy" />
+        <span class="card-price free">FREE</span>
+        <span class="card-sport">⚽ Football</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Saturday</div>
+        <div class="card-title">5v5 Pickup Football — Mont-Royal Park</div>
+        <div class="card-meta">Apr 19 · 10:00 AM EDT<br>by Plein Air Montréal · Mont-Royal</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.8</div>
+          </div>
+          <span class="card-going">22 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="badminton">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format" alt="Badminton" loading="lazy" />
+        <span class="card-price">CA$13.00</span>
+        <span class="card-waitlist">📋 Waitlist</span>
+        <span class="card-sport">🏸 Badminton</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Saturday</div>
+        <div class="card-title">Badminton Doubles #Downtown — All levels welcome!</div>
+        <div class="card-meta">Apr 19 · 3:00 PM EDT<br>by Downtown Badminton MTL</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.9</div>
+          </div>
+          <span class="card-going">31 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="pingpong">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format" alt="Ping Pong" loading="lazy" />
+        <span class="card-price">CA$10.00</span>
+        <span class="card-sport">🏓 Ping-Pong</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Sunday</div>
+        <div class="card-title">🏓 Ping-Pong Fun — Tous niveaux bienvenus!</div>
+        <div class="card-meta">Apr 20 · 1:30 PM EDT<br>by Volley Urbain · Plateau</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.7</div>
+          </div>
+          <span class="card-going">9 going</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Banner — always visible -->
+    <div class="inline-banner" id="inlineBanner">
+      <div>
+        <h3>🏆 Create your own event</h3>
+        <p>Organize a pickup game, a league, or a one-off session. Open it to your community.</p>
+      </div>
+      <button class="btn-white" onclick="openModal()">Start for free →</button>
+    </div>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="basketball">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+        <span class="card-price free">FREE</span>
+        <span class="card-sport">🏀 Basketball</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Weekly · Thursdays</div>
+        <div class="card-title">3v3 Basketball Open Run — Parc Jarry</div>
+        <div class="card-meta">Apr 24 · 6:30 PM EDT<br>by MTL Ballers Collective</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.6</div>
+          </div>
+          <span class="card-going">18 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="running">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
+        <span class="card-price free">FREE</span>
+        <span class="card-sport">🏃 Running</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Sunday Morning</div>
+        <div class="card-title">Group Run — Lachine Canal 10K (Beginner-friendly!)</div>
+        <div class="card-meta">Apr 20 · 8:00 AM EDT<br>by Run MTL Community</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.9</div>
+          </div>
+          <span class="card-going">44 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="tennis">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&h=400&fit=crop&auto=format" alt="Tennis" loading="lazy" />
+        <span class="card-price">CA$8.00</span>
+        <span class="card-sport">🎾 Tennis</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Biweekly · Saturdays</div>
+        <div class="card-title">Tennis Mixte — Parc Lafontaine · Intermediate</div>
+        <div class="card-meta">Apr 26 · 9:00 AM EDT<br>by Tennis Montréal</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.8</div>
+          </div>
+          <span class="card-going">12 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="volleyball">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=600&h=400&fit=crop&auto=format" alt="Volleyball" loading="lazy" />
+        <span class="card-price">CA$12.00</span>
+        <span class="card-sport">🏐 Volleyball</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Friday Evening</div>
+        <div class="card-title">Beach Volleyball — Parc Jean-Drapeau</div>
+        <div class="card-meta">Apr 25 · 7:00 PM EDT<br>by Volley Urbain MTL</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.7</div>
+          </div>
+          <span class="card-going">16 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="swimming">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=600&h=400&fit=crop&auto=format" alt="Swimming" loading="lazy" />
+        <span class="card-price free">FREE</span>
+        <span class="card-sport">🏊 Swimming</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Weekly · Tuesdays</div>
+        <div class="card-title">Masters Swimming Club — All levels, Piscine Rosemont</div>
+        <div class="card-meta">Apr 22 · 6:00 AM EDT<br>by Swim MTL</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.5</div>
+          </div>
+          <span class="card-going">11 going</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="yoga">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1588286840104-8957b019727f?w=600&h=400&fit=crop&auto=format" alt="Yoga" loading="lazy" />
+        <span class="card-price free">FREE</span>
+        <span class="card-sport">🧘 Yoga</span>
+      </div>
+      <div class="card-body">
+        <div class="card-rec">Every Sunday Morning</div>
+        <div class="card-title">Outdoor Yoga — Parc du Mont-Royal (All levels)</div>
+        <div class="card-meta">Apr 20 · 9:00 AM EDT<br>by Yoga MTL Community</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+            <div class="card-rating"><span class="s">★</span> 4.9</div>
+          </div>
+          <span class="card-going">38 going</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- No results -->
+    <div class="no-results" id="noResults">
+      <span class="icon">🔍</span>
+      No events found for this sport yet — <a href="#" onclick="openModal();return false;" style="color:var(--orange);font-weight:800;">be the first to create one!</a>
+    </div>
+
+  </div><!-- /events-grid -->
+</div><!-- /main-wrap -->
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="mitem"><span class="dot"></span>Football</span>
+    <span class="mitem"><span class="dot"></span>Basketball</span>
+    <span class="mitem"><span class="dot"></span>Tennis</span>
+    <span class="mitem"><span class="dot"></span>Volleyball</span>
+    <span class="mitem"><span class="dot"></span>Badminton</span>
+    <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+    <span class="mitem"><span class="dot"></span>Swimming</span>
+    <span class="mitem"><span class="dot"></span>Yoga</span>
+    <span class="mitem"><span class="dot"></span>Cycling</span>
+    <span class="mitem"><span class="dot"></span>Boxing</span>
+    <span class="mitem"><span class="dot"></span>Running</span>
+    <span class="mitem"><span class="dot"></span>Padel</span>
+    <span class="mitem"><span class="dot"></span>Football</span>
+    <span class="mitem"><span class="dot"></span>Basketball</span>
+    <span class="mitem"><span class="dot"></span>Tennis</span>
+    <span class="mitem"><span class="dot"></span>Volleyball</span>
+    <span class="mitem"><span class="dot"></span>Badminton</span>
+    <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+    <span class="mitem"><span class="dot"></span>Swimming</span>
+    <span class="mitem"><span class="dot"></span>Yoga</span>
+    <span class="mitem"><span class="dot"></span>Cycling</span>
+    <span class="mitem"><span class="dot"></span>Boxing</span>
+    <span class="mitem"><span class="dot"></span>Running</span>
+    <span class="mitem"><span class="dot"></span>Padel</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="how-inner">
+    <p class="sec-eye">Simple by design</p>
+    <h2 class="sec-title">How <span>MatchUp</span> works</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-icon si-o">🎯</div>
+        <h3>Pick your sport</h3>
+        <p>Tell us what you love to play. We cover 18+ sports — filter by level, schedule, and distance from home.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div class="step-icon si-b">⚡</div>
+        <h3>Get matched instantly</h3>
+        <p>Our smart algorithm surfaces compatible players and events near you in seconds — no guesswork, no waiting.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div class="step-icon si-o">📍</div>
+        <h3>Play, book &amp; repeat</h3>
+        <p>Book a court, join a group session, or create your own event. Split costs automatically — no clubs, no contracts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPORTS -->
+<section id="sports">
+  <p class="sec-eye">All your favourites</p>
+  <h2 class="sec-title" style="margin-bottom:28px">Sports for <span style="color:var(--orange)">everyone</span></h2>
+  <div class="sports-grid">
+    <div class="sc feat reveal">
+      <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=900&h=600&fit=crop&auto=format" alt="Football" loading="lazy" />
+      <div class="sco"></div>
+      <div class="sci"><span class="scn">Football</span><span class="scc">4,200 players near you</span></div>
+      <span class="shot">🔥 #1 sport</span>
+    </div>
+    <div class="sc reveal">
+      <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=600&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+      <div class="sco"></div>
+      <div class="sci"><span class="scn">Basketball</span><span class="scc">1,850 players</span></div>
+    </div>
+    <div class="sc reveal">
+      <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=600&fit=crop&auto=format" alt="Tennis" loading="lazy" />
+      <div class="sco"></div>
+      <div class="sci"><span class="scn">Tennis</span><span class="scc">2,100 players</span></div>
+    </div>
+    <div class="sc reveal">
+      <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=600&fit=crop&auto=format" alt="Swimming" loading="lazy" />
+      <div class="sco"></div>
+      <div class="sci"><span class="scn">Swimming</span><span class="scc">980 players</span></div>
+    </div>
+    <div class="sc reveal">
+      <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop&auto=format" alt="Running" loading="lazy" />
+      <div class="sco"></div>
+      <div class="sci"><span class="scn">Running</span><span class="scc">3,400 players</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="testi-inner">
+    <p class="sec-eye">Real players, real stories</p>
+    <h2 class="sec-title">They found <span style="color:var(--blue)">their team</span></h2>
+    <div class="tgrid">
+      <div class="tc reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I moved to Montréal not knowing anyone. Within a week I had a regular football crew thanks to MatchUp. Absolute game-changer."</blockquote>
+        <div class="author">
+          <div class="av"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=84&h=84&fit=crop&crop=face&auto=format" alt="Thomas" /></div>
+          <div><div class="aname">Thomas R.</div><div class="asport">⚽ Football · Montréal</div></div>
+        </div>
+      </div>
+      <div class="tc reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Finally an app that gets it — no expensive club memberships. MatchUp lets me play tennis 3× a week for a fraction of the cost."</blockquote>
+        <div class="author">
+          <div class="av"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=84&h=84&fit=crop&crop=face&auto=format" alt="Camille" /></div>
+          <div><div class="aname">Camille D.</div><div class="asport">🎾 Tennis · Québec City</div></div>
+        </div>
+      </div>
+      <div class="tc reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Organized our 5v5 tournament in 20 minutes. The cost-split feature is brilliantly simple. Our whole crew uses MatchUp now."</blockquote>
+        <div class="author">
+          <div class="av"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=84&h=84&fit=crop&crop=face&auto=format" alt="Marcus" /></div>
+          <div><div class="aname">Marcus K.</div><div class="asport">🏀 Basketball · Toronto</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <h2>Ready to play?</h2>
+  <p>Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
+  <div class="cta-btns">
+    <button class="btn-ws" onclick="openModal()">Create your free account →</button>
+    <a class="btn-gw" href="#how">Learn more</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-brand">
+    <span class="f-logo">🏆 MatchUp</span>
+    <p>Find your game, find your people. Sport shouldn't be complicated or expensive — we're here to change that.</p>
+    <div class="f-social">
+      <a aria-label="Instagram">📸</a>
+      <a aria-label="X">𝕏</a>
+      <a aria-label="TikTok">🎵</a>
+      <a aria-label="LinkedIn">💼</a>
+    </div>
+  </div>
+  <div class="f-col">
+    <h4>Product</h4>
+    <ul>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#sports">Browse sports</a></li>
+      <li><a href="#">Find courts</a></li>
+      <li><a href="#">Pricing</a></li>
+    </ul>
+  </div>
+  <div class="f-col">
+    <h4>Company</h4>
+    <ul>
+      <li><a href="#">About us</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Careers</a></li>
+      <li><a href="#">Press</a></li>
+    </ul>
+  </div>
+  <div class="f-col">
+    <h4>Legal</h4>
+    <ul>
+      <li><a href="#">Privacy policy</a></li>
+      <li><a href="#">Terms of use</a></li>
+      <li><a href="#">Cookies</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="foot-bottom">
+  <span>© 2025 MatchUp Inc. — Built with ❤️ for players everywhere</span>
+  <span>🇨🇦 Made in Canada</span>
+</div>
+
+<!-- ═══════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════ -->
+<script>
+/* ─── MODAL ─── */
+function openModal() {
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('authModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function switchTab(tab) {
+  const isSignup = tab === 'signup';
+  document.getElementById('tabSignup').classList.toggle('active', isSignup);
+  document.getElementById('tabLogin').classList.toggle('active', !isSignup);
+  document.getElementById('signupForm').style.display = isSignup ? '' : 'none';
+  document.getElementById('loginForm').style.display  = isSignup ? 'none' : '';
+  document.getElementById('switchAuthText').innerHTML = isSignup
+    ? 'Already have an account? <a onclick="switchTab(\'login\')">Log in</a>'
+    : 'No account yet? <a onclick="switchTab(\'signup\')">Create one for free</a>';
+  clearAlert();
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('authAlert');
+  el.textContent = msg;
+  el.className = 'auth-alert ' + type + ' show';
+}
+function clearAlert() {
+  const el = document.getElementById('authAlert');
+  el.className = 'auth-alert';
+  el.textContent = '';
+}
+
+/* Sport opts */
+document.querySelectorAll('.sport-opt').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('sel'));
+});
+
+/* ─── SIGNUP ─── */
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  clearAlert();
+  const fname    = document.getElementById('su-fname').value.trim();
+  const lname    = document.getElementById('su-lname').value.trim();
+  const email    = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-password').value;
+  let valid = true;
+
+  // Validate
+  [['su-fname','err-fname', fname], ['su-lname','err-lname', lname]].forEach(([id, errId, val]) => {
+    const input = document.getElementById(id);
+    const err   = document.getElementById(errId);
+    if (!val) { input.classList.add('error'); err.classList.add('show'); valid = false; }
+    else       { input.classList.remove('error'); err.classList.remove('show'); }
+  });
+  const emailEl = document.getElementById('su-email');
+  const emailErr = document.getElementById('err-email');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
+  } else { emailEl.classList.remove('error'); emailErr.classList.remove('show'); }
+  const passEl  = document.getElementById('su-password');
+  const passErr = document.getElementById('err-password');
+  if (password.length < 8) {
+    passEl.classList.add('error'); passErr.classList.add('show'); valid = false;
+  } else { passEl.classList.remove('error'); passErr.classList.remove('show'); }
+  if (!valid) return;
+
+  const btn = document.getElementById('signupBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  // ── CONNECT YOUR BACKEND HERE ──
+  // Option A: Firebase (see SETUP.md)
+  // Option B: Supabase
+  // Option C: EmailJS for waitlist
+  // For now → simulate a 1.5s API call then show success
+  await fakeApiCall(1400);
+
+  btn.classList.remove('loading'); btn.disabled = false;
+
+  // Show success screen
+  document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
+  document.getElementById('successMsg').textContent   = `Your account is created. We'll send a confirmation to ${email}. Start finding your game!`;
+  document.getElementById('modalFormWrap').classList.add('hide');
+  document.getElementById('modalSuccess').classList.add('show');
+
+  // ── SAVE USER DATA (localStorage as fallback) ──
+  const user = { fname, lname, email, sports: [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport), joined: new Date().toISOString() };
+  const users = JSON.parse(localStorage.getItem('mu_users') || '[]');
+  users.push(user);
+  localStorage.setItem('mu_users', JSON.stringify(users));
+  localStorage.setItem('mu_current_user', JSON.stringify(user));
+  updateNavForUser(fname);
+
+  setTimeout(closeModal, 3200);
+});
+
+/* ─── LOGIN ─── */
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  clearAlert();
+  const email    = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-password').value;
+  let valid = true;
+
+  const emailEl = document.getElementById('li-email');
+  const emailErr = document.getElementById('err-li-email');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
+  } else { emailEl.classList.remove('error'); emailErr.classList.remove('show'); }
+  const passEl  = document.getElementById('li-password');
+  const passErr = document.getElementById('err-li-password');
+  if (!password) {
+    passEl.classList.add('error'); passErr.classList.add('show'); valid = false;
+  } else { passEl.classList.remove('error'); passErr.classList.remove('show'); }
+  if (!valid) return;
+
+  const btn = document.getElementById('loginBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+  await fakeApiCall(1200);
+  btn.classList.remove('loading'); btn.disabled = false;
+
+  // Check against stored users (demo — replace with real auth)
+  const users = JSON.parse(localStorage.getItem('mu_users') || '[]');
+  const found = users.find(u => u.email === email);
+  if (found) {
+    localStorage.setItem('mu_current_user', JSON.stringify(found));
+    document.getElementById('successTitle').textContent = `Welcome back, ${found.fname}! 👋`;
+    document.getElementById('successMsg').textContent   = 'You\'re now logged in. Ready to find your next game?';
+    document.getElementById('modalFormWrap').classList.add('hide');
+    document.getElementById('modalSuccess').classList.add('show');
+    updateNavForUser(found.fname);
+    setTimeout(closeModal, 2500);
+  } else {
+    showAlert('No account found with this email. Try signing up!', 'error');
+  }
+});
+
+/* ─── SOCIAL AUTH STUB ─── */
+function socialAuth(provider) {
+  showAlert(`${provider === 'google' ? 'Google' : 'Apple'} sign-in coming soon! Use email for now.`, 'success');
+}
+
+/* ─── UPDATE NAV WHEN LOGGED IN ─── */
+function updateNavForUser(fname) {
+  const links = document.querySelector('.nav-links');
+  if (links) {
+    links.innerHTML = `
       <li><a href="#how">How it works</a></li>
       <li><a href="#sports">Sports</a></li>
-      <li><a href="#cta">Log in</a></li>
-      <li><a class="btn-su" href="#cta">Sign up</a></li>
-    </ul>
-  </nav>
+      <li><span style="padding:8px 14px;font-size:.88rem;font-weight:800;color:var(--text)">👋 ${fname}</span></li>
+      <li><a class="btn-su" href="#" onclick="logOut();return false;">Log out</a></li>`;
+  }
+}
+function logOut() {
+  localStorage.removeItem('mu_current_user');
+  location.reload();
+}
 
-  <!-- HERO -->
-  <section id="hero">
-    <div class="hero-text">
-      <div class="hero-badge"><span class="live-dot"></span>Live in Montréal, Toronto &amp; Vancouver</div>
-      <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
-      <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
-      <div class="hero-actions">
-        <a class="btn-orange" href="#cta">Join for free</a>
-        <a class="btn-ob" href="#how">How it works</a>
-      </div>
-      <div class="hero-trust">
-        <div class="trust-av">
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-          <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-        </div>
-        <span class="trust-txt"><strong>12,400+</strong> active players already matched</span>
-      </div>
-    </div>
-    <div class="hero-visual">
-      <div class="hgrid">
-        <div class="hgi">
-          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=700&fit=crop&auto=format" alt="Basketball" />
-          <div class="hgi-pill"><span class="dot"></span>34 joining today</div>
-        </div>
-        <div class="hgi">
-          <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format" alt="Tennis" />
-          <div class="hgi-pill"><span class="dot"></span>Court booked</div>
-        </div>
-        <div class="hgi">
-          <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format" alt="Volleyball" />
-          <div class="hgi-pill"><span class="dot"></span>⚡ Starting soon</div>
-        </div>
-      </div>
-    </div>
-  </section>
+/* ─── CHECK SESSION ON LOAD ─── */
+window.addEventListener('load', () => {
+  const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+  if (user) updateNavForUser(user.fname);
+});
 
-  <!-- CATEGORIES -->
-  <div class="cat-strip">
-    <div class="cat-inner">
-      <button class="cat-btn"><span class="ci">✨</span>All Events</button>
-      <button class="cat-btn active"><span class="ci">⚽</span>Sports &amp; Fitness</button>
-      <button class="cat-btn"><span class="ci">🤝</span>Social Activities</button>
-      <button class="cat-btn"><span class="ci">🏕️</span>Outdoor &amp; Hiking</button>
-      <button class="cat-btn"><span class="ci">🎨</span>Hobbies &amp; Passions</button>
-      <button class="cat-btn"><span class="ci">🌍</span>New Groups</button>
-      <button class="cat-btn"><span class="ci">💼</span>Career &amp; Business</button>
-    </div>
-  </div>
+/* ─── SPORT TAB FILTER ─── */
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterSport(btn.dataset.filter);
+  });
+});
 
-  <!-- EVENTS -->
-  <div class="main-wrap">
-    <div class="filters-row">
-      <h2>Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
-      <div class="filter-pills">
-        <button class="fpill">⏰ Any day <span class="chev">▾</span></button>
-        <button class="fpill on">📍 In person <span class="chev">▾</span></button>
-        <button class="fpill">🗺️ Within 30 km <span class="chev">▾</span></button>
-        <button class="reset-btn">Reset</button>
-      </div>
-    </div>
+function filterSport(sport) {
+  const cards  = document.querySelectorAll('.event-card[data-sport]');
+  const banner = document.getElementById('inlineBanner');
+  const noRes  = document.getElementById('noResults');
+  const title  = document.getElementById('sectionTitle');
+  let visible  = 0;
 
-    <div class="events-grid">
+  cards.forEach(card => {
+    if (sport === 'all' || card.dataset.sport === sport) {
+      card.classList.remove('hidden'); visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
 
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format" alt="Football" loading="lazy" />
-          <span class="card-price free">FREE</span>
-          <span class="card-sport">⚽ Football</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Every Saturday</div>
-          <div class="card-title">5v5 Pickup Football — Mont-Royal Park</div>
-          <div class="card-meta">Apr 19 · 10:00 AM EDT<br>by Plein Air Montréal · Mont-Royal</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.8</div>
-            </div>
-            <span class="card-going">22 going</span>
-          </div>
-        </div>
-      </a>
+  // Update heading
+  const sportNames = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
+  title.innerHTML = `<span style="color:var(--orange)">${sportNames[sport] || sport}</span> Events near Montréal, QC`;
 
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format" alt="Badminton" loading="lazy" />
-          <span class="card-price">CA$13.00</span>
-          <span class="card-waitlist">📋 Waitlist</span>
-          <span class="card-sport">🏸 Badminton</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Every Saturday</div>
-          <div class="card-title">Badminton Doubles #Downtown — All levels welcome!</div>
-          <div class="card-meta">Apr 19 · 3:00 PM EDT<br>by Downtown Badminton MTL</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.9</div>
-            </div>
-            <span class="card-going">31 going</span>
-          </div>
-        </div>
-      </a>
+  // No results
+  noRes.style.display   = visible === 0 ? 'block' : 'none';
+  banner.style.display  = sport === 'all' ? '' : 'none';
+}
 
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format" alt="Ping Pong" loading="lazy" />
-          <span class="card-price">CA$10.00</span>
-          <span class="card-sport">🏓 Ping-Pong</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Every Sunday</div>
-          <div class="card-title">🏓 Ping-Pong Fun — Tous niveaux bienvenus!</div>
-          <div class="card-meta">Apr 20 · 1:30 PM EDT<br>by Volley Urbain · Plateau Mont-Royal</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.7</div>
-            </div>
-            <span class="card-going">9 going</span>
-          </div>
-        </div>
-      </a>
+function resetFilters() {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.cat-btn[data-filter="all"]').classList.add('active');
+  filterSport('all');
+}
 
-      <div class="inline-banner reveal">
-        <div>
-          <h3>🏆 Create your own event</h3>
-          <p>Organize a pickup game, a league, or a one-off session. Open it to the community.</p>
-        </div>
-        <a class="btn-white" href="#cta">Start for free →</a>
-      </div>
+/* ─── SCROLL REVEAL ─── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 75);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
-          <span class="card-price free">FREE</span>
-          <span class="card-sport">🏀 Basketball</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Weekly · Thursdays</div>
-          <div class="card-title">3v3 Basketball Open Run — Parc Jarry</div>
-          <div class="card-meta">Apr 24 · 6:30 PM EDT<br>by MTL Ballers Collective</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-                <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.6</div>
-            </div>
-            <span class="card-going">18 going</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
-          <span class="card-price free">FREE</span>
-          <span class="card-sport">🏃 Running</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Every Sunday Morning</div>
-          <div class="card-title">Group Run — Lachine Canal 10K (Beginner-friendly!)</div>
-          <div class="card-meta">Apr 20 · 8:00 AM EDT<br>by Run MTL Community</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.9</div>
-            </div>
-            <span class="card-going">44 going</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="event-card reveal" href="#cta">
-        <div class="card-img">
-          <img src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&h=400&fit=crop&auto=format" alt="Tennis" loading="lazy" />
-          <span class="card-price">CA$8.00</span>
-          <span class="card-sport">🎾 Tennis</span>
-        </div>
-        <div class="card-body">
-          <div class="card-rec">Biweekly · Saturdays</div>
-          <div class="card-title">Tennis Mixte — Parc Lafontaine · Niveau intermédiaire</div>
-          <div class="card-meta">Apr 26 · 9:00 AM EDT<br>by Tennis Montréal</div>
-          <div class="card-footer">
-            <div>
-              <div class="card-avs">
-                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              </div>
-              <div class="card-rating"><span class="s">★</span> 4.8</div>
-            </div>
-            <span class="card-going">12 going</span>
-          </div>
-        </div>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- MARQUEE -->
-  <div class="marquee-wrap">
-    <div class="marquee-track">
-      <span class="mitem"><span class="dot"></span>Football</span>
-      <span class="mitem"><span class="dot"></span>Basketball</span>
-      <span class="mitem"><span class="dot"></span>Tennis</span>
-      <span class="mitem"><span class="dot"></span>Volleyball</span>
-      <span class="mitem"><span class="dot"></span>Badminton</span>
-      <span class="mitem"><span class="dot"></span>Ping-Pong</span>
-      <span class="mitem"><span class="dot"></span>Swimming</span>
-      <span class="mitem"><span class="dot"></span>Yoga</span>
-      <span class="mitem"><span class="dot"></span>Cycling</span>
-      <span class="mitem"><span class="dot"></span>Boxing</span>
-      <span class="mitem"><span class="dot"></span>Running</span>
-      <span class="mitem"><span class="dot"></span>Padel</span>
-      <span class="mitem"><span class="dot"></span>Football</span>
-      <span class="mitem"><span class="dot"></span>Basketball</span>
-      <span class="mitem"><span class="dot"></span>Tennis</span>
-      <span class="mitem"><span class="dot"></span>Volleyball</span>
-      <span class="mitem"><span class="dot"></span>Badminton</span>
-      <span class="mitem"><span class="dot"></span>Ping-Pong</span>
-      <span class="mitem"><span class="dot"></span>Swimming</span>
-      <span class="mitem"><span class="dot"></span>Yoga</span>
-      <span class="mitem"><span class="dot"></span>Cycling</span>
-      <span class="mitem"><span class="dot"></span>Boxing</span>
-      <span class="mitem"><span class="dot"></span>Running</span>
-      <span class="mitem"><span class="dot"></span>Padel</span>
-    </div>
-  </div>
-
-  <!-- HOW IT WORKS -->
-  <section id="how">
-    <div class="how-inner">
-      <p class="sec-eye">Simple by design</p>
-      <h2 class="sec-title">How <span>MatchUp</span> works</h2>
-      <div class="steps">
-        <div class="step reveal">
-          <div class="step-num">01</div>
-          <div class="step-icon si-o">🎯</div>
-          <h3>Pick your sport</h3>
-          <p>Tell us what you love to play. We cover 18+ sports — filter by level, schedule, and distance from home.</p>
-        </div>
-        <div class="step reveal">
-          <div class="step-num">02</div>
-          <div class="step-icon si-b">⚡</div>
-          <h3>Get matched instantly</h3>
-          <p>Our smart algorithm surfaces compatible players and events near you in seconds — no guesswork, no waiting.</p>
-        </div>
-        <div class="step reveal">
-          <div class="step-num">03</div>
-          <div class="step-icon si-o">📍</div>
-          <h3>Play, book &amp; repeat</h3>
-          <p>Book a court, join a group session, or create your own event. Split costs automatically — no clubs, no contracts.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SPORTS -->
-  <section id="sports">
-    <p class="sec-eye">All your favourites</p>
-    <h2 class="sec-title" style="margin-bottom:28px">Sports for <span style="color:var(--orange)">everyone</span></h2>
-    <div class="sports-grid">
-      <div class="sc feat reveal">
-        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=900&h=600&fit=crop&auto=format" alt="Football" loading="lazy" />
-        <div class="sco"></div>
-        <div class="sci"><span class="scn">Football</span><span class="scc">4,200 players near you</span></div>
-        <span class="shot">🔥 #1 sport</span>
-      </div>
-      <div class="sc reveal">
-        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=600&fit=crop&auto=format" alt="Basketball" loading="lazy" />
-        <div class="sco"></div>
-        <div class="sci"><span class="scn">Basketball</span><span class="scc">1,850 players</span></div>
-      </div>
-      <div class="sc reveal">
-        <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=600&fit=crop&auto=format" alt="Tennis" loading="lazy" />
-        <div class="sco"></div>
-        <div class="sci"><span class="scn">Tennis</span><span class="scc">2,100 players</span></div>
-      </div>
-      <div class="sc reveal">
-        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=600&fit=crop&auto=format" alt="Swimming" loading="lazy" />
-        <div class="sco"></div>
-        <div class="sci"><span class="scn">Swimming</span><span class="scc">980 players</span></div>
-      </div>
-      <div class="sc reveal">
-        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop&auto=format" alt="Running" loading="lazy" />
-        <div class="sco"></div>
-        <div class="sci"><span class="scn">Running</span><span class="scc">3,400 players</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS -->
-  <section id="testimonials">
-    <div class="testi-inner">
-      <p class="sec-eye">Real players, real stories</p>
-      <h2 class="sec-title">They found <span style="color:var(--blue)">their team</span></h2>
-      <div class="tgrid">
-        <div class="tc reveal">
-          <div class="stars">★★★★★</div>
-          <blockquote>"I moved to Montréal not knowing anyone. Within a week I had a regular football crew thanks to MatchUp. Absolute game-changer."</blockquote>
-          <div class="author">
-            <div class="av"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=84&h=84&fit=crop&crop=face&auto=format" alt="Thomas" /></div>
-            <div><div class="aname">Thomas R.</div><div class="asport">⚽ Football · Montréal</div></div>
-          </div>
-        </div>
-        <div class="tc reveal">
-          <div class="stars">★★★★★</div>
-          <blockquote>"Finally an app that gets it — no expensive club memberships. MatchUp lets me play tennis 3× a week for a fraction of the cost."</blockquote>
-          <div class="author">
-            <div class="av"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=84&h=84&fit=crop&crop=face&auto=format" alt="Camille" /></div>
-            <div><div class="aname">Camille D.</div><div class="asport">🎾 Tennis · Québec City</div></div>
-          </div>
-        </div>
-        <div class="tc reveal">
-          <div class="stars">★★★★★</div>
-          <blockquote>"Organized our 5v5 tournament in under 20 minutes. The cost-split feature is brilliantly simple. Our whole crew uses it now."</blockquote>
-          <div class="author">
-            <div class="av"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=84&h=84&fit=crop&crop=face&auto=format" alt="Marcus" /></div>
-            <div><div class="aname">Marcus K.</div><div class="asport">🏀 Basketball · Toronto</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section id="cta">
-    <h2>Ready to play?</h2>
-    <p>Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
-    <div class="cta-btns">
-      <a class="btn-ws" href="#">Create your free account →</a>
-      <a class="btn-gw" href="#how">Learn more</a>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="f-brand">
-      <span class="f-logo">🏆 MatchUp</span>
-      <p>Find your game, find your people. Sport shouldn't be complicated or expensive — we're here to change that.</p>
-      <div class="f-social">
-        <a href="#" aria-label="Instagram">📸</a>
-        <a href="#" aria-label="X">𝕏</a>
-        <a href="#" aria-label="TikTok">🎵</a>
-        <a href="#" aria-label="LinkedIn">💼</a>
-      </div>
-    </div>
-    <div class="f-col">
-      <h4>Product</h4>
-      <ul>
-        <li><a href="#">How it works</a></li>
-        <li><a href="#">Browse sports</a></li>
-        <li><a href="#">Find courts</a></li>
-        <li><a href="#">Pricing</a></li>
-      </ul>
-    </div>
-    <div class="f-col">
-      <h4>Company</h4>
-      <ul>
-        <li><a href="#">About us</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Careers</a></li>
-        <li><a href="#">Press</a></li>
-      </ul>
-    </div>
-    <div class="f-col">
-      <h4>Legal</h4>
-      <ul>
-        <li><a href="#">Privacy policy</a></li>
-        <li><a href="#">Terms of use</a></li>
-        <li><a href="#">Cookies</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </div>
-  </footer>
-  <div class="foot-bottom">
-    <span>© 2025 MatchUp Inc. — Built with ❤️ for players everywhere</span>
-    <span>🇨🇦 Made in Canada</span>
-  </div>
-
-  <script>
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
-    });
-    document.querySelectorAll('.fpill').forEach(pill => {
-      pill.addEventListener('click', () => pill.classList.toggle('on'));
-    });
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach((e, i) => {
-        if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('visible'), i * 75);
-          obs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-  </script>
+/* ─── HELPERS ─── */
+function fakeApiCall(ms) { return new Promise(res => setTimeout(res, ms)); }
+</script>
 </body>
 </html>
