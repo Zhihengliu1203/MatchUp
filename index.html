@@ -6,39 +6,41 @@
   <title>MatchUp — Find Your Game, Find Your People</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- ═══════════════════════════════
+       FIREBASE — your real config
+  ═══════════════════════════════ -->
   <script type="module">
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword,
-           signInWithEmailAndPassword, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword,
+             signInWithEmailAndPassword, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-    authDomain: "matchup-165ee.firebaseapp.com",
-    projectId: "matchup-165ee",
-    storageBucket: "matchup-165ee.firebasestorage.app",
-    messagingSenderId: "1038165665131",
-    appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
-  };
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain:        "matchup-165ee.firebaseapp.com",
+      projectId:         "matchup-165ee",
+      storageBucket:     "matchup-165ee.firebasestorage.app",
+      messagingSenderId: "1038165665131",
+      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
+    };
 
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  // Make Firebase available globally
-  window._auth    = auth;
-  window._fbCreate = createUserWithEmailAndPassword;
-  window._fbLogin  = signInWithEmailAndPassword;
-  window._fbState  = onAuthStateChanged;
+    window._auth     = auth;
+    window._fbCreate = createUserWithEmailAndPassword;
+    window._fbLogin  = signInWithEmailAndPassword;
 
-  // Auto-detect if user is already logged in
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
-      if (stored.fname) updateNavForUser(stored.fname);
-    }
-  });
-</script>
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+        if (stored.fname) updateNavForUser(stored.fname);
+      }
+    });
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,78 +62,36 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Nunito', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; }
 
-    /* ── TOPBAR ── */
+    /* TOPBAR */
     .topbar { background: var(--orange); text-align: center; padding: 9px 16px; font-size: .82rem; font-weight: 700; color: #fff; letter-spacing: .03em; }
     .topbar a { color: #fff; text-decoration: underline; cursor: pointer; }
 
-    /* ── NAV ── */
+    /* NAV */
     nav {
       position: sticky; top: 0; z-index: 300;
       background: #fff; border-bottom: 1px solid var(--border);
       padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px;
     }
-    .nav-logo {
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
-      color: var(--orange); text-decoration: none;
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    }
-    .logo-icon {
-      width: 36px; height: 36px; border-radius: 10px; background: var(--orange);
-      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff;
-    }
-    .search-bar {
-      flex: 1; max-width: 540px; display: flex;
-      border: 2px solid var(--border); border-radius: 100px; overflow: hidden;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; }
+    .search-bar { flex: 1; max-width: 540px; display: flex; border: 2px solid var(--border); border-radius: 100px; overflow: hidden; transition: border-color .2s, box-shadow .2s; }
     .search-bar:focus-within { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
-    .search-bar input {
-      flex: 1; padding: 10px 18px; font-family: 'Nunito', sans-serif;
-      font-size: .9rem; border: none; outline: none; background: transparent; color: var(--text);
-    }
+    .search-bar input { flex: 1; padding: 10px 18px; font-family: 'Nunito', sans-serif; font-size: .9rem; border: none; outline: none; background: transparent; color: var(--text); }
     .sb-div { width: 1px; background: var(--border); margin: 8px 0; }
-    .search-bar .loc {
-      padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem;
-      border: none; outline: none; background: transparent; color: var(--muted); min-width: 130px;
-    }
-    .search-btn {
-      width: 42px; height: 42px; margin: 4px; background: var(--orange);
-      border: none; border-radius: 100px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff;
-      transition: background .2s, transform .15s; flex-shrink: 0;
-    }
+    .search-bar .loc { padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem; border: none; outline: none; background: transparent; color: var(--muted); min-width: 130px; }
+    .search-btn { width: 42px; height: 42px; margin: 4px; background: var(--orange); border: none; border-radius: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; transition: background .2s, transform .15s; flex-shrink: 0; }
     .search-btn:hover { background: var(--orange-lt); transform: scale(1.05); }
     .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto; }
-    .nav-links a {
-      padding: 8px 14px; border-radius: 100px; font-size: .88rem; font-weight: 700;
-      color: var(--muted); text-decoration: none; cursor: pointer;
-      transition: background .15s, color .15s;
-    }
+    .nav-links a { padding: 8px 14px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; cursor: pointer; transition: background .15s, color .15s; }
     .nav-links a:hover { background: var(--off); color: var(--text); }
-    .nav-links .btn-su {
-      background: var(--blue); color: #fff !important; padding: 9px 22px !important;
-      transition: background .2s, transform .15s !important;
-    }
+    .nav-links .btn-su { background: var(--blue); color: #fff !important; padding: 9px 22px !important; transition: background .2s, transform .15s !important; }
     .nav-links .btn-su:hover { background: var(--blue-lt) !important; transform: translateY(-1px); }
 
-    /* ── HERO ── */
-    #hero {
-      background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%);
-      padding: 72px 40px 80px; display: flex; align-items: center; gap: 56px;
-      position: relative; overflow: hidden;
-    }
-    #hero::before {
-      content: ''; position: absolute; top: -140px; right: -140px;
-      width: 520px; height: 520px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,87,34,.1), transparent 70%); pointer-events: none;
-    }
+    /* HERO */
+    #hero { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 72px 40px 80px; display: flex; align-items: center; gap: 56px; position: relative; overflow: hidden; }
+    #hero::before { content: ''; position: absolute; top: -140px; right: -140px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(255,87,34,.1), transparent 70%); pointer-events: none; }
     .hero-text { flex: 1; position: relative; z-index: 1; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--orange-bg); border: 1.5px solid rgba(255,87,34,.25);
-      color: var(--orange); font-size: .78rem; font-weight: 800;
-      letter-spacing: .06em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 22px;
-    }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--orange-bg); border: 1.5px solid rgba(255,87,34,.25); color: var(--orange); font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 22px; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: blink 1.4s infinite; }
     @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
     .hero-h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 4vw, 3.8rem); line-height: 1.08; margin-bottom: 20px; }
@@ -139,19 +99,9 @@
     .hero-h1 .bc { color: var(--blue); }
     .hero-sub { font-size: 1.05rem; line-height: 1.75; color: var(--muted); max-width: 440px; margin-bottom: 34px; }
     .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
-    .btn-orange {
-      background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px;
-      text-decoration: none; border: none; cursor: pointer;
-      transition: transform .18s, box-shadow .2s, background .2s; display: inline-block;
-    }
+    .btn-orange { background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px; text-decoration: none; border: none; cursor: pointer; transition: transform .18s, box-shadow .2s, background .2s; display: inline-block; }
     .btn-orange:hover { background: var(--orange-lt); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,87,34,.35); }
-    .btn-ob {
-      border: 2px solid var(--blue); color: var(--blue); font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px;
-      text-decoration: none; background: transparent; cursor: pointer;
-      transition: background .18s, transform .18s; display: inline-block;
-    }
+    .btn-ob { border: 2px solid var(--blue); color: var(--blue); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent; cursor: pointer; transition: background .18s, transform .18s; display: inline-block; }
     .btn-ob:hover { background: var(--blue-bg); transform: translateY(-2px); }
     .hero-trust { display: flex; align-items: center; gap: 16px; }
     .trust-av { display: flex; }
@@ -165,88 +115,40 @@
     .hgi:first-child { grid-row: span 2; }
     .hgi img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
     .hgi:hover img { transform: scale(1.06); }
-    .hgi-pill {
-      position: absolute; bottom: 10px; left: 10px;
-      background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
-      border-radius: 100px; padding: 5px 12px;
-      font-size: .74rem; font-weight: 800; color: var(--text);
-      display: flex; align-items: center; gap: 5px;
-    }
+    .hgi-pill { position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-radius: 100px; padding: 5px 12px; font-size: .74rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 5px; }
     .hgi-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
 
-    /* ── SPORT CATEGORY TABS ── */
+    /* SPORT TABS */
     .cat-strip { border-bottom: 2px solid var(--border); padding: 0 40px; background: #fff; }
     .cat-inner { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
     .cat-inner::-webkit-scrollbar { display: none; }
-    .cat-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      padding: 14px 28px 12px; border: none; background: transparent; cursor: pointer;
-      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700;
-      color: #555; white-space: nowrap;
-      border-bottom: 3px solid transparent; margin-bottom: -2px;
-      transition: color .18s, border-color .18s;
-    }
+    .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 28px 12px; border: none; background: transparent; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700; color: #555; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
     .cat-btn .ci { font-size: 1.6rem; line-height: 1; }
     .cat-btn:hover { color: var(--text); }
     .cat-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 800; }
 
-    /* ── MAIN CONTENT ── */
+    /* MAIN */
     .main-wrap { max-width: 1180px; margin: 0 auto; padding: 36px 40px 80px; }
-
-    /* Filter pills — styled like screenshot */
-    .filters-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 28px; flex-wrap: wrap; gap: 14px;
-    }
+    .filters-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 14px; }
     .filters-row h2 { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; }
     .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .fpill {
-      display: flex; align-items: center; gap: 7px;
-      border: 1.5px solid var(--border); border-radius: 100px; padding: 8px 18px;
-      font-family: 'Nunito', sans-serif; font-size: .85rem; font-weight: 700;
-      color: var(--text); background: #fff; cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-      transition: border-color .15s, box-shadow .15s;
-      white-space: nowrap;
-    }
+    .fpill { display: flex; align-items: center; gap: 7px; border: 1.5px solid var(--border); border-radius: 100px; padding: 8px 18px; font-family: 'Nunito', sans-serif; font-size: .85rem; font-weight: 700; color: var(--text); background: #fff; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.06); transition: border-color .15s, box-shadow .15s; white-space: nowrap; }
     .fpill:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
     .fpill .chev { font-size: .7rem; color: var(--muted); margin-left: 2px; }
-    .reset-btn {
-      background: none; border: none; font-family: 'Nunito', sans-serif;
-      font-size: .88rem; font-weight: 800; color: var(--blue); cursor: pointer;
-      text-decoration: underline; padding: 4px 0;
-    }
+    .reset-btn { background: none; border: none; font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; color: var(--blue); cursor: pointer; text-decoration: underline; padding: 4px 0; }
 
-    /* ── EVENT CARDS ── */
+    /* EVENT CARDS */
     .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .event-card {
-      background: #fff; border-radius: 20px; border: 1px solid var(--border);
-      overflow: hidden; transition: transform .25s, box-shadow .25s;
-      cursor: pointer; text-decoration: none; color: inherit; display: block;
-    }
+    .event-card { background: #fff; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; transition: transform .25s, box-shadow .25s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
     .event-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-h); }
-    .event-card[data-sport] { transition: transform .25s, box-shadow .25s, opacity .3s; }
     .event-card.hidden { display: none; }
     .card-img { position: relative; height: 198px; overflow: hidden; background: var(--off); }
     .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
     .event-card:hover .card-img img { transform: scale(1.07); }
-    .card-price {
-      position: absolute; top: 12px; left: 12px;
-      background: rgba(255,255,255,.93); backdrop-filter: blur(6px);
-      border-radius: 100px; padding: 4px 12px; font-size: .8rem; font-weight: 800; color: var(--text);
-    }
+    .card-price { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.93); backdrop-filter: blur(6px); border-radius: 100px; padding: 4px 12px; font-size: .8rem; font-weight: 800; color: var(--text); }
     .card-price.free { background: var(--orange); color: #fff; }
-    .card-waitlist {
-      position: absolute; top: 42px; left: 12px;
-      background: rgba(255,255,255,.93); backdrop-filter: blur(6px);
-      border-radius: 100px; padding: 4px 12px; font-size: .74rem; font-weight: 700; color: var(--muted);
-      display: flex; align-items: center; gap: 4px;
-    }
-    .card-sport {
-      position: absolute; top: 12px; right: 12px;
-      background: var(--blue); color: #fff; border-radius: 100px;
-      padding: 4px 11px; font-size: .72rem; font-weight: 800;
-    }
+    .card-waitlist { position: absolute; top: 42px; left: 12px; background: rgba(255,255,255,.93); backdrop-filter: blur(6px); border-radius: 100px; padding: 4px 12px; font-size: .74rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+    .card-sport { position: absolute; top: 12px; right: 12px; background: var(--blue); color: #fff; border-radius: 100px; padding: 4px 11px; font-size: .72rem; font-weight: 800; }
     .card-body { padding: 16px 18px 18px; }
     .card-rec { font-size: .74rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
     .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .96rem; line-height: 1.35; margin-bottom: 7px; }
@@ -258,38 +160,22 @@
     .card-rating { font-size: .74rem; color: var(--muted); margin-top: 2px; }
     .card-rating .s { color: var(--orange); }
     .card-going { font-size: .77rem; font-weight: 800; color: var(--blue); background: var(--blue-bg); padding: 4px 10px; border-radius: 100px; }
-
-    /* No results message */
-    .no-results {
-      grid-column: span 3; text-align: center; padding: 60px 20px;
-      color: var(--muted); font-size: 1rem; font-weight: 600; display: none;
-    }
+    .no-results { grid-column: span 3; text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1rem; font-weight: 600; display: none; }
     .no-results .icon { font-size: 3rem; display: block; margin-bottom: 12px; }
-
-    /* Inline banner */
-    .inline-banner {
-      grid-column: span 3; background: linear-gradient(118deg, var(--orange), #FF8A65);
-      border-radius: 20px; padding: 34px 38px;
-      display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #fff;
-    }
+    .inline-banner { grid-column: span 3; background: linear-gradient(118deg, var(--orange), #FF8A65); border-radius: 20px; padding: 34px 38px; display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #fff; }
     .inline-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 5px; }
     .inline-banner p { font-size: .88rem; opacity: .85; }
-    .btn-white {
-      background: #fff; color: var(--orange); font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: .9rem; padding: 12px 26px; border-radius: 100px;
-      text-decoration: none; white-space: nowrap; border: none; cursor: pointer;
-      transition: transform .18s, box-shadow .18s; display: inline-block;
-    }
+    .btn-white { background: #fff; color: var(--orange); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem; padding: 12px 26px; border-radius: 100px; text-decoration: none; white-space: nowrap; border: none; cursor: pointer; transition: transform .18s, box-shadow .18s; display: inline-block; }
     .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
 
-    /* ── MARQUEE ── */
+    /* MARQUEE */
     .marquee-wrap { background: var(--off); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 13px 0; overflow: hidden; }
     .marquee-track { display: flex; gap: 48px; width: max-content; animation: marquee 32s linear infinite; }
     @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
     .mitem { display: flex; align-items: center; gap: 9px; font-size: .77rem; font-weight: 800; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
     .mitem .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
 
-    /* ── HOW IT WORKS ── */
+    /* HOW IT WORKS */
     #how { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 80px 40px; }
     .how-inner { max-width: 1100px; margin: 0 auto; }
     .sec-eye { font-size: .77rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
@@ -305,7 +191,7 @@
     .step h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 9px; }
     .step p { font-size: .88rem; line-height: 1.7; color: var(--muted); }
 
-    /* ── SPORTS SECTION ── */
+    /* SPORTS */
     #sports { max-width: 1180px; margin: 0 auto; padding: 80px 40px; }
     .sports-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
     .sc { border-radius: 16px; overflow: hidden; aspect-ratio: 3/4; position: relative; cursor: pointer; }
@@ -319,7 +205,7 @@
     .sc.feat .scn { font-size: 1.55rem; }
     .sc .shot { position: absolute; top: 10px; right: 10px; background: var(--orange); color: #fff; font-size: .67rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
 
-    /* ── TESTIMONIALS ── */
+    /* TESTIMONIALS */
     #testimonials { background: var(--off); padding: 80px 40px; }
     .testi-inner { max-width: 1100px; margin: 0 auto; }
     .tgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
@@ -333,7 +219,7 @@
     .tc .aname { font-weight: 800; font-size: .86rem; }
     .tc .asport { font-size: .74rem; color: var(--muted); }
 
-    /* ── CTA ── */
+    /* CTA */
     #cta { background: linear-gradient(120deg, var(--blue), #1976D2); padding: 80px 40px; text-align: center; color: #fff; position: relative; overflow: hidden; }
     #cta::before { content:'⚡'; position: absolute; font-size: 22rem; opacity: .04; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
     #cta h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 14px; position: relative; }
@@ -344,7 +230,7 @@
     .btn-gw { border: 2px solid rgba(255,255,255,.4); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent; cursor: pointer; transition: background .18s, transform .18s; display: inline-block; }
     .btn-gw:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
 
-    /* ── FOOTER ── */
+    /* FOOTER */
     footer { background: #111827; padding: 60px 40px 0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
     .f-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--orange); display: block; margin-bottom: 12px; }
     .f-brand p { font-size: .87rem; line-height: 1.7; color: rgba(255,255,255,.38); max-width: 260px; }
@@ -357,103 +243,43 @@
     .f-col a:hover { color: #fff; }
     .foot-bottom { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827; }
 
-    /* ── REVEAL ── */
+    /* REVEAL */
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* ══════════════════════════════════════════
-       MODAL — AUTH (Sign up / Log in)
-    ══════════════════════════════════════════ */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 1000;
-      background: rgba(10,10,30,.55); backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-      opacity: 0; pointer-events: none;
-      transition: opacity .25s ease;
-    }
+    /* ══════════════════════════════
+       AUTH MODAL
+    ══════════════════════════════ */
+    .modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(10,10,30,.55); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal {
-      background: #fff; border-radius: 28px;
-      width: 100%; max-width: 460px;
-      padding: 44px 40px 40px;
-      position: relative;
-      transform: translateY(20px) scale(.97);
-      transition: transform .28s cubic-bezier(.34,1.3,.64,1);
-      box-shadow: 0 24px 80px rgba(0,0,0,.22);
-    }
+    .modal { background: #fff; border-radius: 28px; width: 100%; max-width: 460px; padding: 44px 40px 40px; position: relative; transform: translateY(20px) scale(.97); transition: transform .28s cubic-bezier(.34,1.3,.64,1); box-shadow: 0 24px 80px rgba(0,0,0,.22); }
     .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-    .modal-close {
-      position: absolute; top: 18px; right: 18px;
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--off); border: none; cursor: pointer;
-      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-      color: var(--muted); transition: background .15s, color .15s;
-    }
+    .modal-close { position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%; background: var(--off); border: none; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: background .15s, color .15s; }
     .modal-close:hover { background: var(--border); color: var(--text); }
     .modal-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); margin-bottom: 6px; }
-    .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.55rem; margin-bottom: 6px; }
-    .modal-sub { font-size: .9rem; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
     .modal-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
-    .mtab {
-      flex: 1; padding: 10px; text-align: center;
-      font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800;
-      color: var(--muted); background: none; border: none; cursor: pointer;
-      border-bottom: 2.5px solid transparent; margin-bottom: -2px;
-      transition: color .18s, border-color .18s;
-    }
+    .mtab { flex: 1; padding: 10px; text-align: center; font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
     .mtab.active { color: var(--orange); border-bottom-color: var(--orange); }
-
-    /* Social buttons */
     .social-auth { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .btn-social {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 12px; border-radius: 12px;
-      font-family: 'Nunito', sans-serif; font-size: .92rem; font-weight: 700;
-      cursor: pointer; border: 1.5px solid var(--border); background: #fff;
-      transition: background .15s, border-color .15s, box-shadow .15s;
-    }
+    .btn-social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: .92rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: #fff; transition: background .15s, border-color .15s, box-shadow .15s; }
     .btn-social:hover { background: var(--off); border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
     .btn-social .si { font-size: 1.1rem; }
-
-    /* Divider */
     .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .auth-divider span { font-size: .78rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-
-    /* Form fields */
     .form-group { margin-bottom: 16px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .form-group label { display: block; font-size: .82rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 12px 16px; border-radius: 12px;
-      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
-      font-size: .92rem; color: var(--text); background: #fff; outline: none;
-      transition: border-color .18s, box-shadow .18s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12);
-    }
+    .form-group input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .92rem; color: var(--text); background: #fff; outline: none; transition: border-color .18s, box-shadow .18s; }
+    .form-group input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
     .form-group input.error { border-color: #e53e3e; }
     .field-error { font-size: .75rem; color: #e53e3e; font-weight: 700; margin-top: 4px; display: none; }
     .field-error.show { display: block; }
     .sport-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
-    .sport-opt {
-      padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border);
-      font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 700;
-      text-align: center; cursor: pointer; background: #fff;
-      transition: border-color .15s, background .15s, color .15s;
-    }
+    .sport-opt { padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 700; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, color .15s; }
     .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); }
     .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
-    .form-submit {
-      width: 100%; padding: 14px; border-radius: 100px;
-      background: var(--orange); color: #fff;
-      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
-      border: none; cursor: pointer; margin-top: 6px;
-      transition: background .2s, transform .15s, box-shadow .2s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
+    .form-submit { width: 100%; padding: 14px; border-radius: 100px; background: var(--orange); color: #fff; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; border: none; cursor: pointer; margin-top: 6px; transition: background .2s, transform .15s, box-shadow .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .form-submit:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
     .form-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; }
     .switch-auth { text-align: center; margin-top: 18px; font-size: .85rem; color: var(--muted); }
@@ -461,31 +287,22 @@
     .switch-auth a:hover { text-decoration: underline; }
     .privacy-note { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 14px; line-height: 1.5; }
     .privacy-note a { color: var(--blue); }
-
-    /* Success state */
     .modal-success { text-align: center; display: none; padding: 20px 0; }
     .modal-success.show { display: block; }
     .modal-form-wrap.hide { display: none; }
     .success-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
     .modal-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 8px; }
     .modal-success p { font-size: .92rem; color: var(--muted); line-height: 1.6; }
-
-    /* Loading spinner */
     .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
     @keyframes spin { to{transform:rotate(360deg)} }
     .form-submit.loading .spinner { display: inline-block; }
     .form-submit.loading .btn-label { display: none; }
-
-    /* Alert banner inside modal */
-    .auth-alert {
-      padding: 10px 14px; border-radius: 10px; font-size: .82rem; font-weight: 700;
-      margin-bottom: 16px; display: none;
-    }
+    .auth-alert { padding: 10px 14px; border-radius: 10px; font-size: .82rem; font-weight: 700; margin-bottom: 16px; display: none; }
     .auth-alert.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
     .auth-alert.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
     .auth-alert.show { display: block; }
 
-    /* ── RESPONSIVE ── */
+    /* RESPONSIVE */
     @media (max-width: 960px) {
       nav { padding: 0 20px; gap: 10px; }
       .nav-links li:not(:last-child) { display: none; }
@@ -515,39 +332,29 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════
-     AUTH MODAL
-═══════════════════════════════ -->
-<div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-label="Sign up or Log in">
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" role="dialog" aria-modal="true">
   <div class="modal">
     <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
     <div class="modal-logo">🏆 MatchUp</div>
 
-    <!-- Success state -->
     <div class="modal-success" id="modalSuccess">
       <span class="success-icon">🎉</span>
       <h3 id="successTitle">Welcome aboard!</h3>
-      <p id="successMsg">Your account is ready. Check your email to confirm, then start finding your game!</p>
+      <p id="successMsg">Your account is ready. Start finding your game!</p>
     </div>
 
-    <!-- Form -->
     <div class="modal-form-wrap" id="modalFormWrap">
       <div class="modal-tabs">
         <button class="mtab active" id="tabSignup" onclick="switchTab('signup')">Create account</button>
         <button class="mtab" id="tabLogin" onclick="switchTab('login')">Log in</button>
       </div>
 
-      <!-- Alert -->
       <div class="auth-alert" id="authAlert"></div>
 
-      <!-- Social -->
       <div class="social-auth">
-        <button class="btn-social" onclick="socialAuth('google')">
-          <span class="si">🔵</span> Continue with Google
-        </button>
-        <button class="btn-social" onclick="socialAuth('apple')">
-          <span class="si">🍎</span> Continue with Apple
-        </button>
+        <button class="btn-social" onclick="socialAuth('google')"><span class="si">🔵</span> Continue with Google</button>
+        <button class="btn-social" onclick="socialAuth('apple')"><span class="si">🍎</span> Continue with Apple</button>
       </div>
       <div class="auth-divider"><span>or with email</span></div>
 
@@ -605,8 +412,8 @@
           <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password" />
           <div class="field-error" id="err-li-password">Required</div>
         </div>
-        <div style="text-align:right;margin-bottom:16px;">
-          <a style="font-size:.8rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="showAlert('A reset link will be sent to your email.','success')">Forgot password?</a>
+        <div style="text-align:right; margin-bottom:16px;">
+          <a style="font-size:.8rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="forgotPassword()">Forgot password?</a>
         </div>
         <button type="submit" class="form-submit" id="loginBtn">
           <span class="btn-label">Log in →</span>
@@ -617,19 +424,15 @@
       <div class="switch-auth" id="switchAuthText">
         Already have an account? <a onclick="switchTab('login')">Log in</a>
       </div>
-    </div><!-- /modal-form-wrap -->
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════
-     PAGE
-═══════════════════════════════ -->
+<!-- PAGE -->
 <div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a onclick="openModal()">Claim your spot →</a></div>
 
 <nav>
-  <a class="nav-logo" href="#">
-    <span class="logo-icon">🏆</span>MatchUp
-  </a>
+  <a class="nav-logo" href="#"><span class="logo-icon">🏆</span>MatchUp</a>
   <div class="search-bar">
     <input type="text" placeholder="Search sports, events, players…" />
     <div class="sb-div"></div>
@@ -682,7 +485,7 @@
   </div>
 </section>
 
-<!-- SPORT CATEGORY TABS -->
+<!-- SPORT TABS -->
 <div class="cat-strip">
   <div class="cat-inner">
     <button class="cat-btn active" data-filter="all"><span class="ci">✨</span>All Sports</button>
@@ -780,7 +583,6 @@
       </div>
     </a>
 
-    <!-- Banner — always visible -->
     <div class="inline-banner" id="inlineBanner">
       <div>
         <h3>🏆 Create your own event</h3>
@@ -923,14 +725,13 @@
       </div>
     </a>
 
-    <!-- No results -->
     <div class="no-results" id="noResults">
       <span class="icon">🔍</span>
-      No events found for this sport yet — <a href="#" onclick="openModal();return false;" style="color:var(--orange);font-weight:800;">be the first to create one!</a>
+      No events for this sport yet — <a href="#" onclick="openModal();return false;" style="color:var(--orange);font-weight:800;">be the first to create one!</a>
     </div>
 
-  </div><!-- /events-grid -->
-</div><!-- /main-wrap -->
+  </div>
+</div>
 
 <!-- MARQUEE -->
 <div class="marquee-wrap">
@@ -1114,10 +915,10 @@
 </div>
 
 <!-- ═══════════════════════════════
-     JAVASCRIPT
+     JAVASCRIPT — clean, no leftover code
 ═══════════════════════════════ -->
 <script>
-/* ─── MODAL ─── */
+/* ── MODAL ── */
 function openModal() {
   document.getElementById('authModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1125,6 +926,9 @@ function openModal() {
 function closeModal() {
   document.getElementById('authModal').classList.remove('open');
   document.body.style.overflow = '';
+  // Reset modal state for next open
+  document.getElementById('modalSuccess').classList.remove('show');
+  document.getElementById('modalFormWrap').classList.remove('hide');
 }
 document.getElementById('modalClose').onclick = closeModal;
 document.getElementById('authModal').addEventListener('click', function(e) {
@@ -1155,29 +959,34 @@ function clearAlert() {
   el.textContent = '';
 }
 
-/* Sport opts */
+function forgotPassword() {
+  showAlert('Password reset coming soon! Contact us at hello@matchup.app for now.', 'success');
+}
+
+/* Sport option toggles */
 document.querySelectorAll('.sport-opt').forEach(btn => {
   btn.addEventListener('click', () => btn.classList.toggle('sel'));
 });
 
-/* ─── SIGNUP ─── */
+/* ── SIGNUP ── */
 document.getElementById('signupForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   clearAlert();
+
   const fname    = document.getElementById('su-fname').value.trim();
   const lname    = document.getElementById('su-lname').value.trim();
   const email    = document.getElementById('su-email').value.trim();
   const password = document.getElementById('su-password').value;
   let valid = true;
 
-  // Validate
-  [['su-fname','err-fname', fname], ['su-lname','err-lname', lname]].forEach(([id, errId, val]) => {
+  // Validate fields
+  [['su-fname','err-fname',fname],['su-lname','err-lname',lname]].forEach(([id,errId,val]) => {
     const input = document.getElementById(id);
     const err   = document.getElementById(errId);
     if (!val) { input.classList.add('error'); err.classList.add('show'); valid = false; }
-    else       { input.classList.remove('error'); err.classList.remove('show'); }
+    else      { input.classList.remove('error'); err.classList.remove('show'); }
   });
-  const emailEl = document.getElementById('su-email');
+  const emailEl  = document.getElementById('su-email');
   const emailErr = document.getElementById('err-email');
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
@@ -1193,45 +1002,42 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   btn.classList.add('loading'); btn.disabled = true;
 
   try {
-  await window._fbCreate(window._auth, email, password);
-} catch (err) {
-  btn.classList.remove('loading');
-  btn.disabled = false;
-  const msg = err.code === 'auth/email-already-in-use'
-    ? 'This email is already registered. Try logging in!'
-    : err.message;
-  showAlert(msg, 'error');
-  return;
-}
+    await window._fbCreate(window._auth, email, password);
+  } catch (err) {
+    btn.classList.remove('loading'); btn.disabled = false;
+    const msg = err.code === 'auth/email-already-in-use'
+      ? 'This email is already registered. Try logging in!'
+      : err.message;
+    showAlert(msg, 'error');
+    return;
+  }
 
   btn.classList.remove('loading'); btn.disabled = false;
 
-  // Show success screen
+  // Save name locally so nav can show it
+  const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
+  const user = { fname, lname, email, sports, joined: new Date().toISOString() };
+  localStorage.setItem('mu_current_user', JSON.stringify(user));
+
+  // Show success
   document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
-  document.getElementById('successMsg').textContent   = `Your account is created. We'll send a confirmation to ${email}. Start finding your game!`;
+  document.getElementById('successMsg').textContent   = `Account created! Check your email to verify, then start finding your game.`;
   document.getElementById('modalFormWrap').classList.add('hide');
   document.getElementById('modalSuccess').classList.add('show');
-
-  // ── SAVE USER DATA (localStorage as fallback) ──
-  const user = { fname, lname, email, sports: [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport), joined: new Date().toISOString() };
-  const users = JSON.parse(localStorage.getItem('mu_users') || '[]');
-  users.push(user);
-  localStorage.setItem('mu_users', JSON.stringify(users));
-  localStorage.setItem('mu_current_user', JSON.stringify(user));
   updateNavForUser(fname);
-
-  setTimeout(closeModal, 3200);
+  setTimeout(closeModal, 3000);
 });
 
-/* ─── LOGIN ─── */
+/* ── LOGIN ── */
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   clearAlert();
+
   const email    = document.getElementById('li-email').value.trim();
   const password = document.getElementById('li-password').value;
   let valid = true;
 
-  const emailEl = document.getElementById('li-email');
+  const emailEl  = document.getElementById('li-email');
   const emailErr = document.getElementById('err-li-email');
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
@@ -1246,35 +1052,30 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   const btn = document.getElementById('loginBtn');
   btn.classList.add('loading'); btn.disabled = true;
 
-try {
-  const cred = await window._fbLogin(window._auth, email, password);
-  const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
-  const name = stored.fname || cred.user.email.split('@')[0];
-  localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name }));
-  document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
-  document.getElementById('successMsg').textContent = "You're logged in. Ready to find your next game!";
-  document.getElementById('modalFormWrap').classList.add('hide');
-  document.getElementById('modalSuccess').classList.add('show');
-  updateNavForUser(name);
-  setTimeout(closeModal, 2500);
-} catch (err) {
-  btn.classList.remove('loading');
-  btn.disabled = false;
-  showAlert('Wrong email or password. Try again!', 'error');
-  return;
-}
-  
-  } else {
-    showAlert('No account found with this email. Try signing up!', 'error');
+  try {
+    const cred   = await window._fbLogin(window._auth, email, password);
+    const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+    const name   = stored.fname || cred.user.email.split('@')[0];
+    localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email }));
+
+    document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
+    document.getElementById('successMsg').textContent   = "You're logged in. Ready to find your next game!";
+    document.getElementById('modalFormWrap').classList.add('hide');
+    document.getElementById('modalSuccess').classList.add('show');
+    updateNavForUser(name);
+    setTimeout(closeModal, 2500);
+  } catch (err) {
+    btn.classList.remove('loading'); btn.disabled = false;
+    showAlert('Wrong email or password. Please try again.', 'error');
   }
 });
 
-/* ─── SOCIAL AUTH STUB ─── */
+/* ── SOCIAL AUTH (stub) ── */
 function socialAuth(provider) {
   showAlert(`${provider === 'google' ? 'Google' : 'Apple'} sign-in coming soon! Use email for now.`, 'success');
 }
 
-/* ─── UPDATE NAV WHEN LOGGED IN ─── */
+/* ── NAV UPDATE ── */
 function updateNavForUser(fname) {
   const links = document.querySelector('.nav-links');
   if (links) {
@@ -1287,16 +1088,17 @@ function updateNavForUser(fname) {
 }
 function logOut() {
   localStorage.removeItem('mu_current_user');
+  if (window._auth) window._auth.signOut();
   location.reload();
 }
 
-/* ─── CHECK SESSION ON LOAD ─── */
+/* ── RESTORE SESSION ON LOAD ── */
 window.addEventListener('load', () => {
   const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-  if (user) updateNavForUser(user.fname);
+  if (user && user.fname) updateNavForUser(user.fname);
 });
 
-/* ─── SPORT TAB FILTER ─── */
+/* ── SPORT TAB FILTER ── */
 document.querySelectorAll('.cat-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -1320,13 +1122,10 @@ function filterSport(sport) {
     }
   });
 
-  // Update heading
-  const sportNames = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
-  title.innerHTML = `<span style="color:var(--orange)">${sportNames[sport] || sport}</span> Events near Montréal, QC`;
-
-  // No results
-  noRes.style.display   = visible === 0 ? 'block' : 'none';
-  banner.style.display  = sport === 'all' ? '' : 'none';
+  const names = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
+  title.innerHTML = `<span style="color:var(--orange)">${names[sport] || sport}</span> Events near Montréal, QC`;
+  noRes.style.display  = visible === 0 ? 'block' : 'none';
+  banner.style.display = sport === 'all' ? '' : 'none';
 }
 
 function resetFilters() {
@@ -1335,7 +1134,7 @@ function resetFilters() {
   filterSport('all');
 }
 
-/* ─── SCROLL REVEAL ─── */
+/* ── SCROLL REVEAL ── */
 const revealObs = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
@@ -1345,9 +1144,6 @@ const revealObs = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.08 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-
-/* ─── HELPERS ─── */
-function fakeApiCall(ms) { return new Promise(res => setTimeout(res, ms)); }
 </script>
 </body>
 </html>
