@@ -6,6 +6,39 @@
   <title>MatchUp — Find Your Game, Find Your People</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script type="module">
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword,
+           signInWithEmailAndPassword, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+    authDomain: "matchup-165ee.firebaseapp.com",
+    projectId: "matchup-165ee",
+    storageBucket: "matchup-165ee.firebasestorage.app",
+    messagingSenderId: "1038165665131",
+    appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Make Firebase available globally
+  window._auth    = auth;
+  window._fbCreate = createUserWithEmailAndPassword;
+  window._fbLogin  = signInWithEmailAndPassword;
+  window._fbState  = onAuthStateChanged;
+
+  // Auto-detect if user is already logged in
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+      if (stored.fname) updateNavForUser(stored.fname);
+    }
+  });
+</script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1159,12 +1192,17 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   const btn = document.getElementById('signupBtn');
   btn.classList.add('loading'); btn.disabled = true;
 
-  // ── CONNECT YOUR BACKEND HERE ──
-  // Option A: Firebase (see SETUP.md)
-  // Option B: Supabase
-  // Option C: EmailJS for waitlist
-  // For now → simulate a 1.5s API call then show success
-  await fakeApiCall(1400);
+  try {
+  await window._fbCreate(window._auth, email, password);
+} catch (err) {
+  btn.classList.remove('loading');
+  btn.disabled = false;
+  const msg = err.code === 'auth/email-already-in-use'
+    ? 'This email is already registered. Try logging in!'
+    : err.message;
+  showAlert(msg, 'error');
+  return;
+}
 
   btn.classList.remove('loading'); btn.disabled = false;
 
@@ -1207,20 +1245,25 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
   const btn = document.getElementById('loginBtn');
   btn.classList.add('loading'); btn.disabled = true;
-  await fakeApiCall(1200);
-  btn.classList.remove('loading'); btn.disabled = false;
 
-  // Check against stored users (demo — replace with real auth)
-  const users = JSON.parse(localStorage.getItem('mu_users') || '[]');
-  const found = users.find(u => u.email === email);
-  if (found) {
-    localStorage.setItem('mu_current_user', JSON.stringify(found));
-    document.getElementById('successTitle').textContent = `Welcome back, ${found.fname}! 👋`;
-    document.getElementById('successMsg').textContent   = 'You\'re now logged in. Ready to find your next game?';
-    document.getElementById('modalFormWrap').classList.add('hide');
-    document.getElementById('modalSuccess').classList.add('show');
-    updateNavForUser(found.fname);
-    setTimeout(closeModal, 2500);
+try {
+  const cred = await window._fbLogin(window._auth, email, password);
+  const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+  const name = stored.fname || cred.user.email.split('@')[0];
+  localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name }));
+  document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
+  document.getElementById('successMsg').textContent = "You're logged in. Ready to find your next game!";
+  document.getElementById('modalFormWrap').classList.add('hide');
+  document.getElementById('modalSuccess').classList.add('show');
+  updateNavForUser(name);
+  setTimeout(closeModal, 2500);
+} catch (err) {
+  btn.classList.remove('loading');
+  btn.disabled = false;
+  showAlert('Wrong email or password. Try again!', 'error');
+  return;
+}
+  
   } else {
     showAlert('No account found with this email. Try signing up!', 'error');
   }
