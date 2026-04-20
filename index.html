@@ -8,13 +8,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <!-- ═══════════════════════════════
-       FIREBASE — your real config
+       FIREBASE — your config + Google Provider
   ═══════════════════════════════ -->
   <script type="module">
     import { initializeApp }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword,
-             signInWithEmailAndPassword, onAuthStateChanged }
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+             GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -28,15 +28,22 @@
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
 
-    window._auth     = auth;
-    window._fbCreate = createUserWithEmailAndPassword;
-    window._fbLogin  = signInWithEmailAndPassword;
+    window._auth         = auth;
+    window._fbCreate     = createUserWithEmailAndPassword;
+    window._fbLogin      = signInWithEmailAndPassword;
+    window._fbGoogle     = () => signInWithPopup(auth, googleProvider);
+    window._fbSignOut    = () => signOut(auth);
 
     onAuthStateChanged(auth, user => {
       if (user) {
         const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
-        if (stored.fname) updateNavForUser(stored.fname);
+        const name = stored.fname || (user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0]);
+        if (!stored.fname) {
+          localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email: user.email }));
+        }
+        if (typeof updateNavForUser === 'function') updateNavForUser(name);
       }
     });
   </script>
@@ -175,7 +182,7 @@
     .mitem { display: flex; align-items: center; gap: 9px; font-size: .77rem; font-weight: 800; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
     .mitem .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
 
-    /* HOW IT WORKS */
+    /* HOW */
     #how { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 80px 40px; }
     .how-inner { max-width: 1100px; margin: 0 auto; }
     .sec-eye { font-size: .77rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
@@ -247,57 +254,105 @@
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* ══════════════════════════════
-       AUTH MODAL
-    ══════════════════════════════ */
-    .modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(10,10,30,.55); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+    /* ═══════════════════════════════
+       AUTH MODAL — FIXED SIZING
+    ═══════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(10,10,30,.55); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s ease;
+    }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal { background: #fff; border-radius: 28px; width: 100%; max-width: 460px; padding: 44px 40px 40px; position: relative; transform: translateY(20px) scale(.97); transition: transform .28s cubic-bezier(.34,1.3,.64,1); box-shadow: 0 24px 80px rgba(0,0,0,.22); }
+    .modal {
+      background: #fff; border-radius: 24px;
+      width: 100%;
+      max-width: 440px;
+      max-height: calc(100vh - 40px);    /* ← never taller than viewport */
+      overflow-y: auto;                   /* ← scroll inside modal if needed */
+      padding: 32px 32px 28px;
+      position: relative;
+      transform: translateY(20px) scale(.97);
+      transition: transform .28s cubic-bezier(.34,1.3,.64,1);
+      box-shadow: 0 24px 80px rgba(0,0,0,.22);
+    }
     .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-    .modal-close { position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%; background: var(--off); border: none; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: background .15s, color .15s; }
+    /* Custom scrollbar */
+    .modal::-webkit-scrollbar { width: 6px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--off); border: none; cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: background .15s, color .15s;
+      z-index: 2;
+    }
     .modal-close:hover { background: var(--border); color: var(--text); }
-    .modal-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); margin-bottom: 6px; }
-    .modal-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
-    .mtab { flex: 1; padding: 10px; text-align: center; font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
+    .modal-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--orange); margin-bottom: 14px; }
+    .modal-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .mtab { flex: 1; padding: 9px; text-align: center; font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
     .mtab.active { color: var(--orange); border-bottom-color: var(--orange); }
-    .social-auth { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .btn-social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: .92rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: #fff; transition: background .15s, border-color .15s, box-shadow .15s; }
+
+    /* Social buttons */
+    .social-auth { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 700;
+      cursor: pointer; border: 1.5px solid var(--border); background: #fff;
+      color: var(--text);
+      transition: background .15s, border-color .15s, box-shadow .15s;
+    }
     .btn-social:hover { background: var(--off); border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .btn-social .si { font-size: 1.1rem; }
-    .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .btn-social.disabled { opacity: .55; cursor: not-allowed; }
+    .btn-social.disabled:hover { background: #fff; border-color: var(--border); box-shadow: none; }
+    .btn-social .si { width: 18px; height: 18px; flex-shrink: 0; }
+    .soon-tag { margin-left: auto; font-size: .68rem; font-weight: 800; color: var(--muted); background: var(--off); padding: 2px 7px; border-radius: 100px; letter-spacing: .04em; text-transform: uppercase; }
+
+    .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
     .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .auth-divider span { font-size: .78rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-    .form-group { margin-bottom: 16px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .form-group label { display: block; font-size: .82rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .92rem; color: var(--text); background: #fff; outline: none; transition: border-color .18s, box-shadow .18s; }
+    .auth-divider span { font-size: .75rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+    /* Form fields — TIGHTENED */
+    .form-group { margin-bottom: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .form-group label { display: block; font-size: .78rem; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+    .form-group input {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
+      font-size: .9rem; color: var(--text); background: #fff; outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
     .form-group input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
     .form-group input.error { border-color: #e53e3e; }
-    .field-error { font-size: .75rem; color: #e53e3e; font-weight: 700; margin-top: 4px; display: none; }
+    .field-error { font-size: .72rem; color: #e53e3e; font-weight: 700; margin-top: 3px; display: none; }
     .field-error.show { display: block; }
-    .sport-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
-    .sport-opt { padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 700; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, color .15s; }
+    .sport-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
+    .sport-opt { padding: 7px 4px; border-radius: 8px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .74rem; font-weight: 700; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, color .15s; }
     .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); }
     .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
-    .form-submit { width: 100%; padding: 14px; border-radius: 100px; background: var(--orange); color: #fff; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; border: none; cursor: pointer; margin-top: 6px; transition: background .2s, transform .15s, box-shadow .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .form-submit { width: 100%; padding: 12px; border-radius: 100px; background: var(--orange); color: #fff; font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 800; border: none; cursor: pointer; margin-top: 4px; transition: background .2s, transform .15s, box-shadow .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .form-submit:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
     .form-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; }
-    .switch-auth { text-align: center; margin-top: 18px; font-size: .85rem; color: var(--muted); }
+    .switch-auth { text-align: center; margin-top: 12px; font-size: .82rem; color: var(--muted); }
     .switch-auth a { color: var(--orange); font-weight: 800; cursor: pointer; text-decoration: none; }
     .switch-auth a:hover { text-decoration: underline; }
-    .privacy-note { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 14px; line-height: 1.5; }
+    .privacy-note { font-size: .7rem; color: var(--muted); text-align: center; margin-top: 10px; line-height: 1.5; }
     .privacy-note a { color: var(--blue); }
-    .modal-success { text-align: center; display: none; padding: 20px 0; }
+    .modal-success { text-align: center; display: none; padding: 16px 0; }
     .modal-success.show { display: block; }
     .modal-form-wrap.hide { display: none; }
-    .success-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
-    .modal-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 8px; }
-    .modal-success p { font-size: .92rem; color: var(--muted); line-height: 1.6; }
-    .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 12px; display: block; }
+    .modal-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; margin-bottom: 6px; }
+    .modal-success p { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+    .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
     @keyframes spin { to{transform:rotate(360deg)} }
     .form-submit.loading .spinner { display: inline-block; }
     .form-submit.loading .btn-label { display: none; }
-    .auth-alert { padding: 10px 14px; border-radius: 10px; font-size: .82rem; font-weight: 700; margin-bottom: 16px; display: none; }
+    .auth-alert { padding: 9px 12px; border-radius: 8px; font-size: .8rem; font-weight: 700; margin-bottom: 12px; display: none; }
     .auth-alert.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
     .auth-alert.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
     .auth-alert.show { display: block; }
@@ -325,7 +380,7 @@
       footer { grid-template-columns: 1fr; }
       .foot-bottom { flex-direction: column; gap: 6px; text-align: center; }
       .sb-div, .loc { display: none; }
-      .modal { padding: 36px 24px 28px; }
+      .modal { padding: 26px 22px 22px; border-radius: 18px; }
       .form-row { grid-template-columns: 1fr; }
     }
   </style>
@@ -353,8 +408,15 @@
       <div class="auth-alert" id="authAlert"></div>
 
       <div class="social-auth">
-        <button class="btn-social" onclick="socialAuth('google')"><span class="si">🔵</span> Continue with Google</button>
-        <button class="btn-social" onclick="socialAuth('apple')"><span class="si">🍎</span> Continue with Apple</button>
+        <button class="btn-social" onclick="googleSignIn()">
+          <svg class="si" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button class="btn-social disabled" onclick="showAlert('Apple sign-in is coming soon! Use Google or email for now.', 'success')">
+          <svg class="si" viewBox="0 0 24 24"><path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Continue with Apple
+          <span class="soon-tag">Soon</span>
+        </button>
       </div>
       <div class="auth-divider"><span>or with email</span></div>
 
@@ -412,8 +474,8 @@
           <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password" />
           <div class="field-error" id="err-li-password">Required</div>
         </div>
-        <div style="text-align:right; margin-bottom:16px;">
-          <a style="font-size:.8rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="forgotPassword()">Forgot password?</a>
+        <div style="text-align:right; margin-bottom:12px;">
+          <a style="font-size:.78rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="forgotPassword()">Forgot password?</a>
         </div>
         <button type="submit" class="form-submit" id="loginBtn">
           <span class="btn-label">Log in →</span>
@@ -514,7 +576,6 @@
   </div>
 
   <div class="events-grid" id="eventsGrid">
-
     <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="football">
       <div class="card-img">
         <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format" alt="Football" loading="lazy" />
@@ -729,7 +790,6 @@
       <span class="icon">🔍</span>
       No events for this sport yet — <a href="#" onclick="openModal();return false;" style="color:var(--orange);font-weight:800;">be the first to create one!</a>
     </div>
-
   </div>
 </div>
 
@@ -914,9 +974,6 @@
   <span>🇨🇦 Made in Canada</span>
 </div>
 
-<!-- ═══════════════════════════════
-     JAVASCRIPT — clean, no leftover code
-═══════════════════════════════ -->
 <script>
 /* ── MODAL ── */
 function openModal() {
@@ -926,7 +983,6 @@ function openModal() {
 function closeModal() {
   document.getElementById('authModal').classList.remove('open');
   document.body.style.overflow = '';
-  // Reset modal state for next open
   document.getElementById('modalSuccess').classList.remove('show');
   document.getElementById('modalFormWrap').classList.remove('hide');
 }
@@ -952,6 +1008,8 @@ function showAlert(msg, type) {
   const el = document.getElementById('authAlert');
   el.textContent = msg;
   el.className = 'auth-alert ' + type + ' show';
+  // Scroll modal to top so user sees the alert
+  document.querySelector('.modal').scrollTop = 0;
 }
 function clearAlert() {
   const el = document.getElementById('authAlert');
@@ -960,7 +1018,7 @@ function clearAlert() {
 }
 
 function forgotPassword() {
-  showAlert('Password reset coming soon! Contact us at hello@matchup.app for now.', 'success');
+  showAlert('Password reset is coming soon! Contact us at hello@matchup.app for now.', 'success');
 }
 
 /* Sport option toggles */
@@ -979,7 +1037,6 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   const password = document.getElementById('su-password').value;
   let valid = true;
 
-  // Validate fields
   [['su-fname','err-fname',fname],['su-lname','err-lname',lname]].forEach(([id,errId,val]) => {
     const input = document.getElementById(id);
     const err   = document.getElementById(errId);
@@ -1014,12 +1071,10 @@ document.getElementById('signupForm').addEventListener('submit', async function(
 
   btn.classList.remove('loading'); btn.disabled = false;
 
-  // Save name locally so nav can show it
   const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
   const user = { fname, lname, email, sports, joined: new Date().toISOString() };
   localStorage.setItem('mu_current_user', JSON.stringify(user));
 
-  // Show success
   document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
   document.getElementById('successMsg').textContent   = `Account created! Check your email to verify, then start finding your game.`;
   document.getElementById('modalFormWrap').classList.add('hide');
@@ -1070,9 +1125,38 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   }
 });
 
-/* ── SOCIAL AUTH (stub) ── */
-function socialAuth(provider) {
-  showAlert(`${provider === 'google' ? 'Google' : 'Apple'} sign-in coming soon! Use email for now.`, 'success');
+/* ── GOOGLE SIGN-IN ── */
+async function googleSignIn() {
+  clearAlert();
+  try {
+    const result = await window._fbGoogle();
+    const user   = result.user;
+    const name   = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+    const lname  = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+
+    localStorage.setItem('mu_current_user', JSON.stringify({
+      fname: name, lname, email: user.email,
+      photo: user.photoURL, joined: new Date().toISOString()
+    }));
+
+    document.getElementById('successTitle').textContent = `Welcome, ${name}! 🎉`;
+    document.getElementById('successMsg').textContent   = "You're signed in with Google. Let's find your next game!";
+    document.getElementById('modalFormWrap').classList.add('hide');
+    document.getElementById('modalSuccess').classList.add('show');
+    updateNavForUser(name);
+    setTimeout(closeModal, 2500);
+  } catch (err) {
+    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+      return; // User closed popup on purpose
+    }
+    if (err.code === 'auth/operation-not-allowed') {
+      showAlert('Google sign-in is not yet enabled in Firebase. See SETUP.md step 2.', 'error');
+    } else if (err.code === 'auth/unauthorized-domain') {
+      showAlert('This domain is not authorized. Add it in Firebase → Auth → Settings → Authorized domains.', 'error');
+    } else {
+      showAlert('Google sign-in failed: ' + err.message, 'error');
+    }
+  }
 }
 
 /* ── NAV UPDATE ── */
@@ -1088,17 +1172,17 @@ function updateNavForUser(fname) {
 }
 function logOut() {
   localStorage.removeItem('mu_current_user');
-  if (window._auth) window._auth.signOut();
+  if (window._fbSignOut) window._fbSignOut();
   location.reload();
 }
 
-/* ── RESTORE SESSION ON LOAD ── */
+/* ── RESTORE SESSION ── */
 window.addEventListener('load', () => {
   const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
   if (user && user.fname) updateNavForUser(user.fname);
 });
 
-/* ── SPORT TAB FILTER ── */
+/* ── SPORT FILTER ── */
 document.querySelectorAll('.cat-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
