@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — MatchUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain:        "matchup-165ee.firebaseapp.com",
+      projectId:         "matchup-165ee",
+      storageBucket:     "matchup-165ee.firebasestorage.app",
+      messagingSenderId: "1038165665131",
+      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    window._auth = auth;
+    window._fbSignOut = () => signOut(auth);
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        const stored = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+        if (!stored) window.location.href = 'index.html';
+      }
+    });
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange:#FF5722; --orange-lt:#FF7043; --orange-bg:#FFF3EF;
+      --blue:#1565C0; --blue-lt:#1E88E5; --blue-bg:#E3F2FD;
+      --green:#16A34A; --green-bg:#F0FDF4;
+      --white:#FFFFFF; --off:#F8F9FA;
+      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
+      --shadow-h:0 14px 44px rgba(0,0,0,.12);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text); min-height: 100vh; }
+
+    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
+    .nav-center { display: flex; gap: 4px; margin-left: 20px; }
+    .nav-center a { padding: 8px 16px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: background .15s, color .15s; }
+    .nav-center a:hover { background: var(--off); color: var(--text); }
+    .nav-center a.active { background: var(--orange-bg); color: var(--orange); }
+    .nav-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+    .nav-icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--off); border: none; cursor: pointer; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+    .nav-icon-btn:hover { background: var(--border); }
+    .nav-profile { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 100px; background: var(--off); text-decoration: none; color: inherit; }
+    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; }
+    .nav-profile-name { font-size: .85rem; font-weight: 800; }
+
+    /* PAGE */
+    .page-wrap { max-width: 920px; margin: 0 auto; padding: 36px 40px 80px; }
+    .breadcrumb { font-size: .85rem; color: var(--muted); margin-bottom: 16px; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; font-weight: 700; }
+    .breadcrumb a:hover { color: var(--orange); }
+    .breadcrumb .sep { margin: 0 8px; }
+
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: 6px; }
+    .page-sub { color: var(--muted); font-size: .95rem; margin-bottom: 30px; }
+
+    /* COVER + AVATAR BANNER */
+    .profile-banner {
+      background: linear-gradient(120deg, var(--orange), #FF8A65);
+      border-radius: 20px 20px 0 0; height: 140px; position: relative;
+    }
+    .profile-banner::after { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='1' fill='%23ffffff' opacity='.15'/%3E%3C/svg%3E"); opacity: .5; }
+    .profile-card-wrap { background: #fff; border-radius: 0 0 20px 20px; padding: 0 32px 28px; position: relative; border: 1px solid var(--border); border-top: none; margin-bottom: 28px; }
+    .big-avatar { width: 104px; height: 104px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #FF8A65); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.4rem; border: 5px solid #fff; margin-top: -50px; margin-bottom: 14px; position: relative; }
+    .big-avatar .ba-edit { position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .85rem; cursor: pointer; transition: transform .15s; }
+    .big-avatar .ba-edit:hover { transform: scale(1.1); }
+    .pb-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 4px; }
+    .pb-email { font-size: .88rem; color: var(--muted); margin-bottom: 12px; }
+    .pb-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pb-badge { padding: 4px 12px; border-radius: 100px; font-size: .74rem; font-weight: 800; }
+    .pb-b-orange { background: var(--orange-bg); color: var(--orange); }
+    .pb-b-blue   { background: var(--blue-bg);   color: var(--blue); }
+    .pb-b-green  { background: var(--green-bg);  color: var(--green); }
+
+    /* FORM CARD */
+    .form-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 28px 32px; margin-bottom: 20px; }
+    .form-card h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 6px; }
+    .form-card .sub { font-size: .86rem; color: var(--muted); margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .82rem; font-weight: 800; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
+      font-size: .92rem; color: var(--text); background: #fff; outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; font-family: 'Nunito', sans-serif; }
+    .form-group .hint { font-size: .74rem; color: var(--muted); margin-top: 4px; }
+
+    /* SPORT GRID */
+    .sport-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .sport-opt {
+      padding: 14px 8px; border-radius: 12px; border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 800;
+      text-align: center; cursor: pointer; background: #fff;
+      transition: border-color .15s, background .15s, color .15s, transform .15s;
+    }
+    .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); transform: translateY(-1px); }
+    .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
+
+    /* LEVEL PICKER */
+    .level-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .level-opt {
+      padding: 12px; border-radius: 12px; border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 800;
+      text-align: center; cursor: pointer; background: #fff;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+    .level-opt .em { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+    .level-opt:hover { border-color: var(--blue); background: var(--blue-bg); }
+    .level-opt.sel { border-color: var(--blue); background: var(--blue); color: #fff; }
+
+    /* SAVE BAR */
+    .save-bar {
+      position: sticky; bottom: 20px; z-index: 50;
+      background: #fff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 14px 22px; display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 10px 36px rgba(0,0,0,.1); gap: 12px; flex-wrap: wrap;
+    }
+    .save-bar p { font-size: .88rem; color: var(--muted); font-weight: 700; }
+    .save-bar .actions { display: flex; gap: 10px; }
+    .btn-cancel { padding: 11px 22px; border-radius: 100px; background: var(--off); color: var(--text); border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800; transition: background .15s; text-decoration: none; display: inline-block; }
+    .btn-cancel:hover { background: var(--border); }
+    .btn-save { padding: 11px 28px; border-radius: 100px; background: var(--orange); color: #fff; border: none; cursor: pointer; font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 800; transition: background .2s, transform .15s, box-shadow .2s; }
+    .btn-save:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
+    .btn-save.saved { background: var(--green); }
+
+    /* DANGER ZONE */
+    .danger-card { border-color: #FECACA; background: #FFF5F5; }
+    .danger-card h2 { color: #B91C1C; }
+    .btn-danger { padding: 10px 20px; border-radius: 100px; background: #fff; color: #B91C1C; border: 1.5px solid #FECACA; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .87rem; font-weight: 800; transition: background .15s; }
+    .btn-danger:hover { background: #FEF2F2; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(30px);
+      background: var(--green); color: #fff; padding: 14px 26px; border-radius: 100px;
+      font-weight: 800; font-size: .9rem; box-shadow: 0 10px 30px rgba(22,163,74,.3);
+      opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 760px) {
+      nav { padding: 0 20px; }
+      .nav-center { display: none; }
+      .nav-profile-name { display: none; }
+      .page-wrap { padding: 24px 18px 80px; }
+      .profile-card-wrap { padding: 0 22px 22px; }
+      .form-card { padding: 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      .sport-grid, .level-picker { grid-template-columns: 1fr 1fr; }
+      .save-bar { flex-direction: column; }
+      .save-bar .actions { width: 100%; justify-content: stretch; }
+      .btn-cancel, .btn-save { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
+  <div class="nav-center">
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="index.html">🗓️ Events</a>
+    <a href="index.html#sports">⚽ Sports</a>
+    <a href="profile.html" class="active">👤 Profile</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-icon-btn" title="Notifications">🔔</button>
+    <button class="nav-icon-btn" title="Messages">💬</button>
+    <a class="nav-profile" href="profile.html">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span class="nav-profile-name" id="navName">Player</span>
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="breadcrumb">
+    <a href="dashboard.html">Dashboard</a><span class="sep">›</span><span>My profile</span>
+  </div>
+  <h1 class="page-title">My profile</h1>
+  <p class="page-sub">Keep your info up to date — better matches, better games.</p>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-banner"></div>
+  <div class="profile-card-wrap">
+    <div class="big-avatar" id="bigAvatar">?<span class="ba-edit" title="Change photo (coming soon)">📷</span></div>
+    <div class="pb-name" id="pbName">Player Name</div>
+    <div class="pb-email" id="pbEmail">email@matchup.app</div>
+    <div class="pb-badges">
+      <span class="pb-badge pb-b-orange">⭐ 4.8 rating</span>
+      <span class="pb-badge pb-b-blue">🏆 8 events</span>
+      <span class="pb-badge pb-b-green">✓ Verified</span>
+    </div>
+  </div>
+
+  <form id="profileForm">
+
+    <!-- PERSONAL INFO -->
+    <div class="form-card">
+      <h2>👤 Personal info</h2>
+      <p class="sub">Basic info visible to other players in your games.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fname">First name</label>
+          <input type="text" id="fname" placeholder="Alex" />
+        </div>
+        <div class="form-group">
+          <label for="lname">Last name</label>
+          <input type="text" id="lname" placeholder="Tremblay" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="you@example.com" readonly style="background:var(--off);color:var(--muted);cursor:not-allowed;" />
+        <div class="hint">Email can't be changed (it's your login).</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" placeholder="Montréal" value="Montréal" />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone (optional)</label>
+          <input type="tel" id="phone" placeholder="+1 514 000 0000" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bio">Short bio</label>
+        <textarea id="bio" placeholder="Tell other players about yourself — your favourite game, your playing style, anything fun…"></textarea>
+        <div class="hint">Visible on your public profile. Max 200 characters.</div>
+      </div>
+    </div>
+
+    <!-- SPORTS -->
+    <div class="form-card">
+      <h2>⚽ Your sports</h2>
+      <p class="sub">Pick all the sports you play or want to play. We'll match you with events and players in those sports.</p>
+      <div class="sport-grid" id="sportGrid">
+        <button type="button" class="sport-opt" data-sport="football">⚽ Football</button>
+        <button type="button" class="sport-opt" data-sport="basketball">🏀 Basketball</button>
+        <button type="button" class="sport-opt" data-sport="tennis">🎾 Tennis</button>
+        <button type="button" class="sport-opt" data-sport="badminton">🏸 Badminton</button>
+        <button type="button" class="sport-opt" data-sport="running">🏃 Running</button>
+        <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
+        <button type="button" class="sport-opt" data-sport="pingpong">🏓 Ping-Pong</button>
+        <button type="button" class="sport-opt" data-sport="volleyball">🏐 Volleyball</button>
+        <button type="button" class="sport-opt" data-sport="yoga">🧘 Yoga</button>
+      </div>
+    </div>
+
+    <!-- LEVEL -->
+    <div class="form-card">
+      <h2>🎯 Your level</h2>
+      <p class="sub">This helps us match you with players of similar skill.</p>
+      <div class="level-picker" id="levelPicker">
+        <div class="level-opt" data-level="beginner"><span class="em">🌱</span>Beginner</div>
+        <div class="level-opt" data-level="intermediate"><span class="em">⚡</span>Intermediate</div>
+        <div class="level-opt" data-level="advanced"><span class="em">🔥</span>Advanced</div>
+      </div>
+    </div>
+
+    <!-- DANGER -->
+    <div class="form-card danger-card">
+      <h2>⚠️ Danger zone</h2>
+      <p class="sub">Permanently leave MatchUp. This cannot be undone.</p>
+      <button type="button" class="btn-danger" onclick="if(confirm('Really delete your account? This cannot be undone.')) alert('Account deletion coming soon — contact support for now.')">Delete my account</button>
+    </div>
+
+    <!-- SAVE BAR -->
+    <div class="save-bar">
+      <p>💾 Don't forget to save your changes!</p>
+      <div class="actions">
+        <a href="dashboard.html" class="btn-cancel">Cancel</a>
+        <button type="submit" class="btn-save" id="saveBtn">Save changes</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="toast" id="toast">✓ Profile saved successfully!</div>
+
+<script>
+/* Load user */
+const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+if (!user) window.location.href = 'index.html';
+
+/* Populate fields */
+if (user) {
+  const fname   = user.fname || '';
+  const lname   = user.lname || '';
+  const email   = user.email || '';
+  const initial = (fname[0] || 'P').toUpperCase();
+  const sports  = user.sports || [];
+  const level   = user.level || '';
+
+  document.getElementById('navAvatar').textContent = initial;
+  document.getElementById('navName').textContent   = fname || 'Player';
+  document.getElementById('bigAvatar').firstChild.textContent = initial;
+  document.getElementById('pbName').textContent    = lname ? `${fname} ${lname}` : (fname || 'Your name');
+  document.getElementById('pbEmail').textContent   = email;
+
+  document.getElementById('fname').value = fname;
+  document.getElementById('lname').value = lname;
+  document.getElementById('email').value = email;
+  document.getElementById('city').value  = user.city || 'Montréal';
+  document.getElementById('phone').value = user.phone || '';
+  document.getElementById('bio').value   = user.bio || '';
+
+  sports.forEach(s => {
+    const opt = document.querySelector(`.sport-opt[data-sport="${s}"]`);
+    if (opt) opt.classList.add('sel');
+  });
+  if (level) {
+    const lv = document.querySelector(`.level-opt[data-level="${level}"]`);
+    if (lv) lv.classList.add('sel');
+  }
+}
+
+/* Sport toggle */
+document.querySelectorAll('.sport-opt').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('sel'));
+});
+/* Level toggle (single-select) */
+document.querySelectorAll('.level-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.level-opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+  });
+});
+
+/* Save */
+document.getElementById('profileForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = 'Saving…';
+  saveBtn.disabled = true;
+
+  const current = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+  const updated = {
+    ...current,
+    fname:  document.getElementById('fname').value.trim(),
+    lname:  document.getElementById('lname').value.trim(),
+    email:  document.getElementById('email').value.trim(),
+    city:   document.getElementById('city').value.trim(),
+    phone:  document.getElementById('phone').value.trim(),
+    bio:    document.getElementById('bio').value.trim(),
+    sports: [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport),
+    level:  document.querySelector('.level-opt.sel')?.dataset.level || ''
+  };
+  localStorage.setItem('mu_current_user', JSON.stringify(updated));
+
+  setTimeout(() => {
+    saveBtn.textContent = '✓ Saved!';
+    saveBtn.classList.add('saved');
+    document.getElementById('toast').classList.add('show');
+    // Update header
+    const initial = (updated.fname[0] || 'P').toUpperCase();
+    document.getElementById('navAvatar').textContent = initial;
+    document.getElementById('navName').textContent   = updated.fname || 'Player';
+    document.getElementById('bigAvatar').firstChild.textContent = initial;
+    document.getElementById('pbName').textContent    = updated.lname ? `${updated.fname} ${updated.lname}` : updated.fname;
+
+    setTimeout(() => {
+      saveBtn.textContent = 'Save changes';
+      saveBtn.classList.remove('saved');
+      saveBtn.disabled = false;
+      document.getElementById('toast').classList.remove('show');
+    }, 2500);
+  }, 700);
+});
+</script>
+</body>
+</html>
