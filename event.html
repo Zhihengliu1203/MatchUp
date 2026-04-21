@@ -14,7 +14,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
@@ -29,7 +29,7 @@
     const db = getFirestore(app);
     window._auth = auth;
     window._db = db;
-    window._firestore = { doc, getDoc, collection, getDocs, addDoc };
+    window._firestore = { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc };
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -335,13 +335,15 @@ async function loadEvent() {
     document.getElementById('spotsLeft').textContent = eventData.maxPlayers - attendeesSnap.size;
 
     // Check if user joined
-    if (user) {
-      const userAttendanceDoc = doc(window._db, 'events', eventId, 'attendees', user.email || 'anonymous');
+    // Check if current user already joined (use Firebase Auth uid, not email)
+    const authUser = window._auth.currentUser;
+    if (authUser) {
+      const userAttendanceDoc = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
       const userAttendanceSnap = await getDoc(userAttendanceDoc);
       if (userAttendanceSnap.exists()) {
         document.getElementById('joinBtn').textContent = '✓ You\'re going!';
         document.getElementById('joinBtn').classList.add('joined');
-        document.getElementById('joinBtn').disabled = true;
+        // NOTE: don't disable — button still clickable to LEAVE the event
       }
     }
   } catch (error) {
@@ -465,7 +467,9 @@ heroImg.onload = () => heroImg.style.opacity = '1';
 }
 
 async function joinEvent() {
-  if (!user) {
+  // Use the REAL Firebase Auth user, not the old localStorage one
+  const authUser = window._auth.currentUser;
+  if (!authUser) {
     alert('Please log in first to join this event!');
     window.location.href = 'index.html';
     return;
@@ -474,29 +478,77 @@ async function joinEvent() {
   const btn = document.getElementById('joinBtn');
   if (btn.classList.contains('joined')) return;
 
+  const { doc, setDoc, deleteDoc, updateDoc, increment, getDoc } = window._firestore;
+  const attendeeRef = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
+  const eventRef = doc(window._db, 'events', eventId);
+
+  btn.disabled = true;
+  const originalText = btn.textContent;
+
   try {
-    const { collection, addDoc } = window._firestore;
-    await addDoc(collection(window._db, 'events', eventId, 'attendees'), {
-      userId: user.email || 'anonymous',
+    // Check: already joined?
+    const existing = await getDoc(attendeeRef);
+
+    if (existing.exists()) {
+      // User is leaving the event
+      await deleteDoc(attendeeRef);
+      await updateDoc(eventRef, { going: increment(-1) });
+
+      btn.textContent = 'Join event';
+      btn.classList.remove('joined');
+      btn.disabled = false;
+
+      const count = Math.max(0, parseInt(document.getElementById('infoGoing').textContent) - 1);
+      document.getElementById('infoGoing').textContent = count;
+      const max = parseInt(document.getElementById('infoMax').textContent);
+      document.getElementById('spotsLeft').textContent = max - count;
+      document.getElementById('progressBar').style.width = (count / max) * 100 + '%';
+
+      const toast = document.getElementById('toast');
+      toast.textContent = '👋 You left the event';
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.textContent = '✓ You\'re in! See you there.';
+      }, 2000);
+      return;
+    }
+
+    // Check: event full?
+    const currentCount = parseInt(document.getElementById('infoGoing').textContent);
+    const maxCount = parseInt(document.getElementById('infoMax').textContent);
+    if (currentCount >= maxCount) {
+      alert('Sorry, this event is full!');
+      btn.disabled = false;
+      return;
+    }
+
+    // Join the event
+    await setDoc(attendeeRef, {
+      userId: authUser.uid,
+      userEmail: authUser.email,
+      userName: authUser.displayName || 'Player',
       joinedAt: new Date()
     });
+    await updateDoc(eventRef, { going: increment(1) });
 
     btn.textContent = '✓ You\'re going!';
     btn.classList.add('joined');
-    btn.disabled = true;
+    btn.disabled = false;
 
-    // Update count
-    const count = parseInt(document.getElementById('infoGoing').textContent) + 1;
+    const count = currentCount + 1;
     document.getElementById('infoGoing').textContent = count;
-    document.getElementById('spotsLeft').textContent = parseInt(document.getElementById('infoMax').textContent) - count;
-    document.getElementById('progressBar').style.width = (count / parseInt(document.getElementById('infoMax').textContent)) * 100 + '%';
+    document.getElementById('spotsLeft').textContent = maxCount - count;
+    document.getElementById('progressBar').style.width = (count / maxCount) * 100 + '%';
 
     const toast = document.getElementById('toast');
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
   } catch (error) {
-    console.error('Error joining event:', error);
-    alert('Error joining event');
+    console.error('Error joining/leaving event:', error);
+    alert('Error: ' + error.message);
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
 }
 
