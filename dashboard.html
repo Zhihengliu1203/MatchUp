@@ -11,6 +11,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, collectionGroup, query, where, getDocs, doc, getDoc }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
@@ -22,7 +24,10 @@
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     window._auth = auth;
+    window._db = db;
+    window._firestore = { collection, collectionGroup, query, where, getDocs, doc, getDoc };
     window._fbSignOut = () => signOut(auth);
 
     onAuthStateChanged(auth, user => {
@@ -189,10 +194,10 @@
   </div>
 
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-icon sc-o">🎯</div><div><div class="stat-num">2</div><div class="stat-label">Upcoming games</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-b">🏆</div><div><div class="stat-num">8</div><div class="stat-label">Events attended</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-g">👥</div><div><div class="stat-num">23</div><div class="stat-label">Players met</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-o">⭐</div><div><div class="stat-num">4.8</div><div class="stat-label">Your rating</div></div></div>
+    <div class="stat-card"><div class="stat-icon sc-o">🎯</div><div><div class="stat-num" id="statUpcoming">—</div><div class="stat-label">Upcoming games</div></div></div>
+    <div class="stat-card"><div class="stat-icon sc-b">🏆</div><div><div class="stat-num" id="statAttended">—</div><div class="stat-label">Events attended</div></div></div>
+    <div class="stat-card"><div class="stat-icon sc-g">👥</div><div><div class="stat-num" id="statPlayers">—</div><div class="stat-label">Players met</div></div></div>
+    <div class="stat-card"><div class="stat-icon sc-o">⭐</div><div><div class="stat-num" id="statRating">—</div><div class="stat-label">Your rating</div></div></div>
   </div>
 
   <div class="dash-grid">
@@ -201,25 +206,10 @@
         <h2>📅 Your upcoming games</h2>
         <a href="#">View all →</a>
       </div>
-      <div class="event-list">
-        <a class="ev-item" href="#">
-          <div class="ev-date"><div class="m">Apr</div><div class="d">19</div></div>
-          <div class="ev-info">
-            <div class="ev-sport">⚽ Football</div>
-            <div class="ev-title">5v5 Pickup — Mont-Royal Park</div>
-            <div class="ev-meta">Saturday · 10:00 AM · 22 going</div>
-          </div>
-          <span class="ev-status confirmed">✓ Confirmed</span>
-        </a>
-        <a class="ev-item" href="#">
-          <div class="ev-date"><div class="m">Apr</div><div class="d">26</div></div>
-          <div class="ev-info">
-            <div class="ev-sport">🎾 Tennis</div>
-            <div class="ev-title">Tennis Mixte — Parc Lafontaine</div>
-            <div class="ev-meta">Saturday · 9:00 AM · 12 going · CA$8</div>
-          </div>
-          <span class="ev-status pending">⏳ Pending</span>
-        </a>
+      <div class="event-list" id="eventList">
+        <div style="text-align:center; padding:30px; color:var(--muted); font-weight:700; font-size:.9rem;">
+          Loading your events…
+        </div>
       </div>
 
       <div class="section-head">
@@ -331,7 +321,134 @@ if (user) {
     sportsEl.innerHTML = sports.map(s => `<span class="pc-sport-tag">${sportLabels[s] || s}</span>`).join('');
   }
 }
+/* ==================================================================
+   Load dashboard data from Firestore
+   ================================================================== */
+async function loadDashboard() {
+  // Wait up to 3 seconds for Firebase Auth to populate currentUser
+  let authUser = window._auth.currentUser;
+  if (!authUser) {
+    authUser = await new Promise((resolve) => {
+      let resolved = false;
+      const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 3000);
+      const unsub = window._auth.onAuthStateChanged((u) => {
+        if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
+      });
+    });
+  }
 
+  if (!authUser) {
+    console.warn('No Firebase Auth user — dashboard cannot load events.');
+    document.getElementById('eventList').innerHTML =
+      '<div style="text-align:center;padding:30px;color:var(--muted);font-weight:700;font-size:.9rem;">Please log in to see your events.</div>';
+    return;
+  }
+
+  try {
+    const { collectionGroup, query, where, getDocs, doc, getDoc } = window._firestore;
+
+    // 1. Find every "attendees" subcollection doc where userId == current user's uid
+    const attendeesQuery = query(
+      collectionGroup(window._db, 'attendees'),
+      where('userId', '==', authUser.uid)
+    );
+    const attendeesSnap = await getDocs(attendeesQuery);
+
+    // 2. For each attendance, fetch the parent event doc
+    const eventPromises = attendeesSnap.docs.map(async (attendeeDoc) => {
+      // attendeeDoc.ref.parent is the "attendees" collection
+      // .parent again is the parent event doc
+      const eventRef = attendeeDoc.ref.parent.parent;
+      const eventSnap = await getDoc(eventRef);
+      if (!eventSnap.exists()) return null;
+      return { id: eventSnap.id, ...eventSnap.data() };
+    });
+
+    const rawEvents = (await Promise.all(eventPromises)).filter(Boolean);
+
+    // 3. Split into upcoming vs past using event.date (format: "YYYY-MM-DD")
+    const todayStr = new Date().toISOString().split('T')[0];
+    const upcoming = rawEvents
+      .filter(e => e.date && e.date >= todayStr)
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const past = rawEvents.filter(e => e.date && e.date < todayStr);
+
+    // 4. Update stat cards
+    document.getElementById('statUpcoming').textContent = upcoming.length;
+    document.getElementById('statAttended').textContent = past.length;
+
+    // 5. Render event list
+    const listEl = document.getElementById('eventList');
+    if (upcoming.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding:40px 20px; background:#fff; border:1px dashed var(--border); border-radius:16px;">
+          <div style="font-size:2.2rem; margin-bottom:10px;">🎾</div>
+          <div style="font-weight:800; font-size:.95rem; margin-bottom:6px;">No upcoming games yet</div>
+          <div style="font-size:.82rem; color:var(--muted); margin-bottom:14px;">Find a game to join or create your own!</div>
+          <a href="index.html" style="display:inline-block; padding:9px 20px; background:var(--orange); color:#fff; border-radius:100px; text-decoration:none; font-weight:800; font-size:.82rem;">🔍 Browse events</a>
+        </div>
+      `;
+    } else {
+      const sportMeta = {
+        football:'⚽ Football', basketball:'🏀 Basketball', tennis:'🎾 Tennis',
+        badminton:'🏸 Badminton', running:'🏃 Running', swimming:'🏊 Swimming',
+        pingpong:'🏓 Ping-Pong', volleyball:'🏐 Volleyball', yoga:'🧘 Yoga'
+      };
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      listEl.innerHTML = upcoming.map(e => {
+        const d = new Date(e.date + 'T00:00:00');
+        const monthLabel = months[d.getMonth()];
+        const dayLabel = d.getDate();
+        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+        const timeLabel = e.time ? formatTime(e.time) : '';
+        const goingLabel = `${e.going || 0} going`;
+        const priceLabel = e.price > 0 ? ` · CA$${e.price}` : '';
+        const sportLabel = sportMeta[e.sport] || e.sport || '';
+
+        return `
+          <a class="ev-item" href="event.html?id=${e.id}">
+            <div class="ev-date"><div class="m">${monthLabel}</div><div class="d">${dayLabel}</div></div>
+            <div class="ev-info">
+              <div class="ev-sport">${sportLabel}</div>
+              <div class="ev-title">${escapeHtml(e.title || 'Untitled event')}${e.venue ? ' — ' + escapeHtml(e.venue) : ''}</div>
+              <div class="ev-meta">${weekday} · ${timeLabel} · ${goingLabel}${priceLabel}</div>
+            </div>
+            <span class="ev-status confirmed">✓ Joined</span>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // 6. Update the greeting paragraph with real count
+    const greetingP = document.querySelector('.hero-strip .greeting p');
+    if (greetingP) {
+      if (upcoming.length === 0) {
+        greetingP.innerHTML = 'No upcoming games yet — ready to find one?';
+      } else {
+        greetingP.innerHTML = `You have <strong>${upcoming.length} upcoming ${upcoming.length === 1 ? 'game' : 'games'}</strong>. Let's go!`;
+      }
+    }
+  } catch (err) {
+    console.error('[dashboard] error loading data:', err);
+    document.getElementById('eventList').innerHTML =
+      `<div style="text-align:center;padding:30px;color:#e53e3e;font-weight:700;font-size:.85rem;">Could not load your events. ${err.message || ''}</div>`;
+  }
+}
+
+// Helpers
+function formatTime(hhmm) {
+  if (!hhmm || !hhmm.includes(':')) return hhmm || '';
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Kick it off
+loadDashboard();
 function doLogOut() {
   localStorage.removeItem('mu_current_user');
   if (window._fbSignOut) window._fbSignOut();
