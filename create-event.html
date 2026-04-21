@@ -452,7 +452,24 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
 
   try {
     const { collection, addDoc } = window._firestore;
-    
+
+    // Geocode the address
+    const addressInput = document.getElementById('address').value.trim();
+    const venueInput = venue;
+    const searchAddress = addressInput ? `${venueInput}, ${addressInput}` : `${venueInput}, Montreal, QC`;
+
+    btn.textContent = 'Finding location…';
+    const geo = await window.geocodeAddress(searchAddress);
+
+    if (!geo) {
+      alert("Couldn't find that address. Try being more specific (e.g. include street + city).");
+      btn.textContent = '🚀 Publish event';
+      btn.disabled = false;
+      return;
+    }
+
+    btn.textContent = 'Publishing…';
+
     const newEvent = await addDoc(collection(window._db, 'events'), {
       sport,
       title,
@@ -462,7 +479,10 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
       duration: parseInt(document.getElementById('duration').value),
       recurrence: document.querySelector('.recur-opt.sel')?.dataset.recur || 'once',
       venue,
-      address: document.getElementById('address').value.trim(),
+      address: addressInput,
+      lat: geo.lat,
+      lng: geo.lng,
+      city: geo.city,
       maxPlayers: parseInt(document.getElementById('maxPlayers').value),
       minPlayers: parseInt(document.getElementById('minPlayers').value),
       level: document.querySelector('.level-opt.sel')?.dataset.level || 'all',
