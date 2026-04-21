@@ -9,21 +9,24 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain:        "matchup-165ee.firebaseapp.com",
-      projectId:         "matchup-165ee",
-      storageBucket:     "matchup-165ee.firebasestorage.app",
+      apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain: "matchup-165ee.firebaseapp.com",
+      projectId: "matchup-165ee",
+      storageBucket: "matchup-165ee.firebasestorage.app",
       messagingSenderId: "1038165665131",
-      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
+      appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     window._auth = auth;
+    window._db = db;
     window._fbSignOut = () => signOut(auth);
+    window._firestore = { collection, addDoc };
 
     onAuthStateChanged(auth, user => {
       if (!user) {
@@ -73,12 +76,6 @@
     .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin-bottom: 8px; }
     .page-sub { color: var(--muted); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.55; }
 
-    /* STEP INDICATOR */
-    .steps-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 30px; }
-    .step-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--border); color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; font-family: 'Syne', sans-serif; transition: background .2s, color .2s; }
-    .step-dot.active { background: var(--orange); color: #fff; }
-    .step-line { width: 32px; height: 2px; background: var(--border); }
-
     /* FORM CARDS */
     .form-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 28px 32px; margin-bottom: 20px; }
     .form-card h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
@@ -86,7 +83,6 @@
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: .82rem; font-weight: 800; margin-bottom: 6px; }
-    .form-group label .opt { color: var(--muted); font-weight: 700; }
     .form-group input, .form-group select, .form-group textarea {
       width: 100%; padding: 11px 14px; border-radius: 10px;
       border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
@@ -196,14 +192,6 @@
     <span class="icon-big">🏆</span>
     <h1 class="page-title">Create a new event</h1>
     <p class="page-sub">Organize a pickup game, a league, or a one-off session. It's free to post — open your event to your whole community.</p>
-  </div>
-
-  <div class="steps-bar">
-    <div class="step-dot active">1</div>
-    <div class="step-line"></div>
-    <div class="step-dot active">2</div>
-    <div class="step-line"></div>
-    <div class="step-dot active">3</div>
   </div>
 
   <form id="eventForm" novalidate>
@@ -422,7 +410,7 @@ document.querySelectorAll('.price-opt').forEach(opt => {
 });
 
 /* Submit */
-document.getElementById('eventForm').addEventListener('submit', function(e) {
+document.getElementById('eventForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   // Clear errors
@@ -462,40 +450,41 @@ document.getElementById('eventForm').addEventListener('submit', function(e) {
   btn.textContent = 'Publishing…';
   btn.disabled = true;
 
-  // Build event object
-  const event = {
-    id:           'evt_' + Date.now(),
-    sport,
-    title,
-    description:  document.getElementById('description').value.trim(),
-    date,
-    time,
-    duration:     parseInt(document.getElementById('duration').value),
-    recurrence:   document.querySelector('.recur-opt.sel')?.dataset.recur || 'once',
-    venue,
-    address:      document.getElementById('address').value.trim(),
-    maxPlayers:   parseInt(document.getElementById('maxPlayers').value),
-    minPlayers:   parseInt(document.getElementById('minPlayers').value),
-    level:        document.querySelector('.level-opt.sel')?.dataset.level || 'all',
-    priceType:    document.querySelector('.price-opt.sel')?.dataset.price || 'free',
-    price:        parseFloat(document.getElementById('price').value) || 0,
-    organizer:    `${user.fname} ${user.lname || ''}`.trim(),
-    organizerEmail: user.email,
-    going:        1,
-    created:      new Date().toISOString()
-  };
+  try {
+    const { collection, addDoc } = window._firestore;
+    
+    const newEvent = await addDoc(collection(window._db, 'events'), {
+      sport,
+      title,
+      description: document.getElementById('description').value.trim(),
+      date,
+      time,
+      duration: parseInt(document.getElementById('duration').value),
+      recurrence: document.querySelector('.recur-opt.sel')?.dataset.recur || 'once',
+      venue,
+      address: document.getElementById('address').value.trim(),
+      maxPlayers: parseInt(document.getElementById('maxPlayers').value),
+      minPlayers: parseInt(document.getElementById('minPlayers').value),
+      level: document.querySelector('.level-opt.sel')?.dataset.level || 'all',
+      priceType: document.querySelector('.price-opt.sel')?.dataset.price || 'free',
+      price: parseFloat(document.getElementById('price').value) || 0,
+      organizer: `${user.fname} ${user.lname || ''}`.trim(),
+      organizerEmail: user.email,
+      going: 1,
+      status: 'active',
+      created: new Date()
+    });
 
-  // Save to localStorage (stand-in for backend)
-  const events = JSON.parse(localStorage.getItem('mu_events') || '[]');
-  events.unshift(event);
-  localStorage.setItem('mu_events', JSON.stringify(events));
-
-  setTimeout(() => {
     document.getElementById('toast').classList.add('show');
     setTimeout(() => {
-      window.location.href = `event.html?id=${event.id}`;
+      window.location.href = `event.html?id=${newEvent.id}`;
     }, 1200);
-  }, 600);
+  } catch (error) {
+    console.error('Error creating event:', error);
+    btn.textContent = '🚀 Publish event';
+    btn.disabled = false;
+    alert('Error creating event: ' + error.message);
+  }
 });
 </script>
 </body>
