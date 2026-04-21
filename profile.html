@@ -313,12 +313,12 @@
 <div class="toast" id="toast">✓ Profile saved successfully!</div>
 
 <script>
-/* Load user */
-const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-if (!user) window.location.href = 'index.html';
+/* Initial guard: if neither localStorage nor Firebase Auth has a user, redirect */
+const cachedUser = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
 
-/* Populate fields */
-if (user) {
+/* Render using whatever data we have (localStorage cache, or empty defaults).
+   Firestore will overwrite this as soon as it loads. */
+function renderProfile(user) {
   const fname   = user.fname || '';
   const lname   = user.lname || '';
   const email   = user.email || '';
@@ -339,15 +339,74 @@ if (user) {
   document.getElementById('phone').value = user.phone || '';
   document.getElementById('bio').value   = user.bio || '';
 
+  // Clear all sport selections first, then re-apply
+  document.querySelectorAll('.sport-opt.sel').forEach(o => o.classList.remove('sel'));
   sports.forEach(s => {
     const opt = document.querySelector(`.sport-opt[data-sport="${s}"]`);
     if (opt) opt.classList.add('sel');
   });
+  // Clear level selections first, then re-apply
+  document.querySelectorAll('.level-opt.sel').forEach(o => o.classList.remove('sel'));
   if (level) {
     const lv = document.querySelector(`.level-opt[data-level="${level}"]`);
     if (lv) lv.classList.add('sel');
   }
 }
+
+// First paint: use cached localStorage data (instant, no flash of empty fields)
+renderProfile(cachedUser || {});
+
+/* Now load the real data from Firestore and overwrite */
+(async function loadProfileFromFirestore() {
+  // Wait for Firebase to initialize (modules load async)
+  let tries = 0;
+  while ((!window._auth || !window._db || !window._firestore) && tries < 40) {
+    await new Promise(r => setTimeout(r, 50));
+    tries++;
+  }
+  if (!window._auth) return;
+
+  // Wait up to 3s for auth state
+  let authUser = window._auth.currentUser;
+  if (!authUser) {
+    authUser = await new Promise((resolve) => {
+      let resolved = false;
+      const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 3000);
+      const unsub = window._auth.onAuthStateChanged((u) => {
+        if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
+      });
+    });
+  }
+
+  if (!authUser) {
+    // No Firebase Auth user — if also no localStorage cache, redirect
+    if (!cachedUser) {
+      window.location.href = 'index.html';
+    }
+    return;
+  }
+
+  try {
+    const { doc, getDoc } = window._firestore;
+    const userRef = doc(window._db, 'users', authUser.uid);
+    const snap = await getDoc(userRef);
+
+    if (snap.exists()) {
+      const firestoreUser = snap.data();
+      // Also preserve photo field from localStorage (Google sign-in)
+      const merged = { ...(cachedUser || {}), ...firestoreUser };
+      renderProfile(merged);
+      // Update localStorage cache so other pages see fresh data immediately
+      localStorage.setItem('mu_current_user', JSON.stringify(merged));
+      console.log('[profile] loaded from Firestore for uid:', authUser.uid);
+    } else {
+      console.log('[profile] no Firestore doc yet — will be created on first save');
+    }
+  } catch (err) {
+    console.error('[profile] Firestore load failed:', err);
+    // Not fatal — we already rendered from localStorage
+  }
+})();
 
 /* Sport toggle */
 document.querySelectorAll('.sport-opt').forEach(btn => {
