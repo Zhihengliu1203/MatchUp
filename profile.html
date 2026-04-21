@@ -11,6 +11,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
@@ -22,7 +24,10 @@
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     window._auth = auth;
+    window._db = db;
+    window._firestore = { doc, getDoc, setDoc, serverTimestamp };
     window._fbSignOut = () => signOut(auth);
 
     onAuthStateChanged(auth, user => {
@@ -357,7 +362,7 @@ document.querySelectorAll('.level-opt').forEach(opt => {
 });
 
 /* Save */
-document.getElementById('profileForm').addEventListener('submit', e => {
+document.getElementById('profileForm').addEventListener('submit', async e => {
   e.preventDefault();
   const saveBtn = document.getElementById('saveBtn');
   saveBtn.textContent = 'Saving…';
@@ -377,24 +382,60 @@ document.getElementById('profileForm').addEventListener('submit', e => {
   };
   localStorage.setItem('mu_current_user', JSON.stringify(updated));
 
-  setTimeout(() => {
-    saveBtn.textContent = '✓ Saved!';
-    saveBtn.classList.add('saved');
-    document.getElementById('toast').classList.add('show');
-    // Update header
-    const initial = (updated.fname[0] || 'P').toUpperCase();
-    document.getElementById('navAvatar').textContent = initial;
-    document.getElementById('navName').textContent   = updated.fname || 'Player';
-    document.getElementById('bigAvatar').firstChild.textContent = initial;
-    document.getElementById('pbName').textContent    = updated.lname ? `${updated.fname} ${updated.lname}` : updated.fname;
+  // ---- Save to Firestore ----
+  try {
+    // Wait briefly for Firebase Auth if needed
+    let authUser = window._auth?.currentUser;
+    if (!authUser) {
+      authUser = await new Promise((resolve) => {
+        let resolved = false;
+        const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 2000);
+        const unsub = window._auth.onAuthStateChanged((u) => {
+          if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
+        });
+      });
+    }
 
-    setTimeout(() => {
-      saveBtn.textContent = 'Save changes';
-      saveBtn.classList.remove('saved');
-      saveBtn.disabled = false;
-      document.getElementById('toast').classList.remove('show');
-    }, 2500);
-  }, 700);
+    if (authUser && window._firestore) {
+      const { doc, setDoc, serverTimestamp } = window._firestore;
+      const userRef = doc(window._db, 'users', authUser.uid);
+      await setDoc(userRef, {
+        fname:  updated.fname,
+        lname:  updated.lname,
+        email:  updated.email,
+        city:   updated.city,
+        phone:  updated.phone,
+        bio:    updated.bio,
+        sports: updated.sports,
+        level:  updated.level,
+        photoURL: current.photo || '',
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      console.log('[profile] saved to Firestore for uid:', authUser.uid);
+    } else {
+      console.warn('[profile] no Firebase Auth user — saved to localStorage only');
+    }
+  } catch (err) {
+    console.error('[profile] Firestore save failed:', err);
+    // Not fatal — localStorage still has the data
+  }
+
+  saveBtn.textContent = '✓ Saved!';
+  saveBtn.classList.add('saved');
+  document.getElementById('toast').classList.add('show');
+  // Update header
+  const initial = (updated.fname[0] || 'P').toUpperCase();
+  document.getElementById('navAvatar').textContent = initial;
+  document.getElementById('navName').textContent   = updated.fname || 'Player';
+  document.getElementById('bigAvatar').firstChild.textContent = initial;
+  document.getElementById('pbName').textContent    = updated.lname ? `${updated.fname} ${updated.lname}` : updated.fname;
+
+  setTimeout(() => {
+    saveBtn.textContent = 'Save changes';
+    saveBtn.classList.remove('saved');
+    saveBtn.disabled = false;
+    document.getElementById('toast').classList.remove('show');
+  }, 2500);
 });
 </script>
 </body>
