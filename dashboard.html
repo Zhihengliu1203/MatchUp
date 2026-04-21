@@ -447,8 +447,14 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Kick it off
-loadDashboard();
+// Kick it off once the Firebase module has finished loading
+(function waitForFirebase() {
+  if (window._auth && window._db && window._firestore) {
+    loadDashboard();
+  } else {
+    setTimeout(waitForFirebase, 50);
+  }
+})();
 function doLogOut() {
   localStorage.removeItem('mu_current_user');
   if (window._fbSignOut) window._fbSignOut();
