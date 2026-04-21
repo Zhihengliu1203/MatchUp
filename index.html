@@ -649,7 +649,7 @@
         <h3>🏆 Create your own event</h3>
         <p>Organize a pickup game, a league, or a one-off session. Open it to your community.</p>
       </div>
-      <button class="btn-white" onclick="openModal()">Start for free →</button>
+      <button class="btn-white" onclick="window.location.href='create-event.html'">Start for free →</button>
     </div>
 
     <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="basketball">
@@ -977,6 +977,12 @@
 <script>
 /* ── MODAL ── */
 function openModal() {
+  // If user is logged in, skip the signup modal and go straight to a demo event page
+  const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+  if (user && user.fname) {
+    window.location.href = 'event.html';
+    return;
+  }
   document.getElementById('authModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1166,6 +1172,7 @@ function updateNavForUser(fname) {
   if (links) {
     links.innerHTML = `
       <li><a href="dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="create-event.html" style="color:var(--orange);font-weight:800;">➕ Create</a></li>
       <li><a href="profile.html">👤 Profile</a></li>
       <li><span style="padding:8px 14px;font-size:.88rem;font-weight:800;color:var(--text)">👋 ${fname}</span></li>
       <li><a class="btn-su" href="#" onclick="logOut();return false;">Log out</a></li>`;
