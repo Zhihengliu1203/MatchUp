@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Event — MatchUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain:        "matchup-165ee.firebaseapp.com",
+      projectId:         "matchup-165ee",
+      storageBucket:     "matchup-165ee.firebasestorage.app",
+      messagingSenderId: "1038165665131",
+      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    window._auth = auth;
+    window._fbSignOut = () => signOut(auth);
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        const stored = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+        if (!stored) window.location.href = 'index.html';
+      }
+    });
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange:#FF5722; --orange-lt:#FF7043; --orange-bg:#FFF3EF;
+      --blue:#1565C0; --blue-lt:#1E88E5; --blue-bg:#E3F2FD;
+      --green:#16A34A; --green-bg:#F0FDF4;
+      --white:#FFFFFF; --off:#F8F9FA;
+      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
+      --shadow-h:0 14px 44px rgba(0,0,0,.12);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
+    .nav-center { display: flex; gap: 4px; margin-left: 20px; }
+    .nav-center a { padding: 8px 16px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: background .15s, color .15s; }
+    .nav-center a:hover { background: var(--off); color: var(--text); }
+    .nav-center a.active { background: var(--orange-bg); color: var(--orange); }
+    .nav-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+    .nav-profile { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 100px; background: var(--off); text-decoration: none; color: inherit; transition: background .15s; }
+    .nav-profile:hover { background: var(--border); }
+    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; }
+    .nav-profile-name { font-size: .85rem; font-weight: 800; }
+
+    /* PAGE */
+    .page-wrap { max-width: 780px; margin: 0 auto; padding: 36px 32px 80px; }
+    .breadcrumb { font-size: .85rem; color: var(--muted); margin-bottom: 14px; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; font-weight: 700; }
+    .breadcrumb a:hover { color: var(--orange); }
+    .breadcrumb .sep { margin: 0 8px; }
+
+    .page-hero { text-align: center; margin-bottom: 34px; }
+    .page-hero .icon-big { display: inline-flex; width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, var(--orange), #FF8A65); color: #fff; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(255,87,34,.3); }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin-bottom: 8px; }
+    .page-sub { color: var(--muted); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.55; }
+
+    /* STEP INDICATOR */
+    .steps-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 30px; }
+    .step-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--border); color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; font-family: 'Syne', sans-serif; transition: background .2s, color .2s; }
+    .step-dot.active { background: var(--orange); color: #fff; }
+    .step-line { width: 32px; height: 2px; background: var(--border); }
+
+    /* FORM CARDS */
+    .form-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 28px 32px; margin-bottom: 20px; }
+    .form-card h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .form-card .sub { font-size: .86rem; color: var(--muted); margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .82rem; font-weight: 800; margin-bottom: 6px; }
+    .form-group label .opt { color: var(--muted); font-weight: 700; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
+      font-size: .92rem; color: var(--text); background: #fff; outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12);
+    }
+    .form-group input.error { border-color: #e53e3e; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group .hint { font-size: .74rem; color: var(--muted); margin-top: 4px; }
+    .form-group .char-count { float: right; font-size: .72rem; color: var(--muted); font-weight: 700; }
+    .field-error { font-size: .74rem; color: #e53e3e; font-weight: 700; margin-top: 4px; display: none; }
+    .field-error.show { display: block; }
+
+    /* SPORT PICKER */
+    .sport-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .sport-opt {
+      padding: 14px 8px; border-radius: 12px; border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 800;
+      text-align: center; cursor: pointer; background: #fff;
+      transition: border-color .15s, background .15s, color .15s, transform .15s;
+    }
+    .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); transform: translateY(-1px); }
+    .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
+
+    /* LEVEL PICKER */
+    .level-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .level-opt { padding: 12px 8px; border-radius: 12px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 800; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, color .15s; }
+    .level-opt .em { font-size: 1.25rem; display: block; margin-bottom: 3px; }
+    .level-opt:hover { border-color: var(--blue); background: var(--blue-bg); }
+    .level-opt.sel { border-color: var(--blue); background: var(--blue); color: #fff; }
+
+    /* PRICE TOGGLE */
+    .price-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .price-opt { padding: 14px 12px; border-radius: 12px; border: 1.5px solid var(--border); cursor: pointer; text-align: center; font-weight: 800; transition: border-color .15s, background .15s, color .15s; }
+    .price-opt:hover { border-color: var(--orange); }
+    .price-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
+    .price-opt .em { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+    .price-input-wrap { position: relative; display: none; }
+    .price-input-wrap.show { display: block; }
+    .price-input-wrap::before {
+      content: 'CA$'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-weight: 800; color: var(--muted); font-size: .9rem;
+    }
+    .price-input-wrap input { padding-left: 48px; }
+
+    /* RECURRENCE */
+    .recur-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .recur-opt { padding: 10px 6px; border-radius: 10px; border: 1.5px solid var(--border); cursor: pointer; text-align: center; font-size: .8rem; font-weight: 800; background: #fff; transition: border-color .15s, background .15s, color .15s; }
+    .recur-opt:hover { border-color: var(--orange); }
+    .recur-opt.sel { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
+
+    /* SAVE BAR */
+    .save-bar { position: sticky; bottom: 20px; z-index: 50; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 36px rgba(0,0,0,.1); gap: 12px; flex-wrap: wrap; }
+    .save-bar p { font-size: .88rem; color: var(--muted); font-weight: 700; }
+    .save-bar .actions { display: flex; gap: 10px; }
+    .btn-cancel { padding: 11px 22px; border-radius: 100px; background: var(--off); color: var(--text); border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 800; transition: background .15s; text-decoration: none; display: inline-block; }
+    .btn-cancel:hover { background: var(--border); }
+    .btn-publish { padding: 11px 28px; border-radius: 100px; background: var(--orange); color: #fff; border: none; cursor: pointer; font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 800; transition: background .2s, transform .15s, box-shadow .2s; }
+    .btn-publish:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
+    .btn-publish:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(30px); background: var(--green); color: #fff; padding: 14px 26px; border-radius: 100px; font-weight: 800; font-size: .9rem; box-shadow: 0 10px 30px rgba(22,163,74,.3); opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; z-index: 1000; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 760px) {
+      nav { padding: 0 20px; }
+      .nav-center { display: none; }
+      .nav-profile-name { display: none; }
+      .page-wrap { padding: 24px 18px 80px; }
+      .form-card { padding: 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      .sport-grid { grid-template-columns: 1fr 1fr; }
+      .level-picker, .recur-picker { grid-template-columns: 1fr 1fr; }
+      .save-bar { flex-direction: column; }
+      .save-bar .actions { width: 100%; }
+      .btn-cancel, .btn-publish { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
+  <div class="nav-center">
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="index.html">🗓️ Events</a>
+    <a href="create-event.html" class="active">➕ Create</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-profile" href="profile.html">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span class="nav-profile-name" id="navName">Player</span>
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="breadcrumb">
+    <a href="dashboard.html">Dashboard</a><span class="sep">›</span><span>Create event</span>
+  </div>
+
+  <div class="page-hero">
+    <span class="icon-big">🏆</span>
+    <h1 class="page-title">Create a new event</h1>
+    <p class="page-sub">Organize a pickup game, a league, or a one-off session. It's free to post — open your event to your whole community.</p>
+  </div>
+
+  <div class="steps-bar">
+    <div class="step-dot active">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot active">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot active">3</div>
+  </div>
+
+  <form id="eventForm" novalidate>
+
+    <!-- STEP 1: Sport + Basics -->
+    <div class="form-card">
+      <h2>⚽ Sport &amp; title</h2>
+      <p class="sub">What sport are you organizing? Pick one.</p>
+
+      <div class="form-group">
+        <label>Sport</label>
+        <div class="sport-grid" id="sportGrid">
+          <button type="button" class="sport-opt" data-sport="football">⚽ Football</button>
+          <button type="button" class="sport-opt" data-sport="basketball">🏀 Basketball</button>
+          <button type="button" class="sport-opt" data-sport="tennis">🎾 Tennis</button>
+          <button type="button" class="sport-opt" data-sport="badminton">🏸 Badminton</button>
+          <button type="button" class="sport-opt" data-sport="running">🏃 Running</button>
+          <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
+          <button type="button" class="sport-opt" data-sport="pingpong">🏓 Ping-Pong</button>
+          <button type="button" class="sport-opt" data-sport="volleyball">🏐 Volleyball</button>
+          <button type="button" class="sport-opt" data-sport="yoga">🧘 Yoga</button>
+        </div>
+        <div class="field-error" id="err-sport">Please pick a sport</div>
+      </div>
+
+      <div class="form-group">
+        <label for="title">Event title <span class="char-count"><span id="titleCount">0</span>/80</span></label>
+        <input type="text" id="title" maxlength="80" placeholder="e.g. Sunday 5v5 Pickup Football — All levels welcome" />
+        <div class="field-error" id="err-title">Give your event a title</div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description <span class="char-count"><span id="descCount">0</span>/400</span></label>
+        <textarea id="description" maxlength="400" placeholder="Describe your event — what to expect, rules, what to bring, skill level, etc."></textarea>
+        <div class="hint">Tell players what makes your event special!</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Date + Location -->
+    <div class="form-card">
+      <h2>📅 When &amp; where</h2>
+      <p class="sub">Set the date, time, and location.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" />
+          <div class="field-error" id="err-date">Pick a date</div>
+        </div>
+        <div class="form-group">
+          <label for="time">Start time</label>
+          <input type="time" id="time" />
+          <div class="field-error" id="err-time">Pick a time</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="duration">Duration</label>
+          <select id="duration">
+            <option value="30">30 minutes</option>
+            <option value="60">1 hour</option>
+            <option value="90" selected>1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4+ hours</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Recurrence</label>
+          <div class="recur-picker" id="recurPicker">
+            <div class="recur-opt sel" data-recur="once">One-time</div>
+            <div class="recur-opt" data-recur="weekly">Weekly</div>
+            <div class="recur-opt" data-recur="biweekly">Biweekly</div>
+            <div class="recur-opt" data-recur="monthly">Monthly</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="venue">Venue name</label>
+        <input type="text" id="venue" placeholder="e.g. Parc Jarry — Field 3" />
+        <div class="field-error" id="err-venue">Add a venue name</div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" placeholder="e.g. 285 Rue Gary Carter, Montréal, QC" />
+        <div class="hint">Exact address helps players find you. Hidden from non-attendees until they join.</div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Players + Price -->
+    <div class="form-card">
+      <h2>👥 Players &amp; pricing</h2>
+      <p class="sub">How many players, what level, and what's the cost?</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="maxPlayers">Max players</label>
+          <input type="number" id="maxPlayers" min="2" max="200" value="10" />
+          <div class="hint">Total spots available including you.</div>
+        </div>
+        <div class="form-group">
+          <label for="minPlayers">Minimum to run</label>
+          <input type="number" id="minPlayers" min="2" max="200" value="4" />
+          <div class="hint">Event cancelled if below this.</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Skill level</label>
+        <div class="level-picker" id="levelPicker">
+          <div class="level-opt sel" data-level="all"><span class="em">✨</span>All levels</div>
+          <div class="level-opt" data-level="beginner"><span class="em">🌱</span>Beginner</div>
+          <div class="level-opt" data-level="intermediate"><span class="em">⚡</span>Intermediate</div>
+          <div class="level-opt" data-level="advanced"><span class="em">🔥</span>Advanced</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Pricing</label>
+        <div class="price-toggle" id="priceToggle">
+          <div class="price-opt sel" data-price="free"><span class="em">🎉</span>Free event</div>
+          <div class="price-opt" data-price="paid"><span class="em">💰</span>Paid event</div>
+        </div>
+        <div class="price-input-wrap" id="priceWrap">
+          <input type="number" id="price" min="0" step="0.50" placeholder="0.00" />
+        </div>
+        <div class="hint" id="priceHint">Great! Your event is free for all players.</div>
+      </div>
+    </div>
+
+    <!-- PREVIEW BOX -->
+    <div class="form-card" style="background:linear-gradient(135deg,var(--orange-bg),var(--blue-bg));border-color:var(--orange);">
+      <h2>👀 Almost there!</h2>
+      <p class="sub" style="margin-bottom:6px;">Review your event. Once published, it will be visible to all MatchUp players in your city.</p>
+      <p style="font-size:.82rem;color:var(--muted);line-height:1.6;">You can edit or cancel the event anytime from your dashboard.</p>
+    </div>
+
+    <div class="save-bar">
+      <p>📣 Ready to publish your event?</p>
+      <div class="actions">
+        <a href="dashboard.html" class="btn-cancel">Cancel</a>
+        <button type="submit" class="btn-publish" id="publishBtn">🚀 Publish event</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="toast" id="toast">✓ Event published! Redirecting…</div>
+
+<script>
+/* Auth guard */
+const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+if (!user) window.location.href = 'index.html';
+
+/* Populate nav */
+if (user) {
+  const initial = (user.fname?.[0] || 'P').toUpperCase();
+  document.getElementById('navAvatar').textContent = initial;
+  document.getElementById('navName').textContent   = user.fname || 'Player';
+}
+
+/* Character counters */
+const titleInput = document.getElementById('title');
+const titleCount = document.getElementById('titleCount');
+titleInput.addEventListener('input', () => titleCount.textContent = titleInput.value.length);
+
+const descInput = document.getElementById('description');
+const descCount = document.getElementById('descCount');
+descInput.addEventListener('input', () => descCount.textContent = descInput.value.length);
+
+/* Default date to tomorrow */
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+document.getElementById('date').value = tomorrow.toISOString().split('T')[0];
+document.getElementById('date').min   = new Date().toISOString().split('T')[0];
+
+/* Sport picker (single select) */
+document.querySelectorAll('.sport-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sport-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+  });
+});
+
+/* Level picker (single select) */
+document.querySelectorAll('.level-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.level-opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+  });
+});
+
+/* Recurrence picker */
+document.querySelectorAll('.recur-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.recur-opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+  });
+});
+
+/* Price toggle */
+const priceWrap = document.getElementById('priceWrap');
+const priceHint = document.getElementById('priceHint');
+document.querySelectorAll('.price-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.price-opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+    const isPaid = opt.dataset.price === 'paid';
+    priceWrap.classList.toggle('show', isPaid);
+    priceHint.textContent = isPaid ? 'Set the price per player. You keep 95% (MatchUp takes 5% for platform fees).' : 'Great! Your event is free for all players.';
+  });
+});
+
+/* Submit */
+document.getElementById('eventForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  // Clear errors
+  document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+
+  let valid = true;
+  const sport = document.querySelector('.sport-opt.sel')?.dataset.sport;
+  if (!sport) { document.getElementById('err-sport').classList.add('show'); valid = false; }
+
+  const title = document.getElementById('title').value.trim();
+  if (!title) {
+    document.getElementById('title').classList.add('error');
+    document.getElementById('err-title').classList.add('show');
+    valid = false;
+  }
+
+  const date = document.getElementById('date').value;
+  if (!date) { document.getElementById('err-date').classList.add('show'); valid = false; }
+
+  const time = document.getElementById('time').value;
+  if (!time) { document.getElementById('err-time').classList.add('show'); valid = false; }
+
+  const venue = document.getElementById('venue').value.trim();
+  if (!venue) {
+    document.getElementById('venue').classList.add('error');
+    document.getElementById('err-venue').classList.add('show');
+    valid = false;
+  }
+
+  if (!valid) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  const btn = document.getElementById('publishBtn');
+  btn.textContent = 'Publishing…';
+  btn.disabled = true;
+
+  // Build event object
+  const event = {
+    id:           'evt_' + Date.now(),
+    sport,
+    title,
+    description:  document.getElementById('description').value.trim(),
+    date,
+    time,
+    duration:     parseInt(document.getElementById('duration').value),
+    recurrence:   document.querySelector('.recur-opt.sel')?.dataset.recur || 'once',
+    venue,
+    address:      document.getElementById('address').value.trim(),
+    maxPlayers:   parseInt(document.getElementById('maxPlayers').value),
+    minPlayers:   parseInt(document.getElementById('minPlayers').value),
+    level:        document.querySelector('.level-opt.sel')?.dataset.level || 'all',
+    priceType:    document.querySelector('.price-opt.sel')?.dataset.price || 'free',
+    price:        parseFloat(document.getElementById('price').value) || 0,
+    organizer:    `${user.fname} ${user.lname || ''}`.trim(),
+    organizerEmail: user.email,
+    going:        1,
+    created:      new Date().toISOString()
+  };
+
+  // Save to localStorage (stand-in for backend)
+  const events = JSON.parse(localStorage.getItem('mu_events') || '[]');
+  events.unshift(event);
+  localStorage.setItem('mu_events', JSON.stringify(events));
+
+  setTimeout(() => {
+    document.getElementById('toast').classList.add('show');
+    setTimeout(() => {
+      window.location.href = `event.html?id=${event.id}`;
+    }, 1200);
+  }, 600);
+});
+</script>
+</body>
+</html>
