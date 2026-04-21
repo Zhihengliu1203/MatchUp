@@ -290,17 +290,23 @@
 
 <script>
 const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-if (!user) window.location.href = 'index.html';
+// Note: no hard redirect here — we wait for Firebase Auth to confirm
 
 const h = new Date().getHours();
 document.getElementById('timeOfDay').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 
-if (user) {
-  const fname   = user.fname || 'Player';
-  const lname   = user.lname || '';
-  const email   = user.email || 'you@matchup.app';
+const sportLabels = {
+  football:'⚽ Football', basketball:'🏀 Basketball', tennis:'🎾 Tennis',
+  badminton:'🏸 Badminton', running:'🏃 Running', swimming:'🏊 Swimming',
+  pingpong:'🏓 Ping-Pong', volleyball:'🏐 Volleyball', yoga:'🧘 Yoga'
+};
+
+function renderUserUI(u) {
+  const fname   = u.fname || 'Player';
+  const lname   = u.lname || '';
+  const email   = u.email || 'you@matchup.app';
   const initial = (fname[0] || 'P').toUpperCase();
-  const sports  = user.sports || [];
+  const sports  = u.sports || [];
 
   document.getElementById('greetName').textContent = `${fname}, ready to play?`;
   document.getElementById('navName').textContent   = fname;
@@ -309,11 +315,6 @@ if (user) {
   document.getElementById('pcName').textContent    = lname ? `${fname} ${lname}` : fname;
   document.getElementById('pcEmail').textContent   = email;
 
-  const sportLabels = {
-    football:'⚽ Football', basketball:'🏀 Basketball', tennis:'🎾 Tennis',
-    badminton:'🏸 Badminton', running:'🏃 Running', swimming:'🏊 Swimming',
-    pingpong:'🏓 Ping-Pong', volleyball:'🏐 Volleyball', yoga:'🧘 Yoga'
-  };
   const sportsEl = document.getElementById('pcSports');
   if (sports.length === 0) {
     sportsEl.innerHTML = '<span style="font-size:.76rem;color:var(--muted);">No sports yet — <a href="profile.html" style="color:var(--orange);font-weight:800;">add some</a></span>';
@@ -321,6 +322,54 @@ if (user) {
     sportsEl.innerHTML = sports.map(s => `<span class="pc-sport-tag">${sportLabels[s] || s}</span>`).join('');
   }
 }
+
+// First paint: whatever we have in localStorage (instant) or empty defaults
+renderUserUI(user || {});
+
+// Now fetch fresh data from Firestore
+(async function loadUserFromFirestore() {
+  let tries = 0;
+  while ((!window._auth || !window._db || !window._firestore) && tries < 40) {
+    await new Promise(r => setTimeout(r, 50));
+    tries++;
+  }
+  if (!window._auth) return;
+
+  let authUser = window._auth.currentUser;
+  if (!authUser) {
+    authUser = await new Promise((resolve) => {
+      let resolved = false;
+      const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 3000);
+      const unsub = window._auth.onAuthStateChanged((u) => {
+        if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
+      });
+    });
+  }
+
+  // If Firebase says NOT logged in and we also had no localStorage, redirect
+  if (!authUser) {
+    if (!user) window.location.href = 'index.html';
+    return;
+  }
+
+  try {
+    const { doc, getDoc } = window._firestore;
+    const userRef = doc(window._db, 'users', authUser.uid);
+    const snap = await getDoc(userRef);
+
+    if (snap.exists()) {
+      const firestoreUser = snap.data();
+      const merged = { ...(user || {}), ...firestoreUser };
+      renderUserUI(merged);
+      localStorage.setItem('mu_current_user', JSON.stringify(merged));
+      console.log('[dashboard] user loaded from Firestore for uid:', authUser.uid);
+    } else {
+      console.log('[dashboard] no Firestore user doc yet');
+    }
+  } catch (err) {
+    console.error('[dashboard] user load failed:', err);
+  }
+})();
 /* ==================================================================
    Load dashboard data from Firestore
    ================================================================== */
