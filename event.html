@@ -436,10 +436,17 @@ heroImg.onload = () => heroImg.style.opacity = '1';
     'rosemont':     [45.5586, -73.5700]
   };
 
-  let coords = [45.5048, -73.5872];
-  const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
-  for (const key in venueCoords) {
-    if (venueLower.includes(key)) { coords = venueCoords[key]; break; }
+  let coords = [45.5048, -73.5872]; // Montreal fallback
+
+  // Prefer geocoded lat/lng saved on the event itself
+  if (typeof eventData.lat === 'number' && typeof eventData.lng === 'number') {
+    coords = [eventData.lat, eventData.lng];
+  } else {
+    // Fallback for old events: match against hardcoded venue list
+    const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
+    for (const key in venueCoords) {
+      if (venueLower.includes(key)) { coords = venueCoords[key]; break; }
+    }
   }
 
   const map = L.map('map', { scrollWheelZoom: false }).setView(coords, 15);
