@@ -1036,7 +1036,7 @@ function renderEventCards(events) {
 
     const card = document.createElement('a');
     card.href = `event.html?id=${event.id}`;
-    card.className = 'event-card reveal';
+    card.className = 'event-card reveal visible';
     card.dataset.sport = event.sport;
     card.innerHTML = `
       <div class="card-img">
