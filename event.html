@@ -7,26 +7,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- Leaflet for maps (free, open-source, no API key needed) -->
+  <!-- Leaflet for maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain:        "matchup-165ee.firebaseapp.com",
-      projectId:         "matchup-165ee",
-      storageBucket:     "matchup-165ee.firebasestorage.app",
+      apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain: "matchup-165ee.firebaseapp.com",
+      projectId: "matchup-165ee",
+      storageBucket: "matchup-165ee.firebasestorage.app",
       messagingSenderId: "1038165665131",
-      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
+      appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     window._auth = auth;
+    window._db = db;
+    window._firestore = { doc, getDoc, collection, getDocs };
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -108,11 +111,7 @@
     .attendees { display: flex; flex-wrap: wrap; gap: 12px; }
     .attendee { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 60px; }
     .att-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #FF8A65); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .95rem; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
-    .att-avatar.b2 { background: linear-gradient(135deg, var(--blue), var(--blue-lt)); }
-    .att-avatar.b3 { background: linear-gradient(135deg, #7C3AED, #A78BFA); }
-    .att-avatar.b4 { background: linear-gradient(135deg, var(--green), #4ADE80); }
     .att-name { font-size: .72rem; font-weight: 700; color: var(--muted); text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .att-more { width: 48px; height: 48px; border-radius: 50%; background: var(--off); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 800; color: var(--muted); }
 
     /* SIDEBAR - JOIN CARD */
     .join-card { position: sticky; top: 92px; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); }
@@ -166,7 +165,7 @@
     <a href="create-event.html">➕ Create</a>
   </div>
   <div class="nav-right" id="navRight">
-    <!-- Populated by JS based on login state -->
+    <a class="nav-login" href="index.html">Log in</a>
   </div>
 </nav>
 
@@ -279,84 +278,92 @@
 <div class="toast" id="toast">✓ You're in! See you there.</div>
 
 <script>
-/* ── Get event from URL or localStorage ── */
-const params  = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.search);
 const eventId = params.get('id');
-const user    = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
 
-/* ── Build navigation based on login state ── */
+/* Build nav */
 const navRight = document.getElementById('navRight');
 if (user) {
   const initial = (user.fname?.[0] || 'P').toUpperCase();
-  navRight.innerHTML = `
-    <a class="nav-profile" href="profile.html">
-      <div class="nav-avatar">${initial}</div>
-      <span class="nav-profile-name">${user.fname || 'Player'}</span>
-    </a>`;
+  navRight.innerHTML = `<a class="nav-profile" href="profile.html"><div class="nav-avatar">${initial}</div><span class="nav-profile-name">${user.fname || 'Player'}</span></a>`;
 } else {
   navRight.innerHTML = `<a class="nav-login" href="index.html">Log in</a>`;
 }
 
-/* ── Sport → emoji + hero image mapping ── */
+/* Sport metadata */
 const sportMeta = {
-  football:   { emoji: '⚽', label: 'Football',   img: 'photo-1551698618-1dfe5d97d256' },
-  basketball: { emoji: '🏀', label: 'Basketball', img: 'photo-1546519638-68e109498ffc' },
-  tennis:     { emoji: '🎾', label: 'Tennis',     img: 'photo-1595435934249-5df7ed86e1c0' },
-  badminton:  { emoji: '🏸', label: 'Badminton',  img: 'photo-1521537634581-0dced2fee2ef' },
-  running:    { emoji: '🏃', label: 'Running',    img: 'photo-1461896836934-ffe607ba8211' },
-  swimming:   { emoji: '🏊', label: 'Swimming',   img: 'photo-1530549387789-4c1017266635' },
-  pingpong:   { emoji: '🏓', label: 'Ping-Pong',  img: 'photo-1611996575749-79a3a250f948' },
-  volleyball: { emoji: '🏐', label: 'Volleyball', img: 'photo-1609710228159-0fa9bd7c0827' },
-  yoga:       { emoji: '🧘', label: 'Yoga',       img: 'photo-1588286840104-8957b019727f' }
+  football:   { emoji: '⚽', img: 'photo-1551698618-1dfe5d97d256' },
+  basketball: { emoji: '🏀', img: 'photo-1546519638-68e109498ffc' },
+  tennis:     { emoji: '🎾', img: 'photo-1595435934249-5df7ed86e1c0' },
+  badminton:  { emoji: '🏸', img: 'photo-1521537634581-0dced2fee2ef' },
+  running:    { emoji: '🏃', img: 'photo-1461896836934-ffe607ba8211' },
+  swimming:   { emoji: '🏊', img: 'photo-1530549387789-4c1017266635' },
+  pingpong:   { emoji: '🏓', img: 'photo-1611996575749-79a3a250f948' },
+  volleyball: { emoji: '🏐', img: 'photo-1609710228159-0fa9bd7c0827' },
+  yoga:       { emoji: '🧘', img: 'photo-1588286840104-8957b019727f' }
 };
 
-/* ── Load event data (from localStorage first, else demo data) ── */
-let eventData;
-const savedEvents = JSON.parse(localStorage.getItem('mu_events') || '[]');
-const foundEvent  = savedEvents.find(e => e.id === eventId);
+/* Load event from Firestore */
+async function loadEvent() {
+  if (!eventId) {
+    alert('Event not found');
+    window.location.href = '/';
+    return;
+  }
 
-if (foundEvent) {
-  eventData = foundEvent;
-} else {
-  // Fallback demo event (in case user navigates directly without an ID)
-  eventData = {
-    id: 'demo',
-    sport: 'football',
-    title: '5v5 Pickup Football — Mont-Royal Park',
-    description: 'Join us for a friendly 5v5 pickup game at Mont-Royal. All levels welcome! We play every Saturday morning. Bring your own water and cleats if you have them. We have goals and jerseys provided. Games typically last 90 minutes. Great vibes, great people. Come meet the crew!',
-    date: '2026-04-25',
-    time: '10:00',
-    duration: 90,
-    recurrence: 'weekly',
-    venue: 'Mont-Royal Park — Soccer Field',
-    address: 'Av. du Parc, Montréal, QC H2W 1W2',
-    maxPlayers: 12,
-    minPlayers: 6,
-    level: 'all',
-    priceType: 'free',
-    price: 0,
-    organizer: 'Plein Air Montréal',
-    going: 8,
-    created: new Date().toISOString()
-  };
+  try {
+    const { doc, getDoc, collection, getDocs } = window._firestore;
+    const eventRef = doc(window._db, 'events', eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      alert('Event not found');
+      window.location.href = '/';
+      return;
+    }
+
+    const eventData = eventSnap.data();
+    eventData.id = eventId;
+
+    populatePage(eventData);
+
+    // Get attendee count
+    const attendeesRef = collection(window._db, 'events', eventId, 'attendees');
+    const attendeesSnap = await getDocs(attendeesRef);
+    document.getElementById('infoGoing').textContent = attendeesSnap.size;
+    document.getElementById('spotsLeft').textContent = eventData.maxPlayers - attendeesSnap.size;
+
+    // Check if user joined
+    if (user) {
+      const userAttendanceDoc = doc(window._db, 'events', eventId, 'attendees', user.email || 'anonymous');
+      const userAttendanceSnap = await getDoc(userAttendanceDoc);
+      if (userAttendanceSnap.exists()) {
+        document.getElementById('joinBtn').textContent = '✓ You\'re going!';
+        document.getElementById('joinBtn').classList.add('joined');
+        document.getElementById('joinBtn').disabled = true;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading event:', error);
+    alert('Error loading event');
+  }
 }
 
-/* ── Populate page ── */
-function populate() {
+function populatePage(eventData) {
   const meta = sportMeta[eventData.sport] || sportMeta.football;
   document.title = `${eventData.title} — MatchUp`;
   document.getElementById('heroImg').src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
-  document.getElementById('heroSport').textContent = `${meta.emoji} ${meta.label}`;
+  document.getElementById('heroSport').textContent = `${meta.emoji} ${eventData.sport.charAt(0).toUpperCase() + eventData.sport.slice(1)}`;
   document.getElementById('heroTitle').textContent = eventData.title;
 
-  // Format date
   const dateObj = new Date(eventData.date + 'T' + (eventData.time || '12:00'));
   const dateFmt = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const timeFmt = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
   document.getElementById('heroDate').textContent = dateFmt;
   document.getElementById('heroTime').textContent = timeFmt;
-  document.getElementById('heroVenue').textContent = eventData.venue;
+  document.getElementById('heroVenue').textContent = eventData.venue || eventData.location;
 
   document.getElementById('infoDate').textContent = dateFmt;
   document.getElementById('infoTime').textContent = timeFmt;
@@ -364,20 +371,19 @@ function populate() {
   const recurLabels = { once: 'One-time event', weekly: 'Repeats weekly', biweekly: 'Repeats biweekly', monthly: 'Repeats monthly' };
   document.getElementById('infoRecur').textContent = recurLabels[eventData.recurrence] || 'One-time event';
 
-  const d = eventData.duration || 90;
-  const durTxt = d >= 60 ? `${(d/60).toString().replace('.5', '½')} hour${d >= 120 ? 's' : ''}` : `${d} minutes`;
+  const dur = eventData.duration || 90;
+  const durTxt = dur >= 60 ? `${(dur/60).toFixed(1).replace('.5', '½')} hour${dur >= 120 ? 's' : ''}` : `${dur} minutes`;
   document.getElementById('infoDuration').textContent = durTxt;
 
   const levelLabels = { all: 'All levels', beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
   document.getElementById('infoLevel').textContent = levelLabels[eventData.level] || 'All levels';
 
-  document.getElementById('infoGoing').textContent = eventData.going || 1;
   document.getElementById('infoMax').textContent = eventData.maxPlayers;
   document.getElementById('infoMin').textContent = `Min ${eventData.minPlayers} to run`;
 
   document.getElementById('description').textContent = eventData.description || 'No description provided.';
 
-  document.getElementById('addressLine').textContent = eventData.address || eventData.venue;
+  document.getElementById('addressLine').textContent = eventData.address || eventData.venue || eventData.location;
 
   // Pricing
   const priceEl = document.getElementById('joinPrice');
@@ -394,120 +400,105 @@ function populate() {
 
   // Spots
   const going = eventData.going || 1;
-  const max   = eventData.maxPlayers;
-  const pct   = Math.min(100, (going / max) * 100);
+  const max = eventData.maxPlayers;
+  const pct = Math.min(100, (going / max) * 100);
   document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('spotsLeft').textContent = max - going;
   document.getElementById('spotsTotal').textContent = max;
-
-  // Join button state
-  const joinBtn = document.getElementById('joinBtn');
-  const joinedEvents = JSON.parse(localStorage.getItem('mu_joined') || '[]');
-  if (joinedEvents.includes(eventData.id)) {
-    joinBtn.textContent = '✓ You\'re going!';
-    joinBtn.classList.add('joined');
-  } else if (going >= max) {
-    joinBtn.textContent = '❌ Event is full';
-    joinBtn.classList.add('full');
-    joinBtn.disabled = true;
-  }
 
   // Organizer
   const orgName = eventData.organizer || 'MatchUp Organizer';
   document.getElementById('orgName').textContent = orgName;
   document.getElementById('orgAvatar').textContent = orgName[0].toUpperCase();
 
-  // Attendees (demo avatars based on count)
+  // Attendees (demo - in real app, pull from attendees subcollection)
   const attendees = document.getElementById('attendees');
-  const names = ['Thomas', 'Camille', 'Marcus', 'Sarah', 'Alex', 'Jean', 'Maya', 'Leo'];
-  const bg = ['', 'b2', 'b3', 'b4'];
-  const shown = Math.min(going, 7);
+  const names = ['Thomas', 'Camille', 'Marcus', 'Sarah', 'Alex'];
+  const shown = Math.min(5, Math.max(1, going - 1));
   let html = '';
   for (let i = 0; i < shown; i++) {
     const name = names[i % names.length];
-    html += `<div class="attendee"><div class="att-avatar ${bg[i % 4]}">${name[0]}</div><div class="att-name">${name}</div></div>`;
+    html += `<div class="attendee"><div class="att-avatar">${name[0]}</div><div class="att-name">${name}</div></div>`;
   }
-  if (going > shown) {
-    html += `<div class="attendee"><div class="att-more">+${going - shown}</div><div class="att-name">more</div></div>`;
+  if (going > shown + 1) {
+    html += `<div class="attendee"><div class="att-avatar">+</div><div class="att-name">${going - shown - 1} more</div></div>`;
   }
-  attendees.innerHTML = html;
+  attendees.innerHTML = html || '<p style="color:var(--muted);">Be the first to join!</p>';
+
+  // Map
+  const venueCoords = {
+    'mont-royal':   [45.5048, -73.5872],
+    'lafontaine':   [45.5270, -73.5691],
+    'jarry':        [45.5431, -73.6247],
+    'jean-drapeau': [45.5129, -73.5337],
+    'lachine':      [45.4380, -73.6750],
+    'rosemont':     [45.5586, -73.5700]
+  };
+
+  let coords = [45.5048, -73.5872];
+  const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
+  for (const key in venueCoords) {
+    if (venueLower.includes(key)) { coords = venueCoords[key]; break; }
+  }
+
+  const map = L.map('map', { scrollWheelZoom: false }).setView(coords, 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  const orangeIcon = L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="background:#FF5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${meta.emoji}</span></div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34]
+  });
+  L.marker(coords, { icon: orangeIcon }).addTo(map)
+    .bindPopup(`<strong>${eventData.venue || eventData.location}</strong><br>${eventData.address || ''}`);
 }
 
-populate();
-
-/* ── Initialize map (Leaflet + OpenStreetMap, no API key) ── */
-// Default Montréal coords, adjusted by venue keyword for demo
-const venueCoords = {
-  'mont-royal':   [45.5048, -73.5872],
-  'lafontaine':   [45.5270, -73.5691],
-  'jarry':        [45.5431, -73.6247],
-  'jean-drapeau': [45.5129, -73.5337],
-  'lachine':      [45.4380, -73.6750],
-  'rosemont':     [45.5586, -73.5700]
-};
-
-let coords = [45.5048, -73.5872]; // Default Montréal
-const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
-for (const key in venueCoords) {
-  if (venueLower.includes(key)) { coords = venueCoords[key]; break; }
-}
-
-const map = L.map('map', { scrollWheelZoom: false }).setView(coords, 15);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
-}).addTo(map);
-
-// Custom orange marker
-const orangeIcon = L.divIcon({
-  className: 'custom-marker',
-  html: `<div style="background:#FF5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${sportMeta[eventData.sport]?.emoji || '📍'}</span></div>`,
-  iconSize: [34, 34],
-  iconAnchor: [17, 34]
-});
-L.marker(coords, { icon: orangeIcon }).addTo(map)
-  .bindPopup(`<strong>${eventData.venue}</strong><br>${eventData.address || ''}`);
-
-/* ── Actions ── */
-function joinEvent() {
+async function joinEvent() {
   if (!user) {
     alert('Please log in first to join this event!');
     window.location.href = 'index.html';
     return;
   }
+
   const btn = document.getElementById('joinBtn');
   if (btn.classList.contains('joined')) return;
 
-  const joinedEvents = JSON.parse(localStorage.getItem('mu_joined') || '[]');
-  joinedEvents.push(eventData.id);
-  localStorage.setItem('mu_joined', JSON.stringify(joinedEvents));
+  try {
+    const { collection, addDoc } = window._firestore;
+    await addDoc(collection(window._db, 'events', eventId, 'attendees'), {
+      userId: user.email || 'anonymous',
+      joinedAt: new Date()
+    });
 
-  // Update count
-  eventData.going = (eventData.going || 1) + 1;
-  const saved = JSON.parse(localStorage.getItem('mu_events') || '[]');
-  const idx = saved.findIndex(e => e.id === eventData.id);
-  if (idx >= 0) {
-    saved[idx] = eventData;
-    localStorage.setItem('mu_events', JSON.stringify(saved));
+    btn.textContent = '✓ You\'re going!';
+    btn.classList.add('joined');
+    btn.disabled = true;
+
+    // Update count
+    const count = parseInt(document.getElementById('infoGoing').textContent) + 1;
+    document.getElementById('infoGoing').textContent = count;
+    document.getElementById('spotsLeft').textContent = parseInt(document.getElementById('infoMax').textContent) - count;
+    document.getElementById('progressBar').style.width = (count / parseInt(document.getElementById('infoMax').textContent)) * 100 + '%';
+
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  } catch (error) {
+    console.error('Error joining event:', error);
+    alert('Error joining event');
   }
-
-  btn.textContent = '✓ You\'re going!';
-  btn.classList.add('joined');
-  document.getElementById('infoGoing').textContent = eventData.going;
-  document.getElementById('spotsLeft').textContent = eventData.maxPlayers - eventData.going;
-  document.getElementById('progressBar').style.width = ((eventData.going / eventData.maxPlayers) * 100) + '%';
-
-  const toast = document.getElementById('toast');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
 function openInMaps() {
-  const q = encodeURIComponent(eventData.address || eventData.venue);
+  const addr = document.getElementById('addressLine').textContent;
+  const q = encodeURIComponent(addr);
   window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
 }
 
 function copyAddress() {
-  const addr = eventData.address || eventData.venue;
+  const addr = document.getElementById('addressLine').textContent;
   navigator.clipboard.writeText(addr).then(() => {
     const toast = document.getElementById('toast');
     toast.textContent = '📋 Address copied!';
@@ -522,7 +513,7 @@ function copyAddress() {
 function shareEvent() {
   const url = window.location.href;
   if (navigator.share) {
-    navigator.share({ title: eventData.title, url }).catch(() => {});
+    navigator.share({ title: document.getElementById('heroTitle').textContent, url }).catch(() => {});
   } else {
     navigator.clipboard.writeText(url).then(() => {
       const toast = document.getElementById('toast');
@@ -537,11 +528,6 @@ function shareEvent() {
 }
 
 function saveEvent() {
-  const saved = JSON.parse(localStorage.getItem('mu_saved') || '[]');
-  if (!saved.includes(eventData.id)) {
-    saved.push(eventData.id);
-    localStorage.setItem('mu_saved', JSON.stringify(saved));
-  }
   const toast = document.getElementById('toast');
   toast.textContent = '🔖 Saved to your list!';
   toast.classList.add('show');
@@ -554,6 +540,11 @@ function saveEvent() {
 function reportEvent() {
   alert('Thanks for flagging. Our team will review this event.');
 }
+
+// Load on page load
+window.addEventListener('load', () => {
+  loadEvent();
+});
 </script>
 </body>
 </html>
