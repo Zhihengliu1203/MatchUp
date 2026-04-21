@@ -11,23 +11,22 @@
        FIREBASE — your config + Google Provider
   ═══════════════════════════════ -->
   <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-             GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
+import { getFirestore, collection, getDocs, addDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain:        "matchup-165ee.firebaseapp.com",
-      projectId:         "matchup-165ee",
-      storageBucket:     "matchup-165ee.firebasestorage.app",
-      messagingSenderId: "1038165665131",
-      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+  authDomain: "matchup-165ee.firebaseapp.com",
+  projectId: "matchup-165ee",
+  storageBucket: "matchup-165ee.firebasestorage.app",
+  messagingSenderId: "G-L3Z7HLMHZW",
+  appId: "1:1038165665131:web:d38bcec6f394d7cf22582e",
+};
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);  
     const googleProvider = new GoogleAuthProvider();
 
     window._auth         = auth;
