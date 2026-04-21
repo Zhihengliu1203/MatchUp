@@ -1,8 +1,9 @@
 // js/geocoding.js
-// Nominatim (OpenStreetMap) geocoder — no API key needed.
-// Usage policy: max 1 request/sec, include a descriptive User-Agent via Referer.
+// OpenRouteService (Pelias) geocoder — free tier, no credit card.
+// Docs: https://openrouteservice.org/dev/#/api-docs/geocode
 
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjJkNWNiMzMwZTBjNTRlNWRiNTA5YzI2MmY3ZmI5MWM2IiwiaCI6Im11cm11cjY0In0=";
+const ORS_URL = "https://api.openrouteservice.org/geocode/search";
 
 // In-memory + localStorage cache so we don't re-geocode the same address
 const geocodeCache = JSON.parse(localStorage.getItem("geocodeCache") || "{}");
@@ -17,10 +18,14 @@ async function geocodeAddress(address) {
   }
 
   try {
-    const url = `${NOMINATIM_URL}?format=json&limit=1&addressdetails=1&q=${encodeURIComponent(address)}`;
-    const res = await fetch(url, {
-      headers: { "Accept": "application/json" }
-    });
+    const url =
+      `${ORS_URL}` +
+      `?api_key=${ORS_API_KEY}` +
+      `&text=${encodeURIComponent(address)}` +
+      `&size=1` +
+      `&boundary.country=CA`; // bias toward Canada; remove this line to search globally
+
+    const res = await fetch(url);
 
     if (!res.ok) {
       console.error("[geocode] HTTP error:", res.status);
@@ -28,23 +33,21 @@ async function geocodeAddress(address) {
     }
 
     const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!data.features || data.features.length === 0) {
       console.warn("[geocode] no results for:", address);
       return null;
     }
 
-    const hit = data[0];
+    const hit = data.features[0];
+    const [lng, lat] = hit.geometry.coordinates;
+    const props = hit.properties || {};
+
     const result = {
-      lat: parseFloat(parseFloat(hit.lat).toFixed(6)),
-      lng: parseFloat(parseFloat(hit.lon).toFixed(6)),
-      formatted: hit.display_name || address,
-      city:
-        hit.address?.city ||
-        hit.address?.town ||
-        hit.address?.village ||
-        hit.address?.municipality ||
-        "",
-      country: hit.address?.country || ""
+      lat: parseFloat(lat.toFixed(6)),
+      lng: parseFloat(lng.toFixed(6)),
+      formatted: props.label || address,
+      city: props.locality || props.county || props.region || "",
+      country: props.country || ""
     };
 
     geocodeCache[key] = result;
