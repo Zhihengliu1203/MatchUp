@@ -13,7 +13,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
-    import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
+    import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
@@ -36,7 +36,7 @@
     window._fbLogin = signInWithEmailAndPassword;
     window._fbGoogle = () => signInWithPopup(auth, googleProvider);
     window._fbSignOut = () => signOut(auth);
-    window._firestore = { collection, getDocs, query, where };
+    window._firestore = { collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp };
 
     // Listen for auth state changes
     onAuthStateChanged(auth, user => {
@@ -48,7 +48,33 @@
         }
         if (typeof updateNavForUser === 'function') updateNavForUser(name);
       }
-    });
+   });
+
+    // Helper: create or merge user doc in Firestore
+    window._saveUserDoc = async function(userData) {
+      try {
+        const uid = auth.currentUser?.uid;
+        if (!uid) { console.warn('[users] no authenticated user'); return null; }
+
+        const userRef = doc(db, 'users', uid);
+        const existing = await getDoc(userRef);
+
+        const payload = {
+          ...userData,
+          updatedAt: serverTimestamp()
+        };
+        if (!existing.exists()) {
+          payload.createdAt = serverTimestamp();
+        }
+
+        await setDoc(userRef, payload, { merge: true });
+        console.log('[users] saved user doc for uid:', uid);
+        return uid;
+      } catch (err) {
+        console.error('[users] failed to save user doc:', err);
+        return null;
+      }
+    };
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -857,9 +883,24 @@ document.getElementById('signupForm').addEventListener('submit', async function(
 
   btn.classList.remove('loading'); btn.disabled = false;
 
-  const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
+ const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
   const user = { fname, lname, email, sports, joined: new Date().toISOString() };
   localStorage.setItem('mu_current_user', JSON.stringify(user));
+
+  // Save to Firestore users/{uid}
+  if (window._saveUserDoc) {
+    await window._saveUserDoc({
+      fname,
+      lname,
+      email,
+      sports,
+      city: '',
+      phone: '',
+      bio: '',
+      level: '',
+      photoURL: ''
+    });
+  }
 
   document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
   document.getElementById('successMsg').textContent   = `Account created! Check your email to verify, then start finding your game.`;
@@ -899,6 +940,21 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const name   = stored.fname || cred.user.email.split('@')[0];
     localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email }));
 
+    // Ensure Firestore user doc exists (creates one on first login for pre-existing users)
+    if (window._saveUserDoc) {
+      await window._saveUserDoc({
+        fname: name,
+        lname: stored.lname || '',
+        email,
+        sports: stored.sports || [],
+        city: stored.city || '',
+        phone: stored.phone || '',
+        bio: stored.bio || '',
+        level: stored.level || '',
+        photoURL: stored.photo || ''
+      });
+    }
+
     document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
     document.getElementById('successMsg').textContent   = "You're logged in. Ready to find your next game!";
     document.getElementById('modalFormWrap').classList.add('hide');
@@ -924,6 +980,21 @@ async function googleSignIn() {
       fname: name, lname, email: user.email,
       photo: user.photoURL, joined: new Date().toISOString()
     }));
+
+    // Save to Firestore users/{uid}
+    if (window._saveUserDoc) {
+      await window._saveUserDoc({
+        fname: name,
+        lname,
+        email: user.email,
+        sports: [],
+        city: '',
+        phone: '',
+        bio: '',
+        level: '',
+        photoURL: user.photoURL || ''
+      });
+    }
 
     document.getElementById('successTitle').textContent = `Welcome, ${name}! 🎉`;
     document.getElementById('successMsg').textContent   = "You're signed in with Google. Let's find your next game!";
