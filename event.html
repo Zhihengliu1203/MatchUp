@@ -171,7 +171,7 @@
 
 <!-- HERO BANNER -->
 <div class="event-hero">
-  <img id="heroImg" src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=1400&h=600&fit=crop&auto=format" alt="" />
+  <img id="heroImg" src="" alt="" style="opacity:0;transition:opacity .3s;" />
   <div class="hero-inner">
     <span class="ev-sport-chip" id="heroSport">⚽ Football</span>
     <h1 class="ev-hero-title" id="heroTitle">Loading event…</h1>
@@ -353,7 +353,9 @@ async function loadEvent() {
 function populatePage(eventData) {
   const meta = sportMeta[eventData.sport] || sportMeta.football;
   document.title = `${eventData.title} — MatchUp`;
-  document.getElementById('heroImg').src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
+  const heroImg = document.getElementById('heroImg');
+heroImg.src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
+heroImg.onload = () => heroImg.style.opacity = '1';
   document.getElementById('heroSport').textContent = `${meta.emoji} ${eventData.sport.charAt(0).toUpperCase() + eventData.sport.slice(1)}`;
   document.getElementById('heroTitle').textContent = eventData.title;
 
