@@ -8,33 +8,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <!-- ═══════════════════════════════
-       FIREBASE — your config + Google Provider
+       FIREBASE — Firestore Integration
   ═══════════════════════════════ -->
   <script type="module">
-   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
-import { getFirestore, collection, getDocs, addDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
+    import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-  authDomain: "matchup-165ee.firebaseapp.com",
-  projectId: "matchup-165ee",
-  storageBucket: "matchup-165ee.firebasestorage.app",
-  messagingSenderId: "G-L3Z7HLMHZW",
-  appId: "1:1038165665131:web:d38bcec6f394d7cf22582e",
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+      authDomain: "matchup-165ee.firebaseapp.com",
+      projectId: "matchup-165ee",
+      storageBucket: "matchup-165ee.firebasestorage.app",
+      messagingSenderId: "1038165665131",
+      appId: "1:1038165665131:web:d38bcec6f394d7cf22582e",
+    };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);  
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     const googleProvider = new GoogleAuthProvider();
 
-    window._auth         = auth;
-    window._fbCreate     = createUserWithEmailAndPassword;
-    window._fbLogin      = signInWithEmailAndPassword;
-    window._fbGoogle     = () => signInWithPopup(auth, googleProvider);
-    window._fbSignOut    = () => signOut(auth);
+    // Export to window for global access
+    window._auth = auth;
+    window._db = db;
+    window._fbCreate = createUserWithEmailAndPassword;
+    window._fbLogin = signInWithEmailAndPassword;
+    window._fbGoogle = () => signInWithPopup(auth, googleProvider);
+    window._fbSignOut = () => signOut(auth);
+    window._firestore = { collection, getDocs, query, where };
 
+    // Listen for auth state changes
     onAuthStateChanged(auth, user => {
       if (user) {
         const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
@@ -153,10 +157,8 @@ const db = getFirestore(app);
     .event-card:hover .card-img img { transform: scale(1.07); }
     .card-price { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.93); backdrop-filter: blur(6px); border-radius: 100px; padding: 4px 12px; font-size: .8rem; font-weight: 800; color: var(--text); }
     .card-price.free { background: var(--orange); color: #fff; }
-    .card-waitlist { position: absolute; top: 42px; left: 12px; background: rgba(255,255,255,.93); backdrop-filter: blur(6px); border-radius: 100px; padding: 4px 12px; font-size: .74rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 4px; }
     .card-sport { position: absolute; top: 12px; right: 12px; background: var(--blue); color: #fff; border-radius: 100px; padding: 4px 11px; font-size: .72rem; font-weight: 800; }
     .card-body { padding: 16px 18px 18px; }
-    .card-rec { font-size: .74rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
     .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .96rem; line-height: 1.35; margin-bottom: 7px; }
     .card-meta { font-size: .79rem; color: var(--muted); margin-bottom: 14px; line-height: 1.55; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; }
@@ -269,8 +271,8 @@ const db = getFirestore(app);
       background: #fff; border-radius: 24px;
       width: 100%;
       max-width: 440px;
-      max-height: calc(100vh - 40px);    /* ← never taller than viewport */
-      overflow-y: auto;                   /* ← scroll inside modal if needed */
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
       padding: 32px 32px 28px;
       position: relative;
       transform: translateY(20px) scale(.97);
@@ -278,7 +280,6 @@ const db = getFirestore(app);
       box-shadow: 0 24px 80px rgba(0,0,0,.22);
     }
     .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-    /* Custom scrollbar */
     .modal::-webkit-scrollbar { width: 6px; }
     .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     .modal-close {
@@ -315,7 +316,7 @@ const db = getFirestore(app);
     .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .auth-divider span { font-size: .75rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
 
-    /* Form fields — TIGHTENED */
+    /* Form fields */
     .form-group { margin-bottom: 12px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .form-group label { display: block; font-size: .78rem; font-weight: 800; color: var(--text); margin-bottom: 5px; }
@@ -410,11 +411,6 @@ const db = getFirestore(app);
         <button class="btn-social" onclick="googleSignIn()">
           <svg class="si" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           Continue with Google
-        </button>
-        <button class="btn-social disabled" onclick="showAlert('Apple sign-in is coming soon! Use Google or email for now.', 'success')">
-          <svg class="si" viewBox="0 0 24 24"><path fill="#000" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-          Continue with Apple
-          <span class="soon-tag">Soon</span>
         </button>
       </div>
       <div class="auth-divider"><span>or with email</span></div>
@@ -575,220 +571,7 @@ const db = getFirestore(app);
   </div>
 
   <div class="events-grid" id="eventsGrid">
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="football">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1434648957308-5e6a859697e8?w=600&h=400&fit=crop&auto=format" alt="Football" loading="lazy" />
-        <span class="card-price free">FREE</span>
-        <span class="card-sport">⚽ Football</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Saturday</div>
-        <div class="card-title">5v5 Pickup Football — Mont-Royal Park</div>
-        <div class="card-meta">Apr 19 · 10:00 AM EDT<br>by Plein Air Montréal · Mont-Royal</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.8</div>
-          </div>
-          <span class="card-going">22 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="badminton">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format" alt="Badminton" loading="lazy" />
-        <span class="card-price">CA$13.00</span>
-        <span class="card-waitlist">📋 Waitlist</span>
-        <span class="card-sport">🏸 Badminton</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Saturday</div>
-        <div class="card-title">Badminton Doubles #Downtown — All levels welcome!</div>
-        <div class="card-meta">Apr 19 · 3:00 PM EDT<br>by Downtown Badminton MTL</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.9</div>
-          </div>
-          <span class="card-going">31 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="pingpong">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=600&h=400&fit=crop&auto=format" alt="Ping Pong" loading="lazy" />
-        <span class="card-price">CA$10.00</span>
-        <span class="card-sport">🏓 Ping-Pong</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Sunday</div>
-        <div class="card-title">🏓 Ping-Pong Fun — Tous niveaux bienvenus!</div>
-        <div class="card-meta">Apr 20 · 1:30 PM EDT<br>by Volley Urbain · Plateau</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.7</div>
-          </div>
-          <span class="card-going">9 going</span>
-        </div>
-      </div>
-    </a>
-
-    <div class="inline-banner" id="inlineBanner">
-      <div>
-        <h3>🏆 Create your own event</h3>
-        <p>Organize a pickup game, a league, or a one-off session. Open it to your community.</p>
-      </div>
-      <button class="btn-white" onclick="window.location.href='create-event.html'">Start for free →</button>
-    </div>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="basketball">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
-        <span class="card-price free">FREE</span>
-        <span class="card-sport">🏀 Basketball</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Weekly · Thursdays</div>
-        <div class="card-title">3v3 Basketball Open Run — Parc Jarry</div>
-        <div class="card-meta">Apr 24 · 6:30 PM EDT<br>by MTL Ballers Collective</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.6</div>
-          </div>
-          <span class="card-going">18 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="running">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
-        <span class="card-price free">FREE</span>
-        <span class="card-sport">🏃 Running</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Sunday Morning</div>
-        <div class="card-title">Group Run — Lachine Canal 10K (Beginner-friendly!)</div>
-        <div class="card-meta">Apr 20 · 8:00 AM EDT<br>by Run MTL Community</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.9</div>
-          </div>
-          <span class="card-going">44 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="tennis">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&h=400&fit=crop&auto=format" alt="Tennis" loading="lazy" />
-        <span class="card-price">CA$8.00</span>
-        <span class="card-sport">🎾 Tennis</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Biweekly · Saturdays</div>
-        <div class="card-title">Tennis Mixte — Parc Lafontaine · Intermediate</div>
-        <div class="card-meta">Apr 26 · 9:00 AM EDT<br>by Tennis Montréal</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.8</div>
-          </div>
-          <span class="card-going">12 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="volleyball">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1519602035691-16ac091344ef?w=600&h=400&fit=crop&auto=format" alt="Volleyball" loading="lazy" />
-        <span class="card-price">CA$12.00</span>
-        <span class="card-sport">🏐 Volleyball</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Friday Evening</div>
-        <div class="card-title">Beach Volleyball — Parc Jean-Drapeau</div>
-        <div class="card-meta">Apr 25 · 7:00 PM EDT<br>by Volley Urbain MTL</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.7</div>
-          </div>
-          <span class="card-going">16 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="swimming">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=600&h=400&fit=crop&auto=format" alt="Swimming" loading="lazy" />
-        <span class="card-price free">FREE</span>
-        <span class="card-sport">🏊 Swimming</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Weekly · Tuesdays</div>
-        <div class="card-title">Masters Swimming Club — All levels, Piscine Rosemont</div>
-        <div class="card-meta">Apr 22 · 6:00 AM EDT<br>by Swim MTL</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.5</div>
-          </div>
-          <span class="card-going">11 going</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="event-card reveal" href="#" onclick="openModal();return false;" data-sport="yoga">
-      <div class="card-img">
-        <img src="https://images.unsplash.com/photo-1588286840104-8957b019727f?w=600&h=400&fit=crop&auto=format" alt="Yoga" loading="lazy" />
-        <span class="card-price free">FREE</span>
-        <span class="card-sport">🧘 Yoga</span>
-      </div>
-      <div class="card-body">
-        <div class="card-rec">Every Sunday Morning</div>
-        <div class="card-title">Outdoor Yoga — Parc du Mont-Royal (All levels)</div>
-        <div class="card-meta">Apr 20 · 9:00 AM EDT<br>by Yoga MTL Community</div>
-        <div class="card-footer">
-          <div>
-            <div class="card-avs">
-              <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
-            </div>
-            <div class="card-rating"><span class="s">★</span> 4.9</div>
-          </div>
-          <span class="card-going">38 going</span>
-        </div>
-      </div>
-    </a>
-
-    <div class="no-results" id="noResults">
-      <span class="icon">🔍</span>
-      No events for this sport yet — <a href="#" onclick="openModal();return false;" style="color:var(--orange);font-weight:800;">be the first to create one!</a>
-    </div>
+    <!-- Firestore events loaded here by JavaScript -->
   </div>
 </div>
 
@@ -976,7 +759,6 @@ const db = getFirestore(app);
 <script>
 /* ── MODAL ── */
 function openModal() {
-  // If user is logged in, skip the signup modal and go straight to a demo event page
   const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
   if (user && user.fname) {
     window.location.href = 'event.html';
@@ -1013,7 +795,6 @@ function showAlert(msg, type) {
   const el = document.getElementById('authAlert');
   el.textContent = msg;
   el.className = 'auth-alert ' + type + ' show';
-  // Scroll modal to top so user sees the alert
   document.querySelector('.modal').scrollTop = 0;
 }
 function clearAlert() {
@@ -1152,20 +933,13 @@ async function googleSignIn() {
     setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
   } catch (err) {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-      return; // User closed popup on purpose
+      return;
     }
-    if (err.code === 'auth/operation-not-allowed') {
-      showAlert('Google sign-in is not yet enabled in Firebase. See SETUP.md step 2.', 'error');
-    } else if (err.code === 'auth/unauthorized-domain') {
-      showAlert('This domain is not authorized. Add it in Firebase → Auth → Settings → Authorized domains.', 'error');
-    } else {
-      showAlert('Google sign-in failed: ' + err.message, 'error');
-    }
+    showAlert('Google sign-in failed: ' + err.message, 'error');
   }
 }
 
 /* ── NAV UPDATE ── */
-
 function updateNavForUser(fname) {
   const links = document.querySelector('.nav-links');
   if (links) {
@@ -1189,10 +963,115 @@ window.addEventListener('load', () => {
   const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
   if (user && user.fname) {
     updateNavForUser(user.fname);
-    // Uncomment the next line if you want auto-redirect to dashboard:
-    // window.location.href = 'dashboard.html';
   }
 });
+
+/* ── LOAD EVENTS FROM FIRESTORE ── */
+async function loadEventsFromFirestore() {
+  try {
+    const { collection, getDocs, query, where } = window._firestore;
+    const eventsRef = collection(window._db, 'events');
+    const q = query(eventsRef, where('status', '==', 'active'));
+    const querySnapshot = await getDocs(q);
+
+    const events = [];
+    querySnapshot.forEach(doc => {
+      events.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    // Sort by date
+    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    renderEventCards(events);
+  } catch (error) {
+    console.error('Error loading events from Firestore:', error);
+    // Fall back to empty grid
+    document.getElementById('eventsGrid').innerHTML = '<div class="no-results" style="display:block;"><span class="icon">📭</span>No events found. <a href="create-event.html">Create one!</a></div>';
+  }
+}
+
+// Sport emoji mapping
+const sportEmoji = {
+  football: '⚽',
+  basketball: '🏀',
+  tennis: '🎾',
+  badminton: '🏸',
+  running: '🏃',
+  swimming: '🏊',
+  pingpong: '🏓',
+  volleyball: '🏐',
+  yoga: '🧘'
+};
+
+// Sport image mapping
+const sportImages = {
+  football: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format',
+  basketball: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format',
+  tennis: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format',
+  badminton: 'https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format',
+  running: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format',
+  swimming: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=600&h=400&fit=crop&auto=format',
+  pingpong: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format',
+  volleyball: 'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=600&h=400&fit=crop&auto=format',
+  yoga: 'https://images.unsplash.com/photo-1588286840104-8957b019727f?w=600&h=400&fit=crop&auto=format'
+};
+
+function renderEventCards(events) {
+  const container = document.getElementById('eventsGrid');
+  container.innerHTML = '';
+
+  if (events.length === 0) {
+    container.innerHTML = '<div class="no-results" style="display:block;"><span class="icon">📭</span>No events found. <a href="create-event.html">Create one!</a></div>';
+    return;
+  }
+
+  events.forEach(event => {
+    const emoji = sportEmoji[event.sport] || '🎯';
+    const imgSrc = sportImages[event.sport] || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format';
+    const going = event.going || 1;
+    const capacity = event.maxPlayers || 10;
+
+    const card = document.createElement('a');
+    card.href = `event.html?id=${event.id}`;
+    card.className = 'event-card reveal';
+    card.dataset.sport = event.sport;
+    card.innerHTML = `
+      <div class="card-img">
+        <img src="${imgSrc}" alt="${event.title}" loading="lazy" />
+        <span class="card-price ${event.price === 0 ? 'free' : ''}">${event.price === 0 ? 'FREE' : 'CA$' + event.price.toFixed(2)}</span>
+        <span class="card-sport">${emoji} ${event.sport.charAt(0).toUpperCase() + event.sport.slice(1)}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${event.title}</div>
+        <div class="card-meta">${event.date} · ${event.time}<br>${event.location || event.venue}</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-avs">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face&auto=format" alt="" />
+            </div>
+          </div>
+          <span class="card-going">${going} going</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // Add inline banner
+  const banner = document.createElement('div');
+  banner.className = 'inline-banner';
+  banner.innerHTML = `
+    <div>
+      <h3>🏆 Create your own event</h3>
+      <p>Organize a pickup game, a league, or a one-off session. Open it to your community.</p>
+    </div>
+    <button class="btn-white" onclick="window.location.href='create-event.html'">Start for free →</button>
+  `;
+  container.appendChild(banner);
+}
 
 /* ── SPORT FILTER ── */
 document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -1204,11 +1083,10 @@ document.querySelectorAll('.cat-btn').forEach(btn => {
 });
 
 function filterSport(sport) {
-  const cards  = document.querySelectorAll('.event-card[data-sport]');
-  const banner = document.getElementById('inlineBanner');
-  const noRes  = document.getElementById('noResults');
-  const title  = document.getElementById('sectionTitle');
-  let visible  = 0;
+  const cards = document.querySelectorAll('.event-card[data-sport]');
+  const noRes = document.getElementById('noResults');
+  const title = document.getElementById('sectionTitle');
+  let visible = 0;
 
   cards.forEach(card => {
     if (sport === 'all' || card.dataset.sport === sport) {
@@ -1220,8 +1098,7 @@ function filterSport(sport) {
 
   const names = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
   title.innerHTML = `<span style="color:var(--orange)">${names[sport] || sport}</span> Events near Montréal, QC`;
-  noRes.style.display  = visible === 0 ? 'block' : 'none';
-  banner.style.display = sport === 'all' ? '' : 'none';
+  noRes.style.display = visible === 0 ? 'block' : 'none';
 }
 
 function resetFilters() {
@@ -1240,6 +1117,11 @@ const revealObs = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.08 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ── LOAD EVENTS ON PAGE LOAD ── */
+window.addEventListener('load', () => {
+  loadEventsFromFirestore();
+});
 </script>
 </body>
 </html>
