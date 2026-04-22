@@ -308,6 +308,13 @@
     </div>
 
   </form>
+  <div class="card" style="background:#fff; border:1px solid #E5E7EB; border-radius:18px; padding:24px 28px; margin-top:20px;">
+  <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.15rem; margin-bottom:6px;">🚫 Blocked users</h2>
+  <p style="font-size:.86rem; color:#6B7280; margin-bottom:16px;">Organizers you've blocked. You won't see their events.</p>
+  <div id="blockedList" style="display:flex; flex-direction:column; gap:8px;">
+    <div style="color:#6B7280; font-size:.85rem;">Loading…</div>
+  </div>
+</div>
 </div>
 
 <div class="toast" id="toast">✓ Profile saved successfully!</div>
@@ -496,6 +503,71 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     document.getElementById('toast').classList.remove('show');
   }, 2500);
 });
+  /* Load blocked users list */
+(async function loadBlocked() {
+  let tries = 0;
+  while ((!window._auth || !window._db || !window._firestore) && tries < 40) {
+    await new Promise(r => setTimeout(r, 50));
+    tries++;
+  }
+  if (!window._auth) return;
+
+  let au = window._auth.currentUser;
+  if (!au) {
+    au = await new Promise(resolve => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 3000);
+      const unsub = window._auth.onAuthStateChanged(u => {
+        if (!done) { done = true; clearTimeout(t); unsub(); resolve(u); }
+      });
+    });
+  }
+  if (!au) return;
+
+  try {
+    // Import extra Firestore functions we need
+    const { collection, query, where, getDocs, deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q = query(collection(window._db, 'blocks'), where('blocker_id', '==', au.uid));
+    const snap = await getDocs(q);
+
+    const listEl = document.getElementById('blockedList');
+    if (snap.empty) {
+      listEl.innerHTML = '<div style="color:#6B7280; font-size:.85rem; font-style:italic;">No blocked users.</div>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#F8F9FA; border-radius:10px;';
+      row.innerHTML = `
+        <div>
+          <div style="font-weight:800; font-size:.9rem;">${d.blocked_organizer || '(unknown)'}</div>
+          <div style="font-size:.76rem; color:#6B7280;">${d.blocked_organizer_email || ''}</div>
+        </div>
+        <button class="unblock-btn" data-id="${docSnap.id}" style="padding:6px 14px; background:#fff; border:1px solid #E5E7EB; color:#1A1A2E; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.76rem;">Unblock</button>
+      `;
+      listEl.appendChild(row);
+    });
+
+    listEl.querySelectorAll('.unblock-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if (!confirm('Unblock this user?')) return;
+        try {
+          await deleteDoc(doc(window._db, 'blocks', id));
+          btn.closest('div').parentElement.remove();
+        } catch (err) {
+          alert('Failed to unblock: ' + err.message);
+        }
+      });
+    });
+  } catch (err) {
+    console.error('[profile] load blocked failed:', err);
+    document.getElementById('blockedList').innerHTML = '<div style="color:#e53e3e; font-size:.85rem;">Failed to load.</div>';
+  }
+})();
 </script>
 </body>
 </html>
