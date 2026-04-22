@@ -16,7 +16,7 @@
   ═══════════════════════════════ -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
-   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
+   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
     import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -44,8 +44,8 @@
       handleCodeInApp: false
     });
     window._fbSignOut = () => signOut(auth);
+    window._fbResetPassword = (email) => sendPasswordResetEmail(auth, email);
     window._firestore = { collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp };
-
     // Listen for auth state changes
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -951,8 +951,34 @@ function clearAlert() {
   el.textContent = '';
 }
 
-function forgotPassword() {
-  showAlert('Password reset is coming soon! Contact us at hello@matchup.app for now.', 'success');
+async function forgotPassword() {
+  // Try to pre-fill email from login form
+  let email = document.getElementById('li-email')?.value.trim() || '';
+  if (!email) {
+    email = prompt('Enter the email address for your account:');
+    if (!email) return;
+    email = email.trim();
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showAlert('Please enter a valid email address.', 'error');
+    return;
+  }
+
+  try {
+    showAlert('Sending reset link…', 'success');
+    await window._fbResetPassword(email);
+    showAlert(`✅ Check your inbox! We sent a password reset link to ${email}.`, 'success');
+  } catch (err) {
+    console.error('[reset] failed:', err);
+    const code = err.code || '';
+    let msg = err.message || 'Something went wrong. Try again.';
+    if (code === 'auth/user-not-found') msg = 'No account found with that email.';
+    else if (code === 'auth/invalid-email') msg = 'That email address looks invalid.';
+    else if (code === 'auth/too-many-requests') msg = 'Too many attempts. Please wait a few minutes and try again.';
+    showAlert('❌ ' + msg, 'error');
+  }
 }
 
 /* Sport option toggles */
