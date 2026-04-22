@@ -12,7 +12,7 @@
   ═══════════════════════════════ -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
+   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
     import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -34,7 +34,10 @@
     window._db = db;
     window._fbCreate = createUserWithEmailAndPassword;
     window._fbLogin = signInWithEmailAndPassword;
-    window._fbGoogle = () => signInWithPopup(auth, googleProvider);
+    window._fbSendVerification = (user) => sendEmailVerification(user, {
+      url: window.location.origin + window.location.pathname.replace(/index\.html$/, 'dashboard.html').replace(/\/$/, '/dashboard.html'),
+      handleCodeInApp: false
+    });
     window._fbSignOut = () => signOut(auth);
     window._firestore = { collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp };
 
@@ -476,6 +479,16 @@
             <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
           </div>
         </div>
+        <div style="display:flex; gap:10px; align-items:flex-start; margin:16px 0; padding:12px 14px; background:#FFF3EF; border-radius:12px; font-size:.82rem;">
+  <input type="checkbox" id="su-waiver" style="margin-top:3px; cursor:pointer; accent-color:#FF5722;" />
+  <label for="su-waiver" style="cursor:pointer; line-height:1.45; color:#1A1A2E;">
+    I agree to MatchUp's <a href="terms.html" target="_blank" style="color:#FF5722; font-weight:800;">Terms of Service</a>
+    and <a href="privacy.html" target="_blank" style="color:#FF5722; font-weight:800;">Privacy Policy</a>.
+    I understand that sports activities carry risks of injury, and I participate at my own risk.
+    MatchUp is not responsible for injuries, losses, or damages from events.
+  </label>
+</div>
+<div id="err-waiver" style="display:none; font-size:.75rem; color:#e53e3e; font-weight:700; margin-top:-10px; margin-bottom:10px;">Please accept the terms to continue.</div>
         <button type="submit" class="form-submit" id="signupBtn">
           <span class="btn-label">Join MatchUp — It's Free 🚀</span>
           <span class="spinner"></span>
@@ -865,6 +878,16 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   if (password.length < 8) {
     passEl.classList.add('error'); passErr.classList.add('show'); valid = false;
   } else { passEl.classList.remove('error'); passErr.classList.remove('show'); }
+
+  const waiverEl = document.getElementById('su-waiver');
+  const waiverErr = document.getElementById('err-waiver');
+  if (!waiverEl || !waiverEl.checked) {
+    if (waiverErr) waiverErr.style.display = 'block';
+    valid = false;
+  } else {
+    if (waiverErr) waiverErr.style.display = 'none';
+  }
+
   if (!valid) return;
 
   const btn = document.getElementById('signupBtn');
@@ -888,6 +911,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   localStorage.setItem('mu_current_user', JSON.stringify(user));
 
   // Save to Firestore users/{uid}
+  // Save to Firestore users/{uid} + record waiver acceptance
   if (window._saveUserDoc) {
     await window._saveUserDoc({
       fname,
@@ -898,8 +922,20 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       phone: '',
       bio: '',
       level: '',
-      photoURL: ''
+      photoURL: '',
+      waiverAccepted: true,
+      waiverAcceptedAt: new Date().toISOString()
     });
+  }
+
+  // Send verification email
+  try {
+    if (window._fbSendVerification && window._auth.currentUser) {
+      await window._fbSendVerification(window._auth.currentUser);
+      console.log('[signup] verification email sent');
+    }
+  } catch (err) {
+    console.warn('[signup] could not send verification:', err);
   }
 
   document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
@@ -907,7 +943,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   document.getElementById('modalFormWrap').classList.add('hide');
   document.getElementById('modalSuccess').classList.add('show');
   updateNavForUser(fname);
-  setTimeout(() => { window.location.href = 'dashboard.html'; }, 2500);
+  setTimeout(() => { window.location.href = 'verify-email.html'; }, 2500);
 });
 
 /* ── LOGIN ── */
@@ -1194,5 +1230,13 @@ window.addEventListener('load', () => {
   loadEventsFromFirestore();
 });
 </script>
+  <footer style="background:#fff; border-top:1px solid #E5E7EB; padding:24px 40px; text-align:center; font-size:.82rem; color:#6B7280; font-weight:700;">
+  <div style="max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:center;">
+    <span>© 2026 MatchUp</span>
+    <a href="terms.html" style="color:#6B7280; text-decoration:none;">Terms</a>
+    <a href="privacy.html" style="color:#6B7280; text-decoration:none;">Privacy</a>
+    <a href="mailto:support@matchup.app" style="color:#6B7280; text-decoration:none;">Contact</a>
+  </div>
+</footer>
 </body>
 </html>
