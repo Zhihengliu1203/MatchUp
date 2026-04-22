@@ -494,8 +494,18 @@ async function loadDashboard() {
     }
   } catch (err) {
     console.error('[dashboard] error loading data:', err);
-    document.getElementById('eventList').innerHTML =
-      `<div style="text-align:center;padding:30px;color:#e53e3e;font-weight:700;font-size:.85rem;">Could not load your events. ${err.message || ''}</div>`;
+    const online = navigator.onLine;
+    const msg = online
+      ? 'Something went wrong loading your events. Please try again.'
+      : 'You appear to be offline. Please check your connection.';
+    document.getElementById('eventList').innerHTML = `
+      <div style="text-align:center; padding:40px 20px; background:#fff; border:1px solid var(--border); border-radius:16px;">
+        <div style="font-size:2.2rem; margin-bottom:10px;">⚠️</div>
+        <div style="font-weight:800; font-size:.95rem; margin-bottom:6px;">Couldn't load your events</div>
+        <div style="font-size:.82rem; color:var(--muted); margin-bottom:14px;">${msg}</div>
+        <button onclick="location.reload()" style="padding:9px 20px; background:var(--orange); color:#fff; border:none; border-radius:100px; cursor:pointer; font-weight:800; font-size:.82rem;">🔄 Try again</button>
+      </div>
+    `;
   }
 }
 
