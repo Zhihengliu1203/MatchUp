@@ -34,6 +34,7 @@
     window._db = db;
     window._fbCreate = createUserWithEmailAndPassword;
     window._fbLogin = signInWithEmailAndPassword;
+    window._fbGoogle = () => signInWithPopup(auth, googleProvider);
     window._fbSendVerification = (user) => sendEmailVerification(user, {
       url: window.location.origin + window.location.pathname.replace(/index\.html$/, 'dashboard.html').replace(/\/$/, '/dashboard.html'),
       handleCodeInApp: false
@@ -1225,8 +1226,34 @@ const revealObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.08 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-/* ── LOAD EVENTS ON PAGE LOAD ── */
-window.addEventListener('load', () => {
+/* ── LOAD EVENTS ON PAGE LOAD (only if logged in) ── */
+window.addEventListener('load', async () => {
+  // Wait for Firebase module to initialize
+  let tries = 0;
+  while (!window._auth && tries < 40) {
+    await new Promise(r => setTimeout(r, 50));
+    tries++;
+  }
+  if (!window._auth) return;
+
+  // Wait briefly for auth state to settle
+  const au = window._auth.currentUser || await new Promise(resolve => {
+    let done = false;
+    const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 2000);
+    const unsub = window._auth.onAuthStateChanged(u => {
+      if (!done) { done = true; clearTimeout(t); unsub(); resolve(u); }
+    });
+  });
+
+  if (!au) {
+    // Not logged in — show a friendly empty state instead of crashing
+    const grid = document.getElementById('eventsGrid');
+    if (grid) {
+      grid.innerHTML = '<div class="no-results" style="display:block;"><span class="icon">👋</span>Log in to browse events and find games near you.</div>';
+    }
+    return;
+  }
+
   loadEventsFromFirestore();
 });
 </script>
