@@ -14,7 +14,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
@@ -29,7 +29,7 @@
     const db = getFirestore(app);
     window._auth = auth;
     window._db = db;
-    window._firestore = { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc };
+    window._firestore = { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc, serverTimestamp };
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -224,6 +224,10 @@
         <h2>📍 Location</h2>
         <p style="margin-bottom:14px;font-size:.92rem;color:var(--muted);" id="addressLine">Loading address…</p>
         <div id="map"></div>
+        <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+  <button id="reportBtn" onclick="reportOrganizer()" style="padding:8px 14px; background:#FEF3C7; color:#92400E; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">🚩 Report</button>
+  <button id="blockBtn" onclick="blockOrganizer()" style="padding:8px 14px; background:#FEE2E2; color:#991B1B; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">🚫 Block organizer</button>
+</div>
         <div class="map-actions">
           <button class="map-action" onclick="openInMaps()">🗺️ Open in Maps</button>
           <button class="map-action" onclick="copyAddress()">📋 Copy address</button>
@@ -325,6 +329,7 @@ async function loadEvent() {
 
     const eventData = eventSnap.data();
     eventData.id = eventId;
+    window._currentEventData = eventData;  // make accessible to report/block
 
     populatePage(eventData);
 
@@ -467,12 +472,26 @@ heroImg.onload = () => heroImg.style.opacity = '1';
 }
 
 async function joinEvent() {
-  // Use the REAL Firebase Auth user, not the old localStorage one
   const authUser = window._auth.currentUser;
   if (!authUser) {
     alert('Please log in first to join this event!');
     window.location.href = 'index.html';
     return;
+  }
+
+  // Soft-warn unverified users joining events
+  await authUser.reload();
+  if (!authUser.emailVerified) {
+    const proceed = confirm(
+      "⚠️ Your email isn't verified yet.\n\n" +
+      "Unverified users can still join events, but organizers may not trust you as much. " +
+      "We recommend verifying your email first.\n\n" +
+      "Join anyway?"
+    );
+    if (!proceed) {
+      window.location.href = 'verify-email.html';
+      return;
+    }
   }
 
   const btn = document.getElementById('joinBtn');
@@ -551,7 +570,59 @@ async function joinEvent() {
     btn.disabled = false;
   }
 }
+async function reportOrganizer() {
+  const authUser = window._auth?.currentUser;
+  if (!authUser) { alert('Please log in first.'); return; }
 
+  const reason = prompt(
+    "Why are you reporting this event or organizer?\n\n" +
+    "Examples: spam, misleading info, inappropriate content, safety concern…"
+  );
+  if (!reason || !reason.trim()) return;
+
+  try {
+    const { collection, addDoc, serverTimestamp } = window._firestore;
+    await addDoc(collection(window._db, 'reports'), {
+      event_id: eventId,
+      reported_organizer: window._currentEventData?.organizer || 'unknown',
+      reported_organizer_email: window._currentEventData?.organizerEmail || '',
+      reporter_id: authUser.uid,
+      reporter_email: authUser.email,
+      reason: reason.trim(),
+      createdAt: serverTimestamp(),
+      status: 'open'
+    });
+    alert('✓ Report submitted. Our team will review it.');
+  } catch (err) {
+    console.error('[report] failed:', err);
+    alert('Could not submit report: ' + err.message);
+  }
+}
+
+async function blockOrganizer() {
+  const authUser = window._auth?.currentUser;
+  if (!authUser) { alert('Please log in first.'); return; }
+
+  const organizer = window._currentEventData?.organizer || 'this organizer';
+  if (!confirm(`Block ${organizer}? You won't see their events anymore.`)) return;
+
+  try {
+    const { doc, setDoc, serverTimestamp } = window._firestore;
+    // blocks/{blockerUid}_{blockedIdentifier}
+    const blockKey = `${authUser.uid}_${encodeURIComponent(window._currentEventData?.organizerEmail || organizer)}`;
+    const blockRef = doc(window._db, 'blocks', blockKey);
+    await setDoc(blockRef, {
+      blocker_id: authUser.uid,
+      blocked_organizer: organizer,
+      blocked_organizer_email: window._currentEventData?.organizerEmail || '',
+      createdAt: serverTimestamp()
+    });
+    alert('✓ Blocked. You can unblock from your profile page.');
+  } catch (err) {
+    console.error('[block] failed:', err);
+    alert('Could not block: ' + err.message);
+  }
+}
 function openInMaps() {
   const addr = document.getElementById('addressLine').textContent;
   const q = encodeURIComponent(addr);
