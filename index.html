@@ -7,6 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+  <!-- Leaflet for map view -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- ═══════════════════════════════
        FIREBASE — Firestore Integration
   ═══════════════════════════════ -->
@@ -176,6 +180,67 @@
     .fpill:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
     .fpill .chev { font-size: .7rem; color: var(--muted); margin-left: 2px; }
     .reset-btn { background: none; border: none; font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; color: var(--blue); cursor: pointer; text-decoration: underline; padding: 4px 0; }
+
+    /* NEW: Filter dropdowns (popovers) */
+    .fpill { position: relative; }
+    .fpill.active { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
+    .fpill-pop {
+      position: absolute; top: calc(100% + 8px); left: 0; z-index: 200;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      box-shadow: 0 10px 32px rgba(0,0,0,.14); padding: 10px; min-width: 200px;
+      display: none; flex-direction: column; gap: 4px;
+    }
+    .fpill-pop.open { display: flex; }
+    .fpill-opt {
+      text-align: left; background: none; border: none; padding: 9px 12px;
+      border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: .86rem;
+      font-weight: 700; color: var(--text); cursor: pointer;
+    }
+    .fpill-opt:hover { background: var(--off); }
+    .fpill-opt.selected { background: var(--orange-bg); color: var(--orange); }
+
+    /* NEW: Distance slider inside popover */
+    .dist-wrap { padding: 12px 12px 8px; min-width: 230px; }
+    .dist-wrap label { font-size: .78rem; font-weight: 800; color: var(--muted); display: block; margin-bottom: 8px; }
+    .dist-wrap input[type=range] { width: 100%; accent-color: var(--orange); }
+    .dist-wrap .dist-val { font-weight: 800; color: var(--orange); }
+    .dist-wrap .geo-btn {
+      margin-top: 10px; width: 100%; background: var(--blue-bg); color: var(--blue);
+      border: none; border-radius: 8px; padding: 8px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .82rem; cursor: pointer;
+    }
+    .dist-wrap .geo-btn:hover { background: #D1E7FD; }
+    .dist-wrap .geo-status { font-size: .72rem; color: var(--muted); margin-top: 6px; text-align: center; font-weight: 700; }
+    .dist-wrap .geo-status.ok { color: var(--blue); }
+    .dist-wrap .geo-status.err { color: #B91C1C; }
+
+    /* NEW: View toggle (List / Map) */
+    .view-toggle {
+      display: inline-flex; background: var(--off); border: 1.5px solid var(--border);
+      border-radius: 100px; padding: 3px; gap: 2px;
+    }
+    .view-toggle button {
+      background: none; border: none; padding: 7px 16px; border-radius: 100px;
+      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 800;
+      color: var(--muted); cursor: pointer; transition: background .15s, color .15s;
+    }
+    .view-toggle button.active { background: #fff; color: var(--orange); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* NEW: Map container */
+    #eventsMap {
+      display: none; height: 560px; border-radius: 20px; overflow: hidden;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    #eventsMap.active { display: block; }
+    .events-grid.hidden-view { display: none; }
+    .leaflet-container { font-family: 'Nunito', sans-serif !important; }
+    .map-popup { font-family: 'Nunito', sans-serif; }
+    .map-popup strong { font-family: 'Syne', sans-serif; font-size: .95rem; }
+    .map-popup a { color: var(--orange); font-weight: 800; text-decoration: none; font-size: .82rem; }
+
+    /* NEW: result count */
+    .result-count { font-size: .84rem; color: var(--muted); font-weight: 700; margin-top: -18px; margin-bottom: 18px; }
+    .result-count strong { color: var(--text); }
 
     /* EVENT CARDS */
     .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
@@ -603,12 +668,55 @@
   <div class="filters-row">
     <h2 id="sectionTitle">Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
     <div class="filter-pills">
-      <button class="fpill">⏰ Any day <span class="chev">▾</span></button>
-      <button class="fpill">📍 In person <span class="chev">▾</span></button>
-      <button class="fpill">🗺️ Within 30 km <span class="chev">▾</span></button>
+      <div class="fpill-wrap" style="position:relative;">
+        <button class="fpill" id="pillDate" onclick="togglePop('popDate', event)"><span id="pillDateLabel">⏰ Any day</span> <span class="chev">▾</span></button>
+        <div class="fpill-pop" id="popDate">
+          <button class="fpill-opt selected" data-date="any" onclick="pickDate('any','⏰ Any day', this)">Any day</button>
+          <button class="fpill-opt" data-date="today" onclick="pickDate('today','📅 Today', this)">Today</button>
+          <button class="fpill-opt" data-date="week" onclick="pickDate('week','📅 This week', this)">This week</button>
+          <button class="fpill-opt" data-date="weekend" onclick="pickDate('weekend','📅 This weekend', this)">This weekend</button>
+        </div>
+      </div>
+
+      <div class="fpill-wrap" style="position:relative;">
+        <button class="fpill" id="pillLevel" onclick="togglePop('popLevel', event)"><span id="pillLevelLabel">💪 Any level</span> <span class="chev">▾</span></button>
+        <div class="fpill-pop" id="popLevel">
+          <button class="fpill-opt selected" data-level="any" onclick="pickLevel('any','💪 Any level', this)">Any level</button>
+          <button class="fpill-opt" data-level="beginner" onclick="pickLevel('beginner','🌱 Beginner', this)">Beginner</button>
+          <button class="fpill-opt" data-level="intermediate" onclick="pickLevel('intermediate','⚡ Intermediate', this)">Intermediate</button>
+          <button class="fpill-opt" data-level="advanced" onclick="pickLevel('advanced','🔥 Advanced', this)">Advanced</button>
+        </div>
+      </div>
+
+      <div class="fpill-wrap" style="position:relative;">
+        <button class="fpill" id="pillDist" onclick="togglePop('popDist', event)"><span id="pillDistLabel">🗺️ Any distance</span> <span class="chev">▾</span></button>
+        <div class="fpill-pop" id="popDist">
+          <div class="dist-wrap">
+            <label>Within <span class="dist-val" id="distVal">30</span> km</label>
+            <input type="range" id="distRange" min="1" max="100" value="30" oninput="updateDistLabel()" onchange="applyFilters()" />
+            <button class="geo-btn" id="geoBtn" onclick="requestGeo()">📍 Use my location</button>
+            <div class="geo-status" id="geoStatus">Tap to enable distance filter</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-toggle">
+        <button id="viewList" class="active" onclick="setView('list')">📋 List</button>
+        <button id="viewMap" onclick="setView('map')">🗺️ Map</button>
+      </div>
+
       <button class="reset-btn" onclick="resetFilters()">Reset</button>
     </div>
   </div>
+
+  <div class="result-count" id="resultCount"></div>
+
+  <div class="events-grid" id="eventsGrid">
+    <!-- Firestore events loaded here by JavaScript -->
+  </div>
+
+  <div id="eventsMap"></div>
+</div>
 
   <div class="events-grid" id="eventsGrid">
     <!-- Firestore events loaded here by JavaScript -->
@@ -1075,6 +1183,8 @@ window.addEventListener('load', () => {
 });
 
 /* ── LOAD EVENTS FROM FIRESTORE ── */
+let _allEvents = [];
+
 async function loadEventsFromFirestore() {
   try {
     const { collection, getDocs, query, where } = window._firestore;
@@ -1084,19 +1194,15 @@ async function loadEventsFromFirestore() {
 
     const events = [];
     querySnapshot.forEach(doc => {
-      events.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      events.push({ id: doc.id, ...doc.data() });
     });
 
-    // Sort by date
     events.sort((a, b) => new Date(a.date) - new Date(b.date));
+    _allEvents = events;
 
-    renderEventCards(events);
+    applyFilters();
   } catch (error) {
     console.error('Error loading events from Firestore:', error);
-    // Fall back to empty grid
     document.getElementById('eventsGrid').innerHTML = '<div class="no-results" style="display:block;"><span class="icon">📭</span>No events found. <a href="create-event.html">Create one!</a></div>';
   }
 }
@@ -1181,40 +1287,265 @@ function renderEventCards(events) {
   container.appendChild(banner);
 }
 
-/* ── SPORT FILTER ── */
+/* ── FILTER STATE ── */
+const _filters = {
+  sport: 'all',
+  date: 'any',
+  level: 'any',
+  distKm: 30,
+  userLat: null,
+  userLng: null,
+  view: 'list'
+};
+
+const _sportNames = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
+
+/* ── SPORT TABS ── */
 document.querySelectorAll('.cat-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    filterSport(btn.dataset.filter);
+    _filters.sport = btn.dataset.filter;
+    applyFilters();
   });
 });
 
-function filterSport(sport) {
-  const cards = document.querySelectorAll('.event-card[data-sport]');
-  const noRes = document.getElementById('noResults');
-  const title = document.getElementById('sectionTitle');
-  let visible = 0;
+/* ── DROPDOWN TOGGLES ── */
+function togglePop(popId, evt) {
+  if (evt) evt.stopPropagation();
+  document.querySelectorAll('.fpill-pop').forEach(p => {
+    if (p.id !== popId) p.classList.remove('open');
+  });
+  document.getElementById(popId).classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.fpill-wrap')) {
+    document.querySelectorAll('.fpill-pop').forEach(p => p.classList.remove('open'));
+  }
+});
 
-  cards.forEach(card => {
-    if (sport === 'all' || card.dataset.sport === sport) {
-      card.classList.remove('hidden'); visible++;
-    } else {
-      card.classList.add('hidden');
+/* ── DATE FILTER ── */
+function pickDate(val, label, btn) {
+  _filters.date = val;
+  document.getElementById('pillDateLabel').textContent = label;
+  document.querySelectorAll('#popDate .fpill-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('pillDate').classList.toggle('active', val !== 'any');
+  document.getElementById('popDate').classList.remove('open');
+  applyFilters();
+}
+
+/* ── LEVEL FILTER ── */
+function pickLevel(val, label, btn) {
+  _filters.level = val;
+  document.getElementById('pillLevelLabel').textContent = label;
+  document.querySelectorAll('#popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('pillLevel').classList.toggle('active', val !== 'any');
+  document.getElementById('popLevel').classList.remove('open');
+  applyFilters();
+}
+
+/* ── DISTANCE FILTER ── */
+function updateDistLabel() {
+  const v = document.getElementById('distRange').value;
+  _filters.distKm = parseInt(v, 10);
+  document.getElementById('distVal').textContent = v;
+  document.getElementById('pillDistLabel').textContent =
+    (_filters.userLat != null) ? `🗺️ Within ${v} km` : '🗺️ Any distance';
+}
+function requestGeo() {
+  const status = document.getElementById('geoStatus');
+  if (!navigator.geolocation) {
+    status.textContent = 'Geolocation not supported';
+    status.className = 'geo-status err';
+    return;
+  }
+  status.textContent = 'Getting your location…';
+  status.className = 'geo-status';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      _filters.userLat = pos.coords.latitude;
+      _filters.userLng = pos.coords.longitude;
+      status.textContent = '✅ Location locked in';
+      status.className = 'geo-status ok';
+      const v = document.getElementById('distRange').value;
+      document.getElementById('pillDistLabel').textContent = `🗺️ Within ${v} km`;
+      document.getElementById('pillDist').classList.add('active');
+      applyFilters();
+    },
+    (err) => {
+      status.textContent = '❌ ' + (err.message || 'Permission denied');
+      status.className = 'geo-status err';
+    },
+    { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+  );
+}
+
+/* ── VIEW TOGGLE (List / Map) ── */
+function setView(v) {
+  _filters.view = v;
+  document.getElementById('viewList').classList.toggle('active', v === 'list');
+  document.getElementById('viewMap').classList.toggle('active', v === 'map');
+  const grid = document.getElementById('eventsGrid');
+  const map = document.getElementById('eventsMap');
+  if (v === 'map') {
+    grid.classList.add('hidden-view');
+    map.classList.add('active');
+    renderMap();
+  } else {
+    grid.classList.remove('hidden-view');
+    map.classList.remove('active');
+  }
+}
+
+/* ── DISTANCE HELPER (Haversine, km) ── */
+function kmBetween(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/* ── DATE MATCH HELPER ── */
+function dateMatches(eventDateStr, filter) {
+  if (filter === 'any') return true;
+  if (!eventDateStr) return false;
+  const d = new Date(eventDateStr);
+  if (isNaN(d)) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const eDay = new Date(d); eDay.setHours(0,0,0,0);
+  const diffDays = Math.round((eDay - today) / 86400000);
+
+  if (filter === 'today') return diffDays === 0;
+  if (filter === 'week')  return diffDays >= 0 && diffDays <= 7;
+  if (filter === 'weekend') {
+    const dow = eDay.getDay(); // 0 Sun, 6 Sat
+    return (dow === 0 || dow === 6) && diffDays >= 0 && diffDays <= 7;
+  }
+  return true;
+}
+
+/* ── APPLY ALL FILTERS ── */
+function applyFilters() {
+  const title = document.getElementById('sectionTitle');
+  const count = document.getElementById('resultCount');
+
+  let filtered = _allEvents.filter(ev => {
+    if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
+    if (!dateMatches(ev.date, _filters.date)) return false;
+    if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
+    if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
+      const km = kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng);
+      if (km > _filters.distKm) return false;
     }
+    return true;
   });
 
-  const names = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
-  title.innerHTML = `<span style="color:var(--orange)">${names[sport] || sport}</span> Events near Montréal, QC`;
-  noRes.style.display = visible === 0 ? 'block' : 'none';
+  title.innerHTML = `<span style="color:var(--orange)">${_sportNames[_filters.sport] || _filters.sport}</span> Events near Montréal, QC`;
+  count.innerHTML = `<strong>${filtered.length}</strong> event${filtered.length === 1 ? '' : 's'} match your filters`;
+
+  renderEventCards(filtered);
+  if (_filters.view === 'map') renderMap();
 }
 
 function resetFilters() {
+  _filters.sport = 'all';
+  _filters.date = 'any';
+  _filters.level = 'any';
+  _filters.distKm = 30;
+  _filters.userLat = null;
+  _filters.userLng = null;
+
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.cat-btn[data-filter="all"]').classList.add('active');
-  filterSport('all');
+  const allBtn = document.querySelector('.cat-btn[data-filter="all"]');
+  if (allBtn) allBtn.classList.add('active');
+
+  document.getElementById('pillDateLabel').textContent = '⏰ Any day';
+  document.getElementById('pillLevelLabel').textContent = '💪 Any level';
+  document.getElementById('pillDistLabel').textContent = '🗺️ Any distance';
+  document.getElementById('pillDate').classList.remove('active');
+  document.getElementById('pillLevel').classList.remove('active');
+  document.getElementById('pillDist').classList.remove('active');
+
+  document.querySelectorAll('#popDate .fpill-opt, #popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
+  document.querySelector('#popDate .fpill-opt[data-date="any"]').classList.add('selected');
+  document.querySelector('#popLevel .fpill-opt[data-level="any"]').classList.add('selected');
+
+  document.getElementById('distRange').value = 30;
+  document.getElementById('distVal').textContent = '30';
+  document.getElementById('geoStatus').textContent = 'Tap to enable distance filter';
+  document.getElementById('geoStatus').className = 'geo-status';
+
+  applyFilters();
 }
 
+/* ── MAP VIEW ── */
+let _map = null;
+let _markers = [];
+
+function renderMap() {
+  const mapEl = document.getElementById('eventsMap');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  const filtered = _allEvents.filter(ev => {
+    if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
+    if (!dateMatches(ev.date, _filters.date)) return false;
+    if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
+    if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
+      if (kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng) > _filters.distKm) return false;
+    }
+    return typeof ev.lat === 'number' && typeof ev.lng === 'number';
+  });
+
+  if (!_map) {
+    _map = L.map('eventsMap', { scrollWheelZoom: true }).setView([45.5017, -73.5673], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(_map);
+  }
+
+  _markers.forEach(m => _map.removeLayer(m));
+  _markers = [];
+
+  if (filtered.length === 0) {
+    setTimeout(() => _map.invalidateSize(), 50);
+    return;
+  }
+
+  const bounds = [];
+  filtered.forEach(ev => {
+    const emoji = sportEmoji[ev.sport] || '🎯';
+    const icon = L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="background:#FF5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${emoji}</span></div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34]
+    });
+    const m = L.marker([ev.lat, ev.lng], { icon }).addTo(_map);
+    const priceTxt = ev.price === 0 ? 'FREE' : 'CA$' + (ev.price || 0).toFixed(2);
+    m.bindPopup(`
+      <div class="map-popup">
+        <strong>${ev.title}</strong><br>
+        <span style="color:#6B7280; font-size:.82rem;">${ev.date} · ${ev.time}<br>${ev.venue || ''}</span><br>
+        <span style="color:#1565C0; font-weight:800; font-size:.78rem;">${priceTxt} · ${ev.going || 1} going</span><br>
+        <a href="event.html?id=${ev.id}">View details →</a>
+      </div>
+    `);
+    _markers.push(m);
+    bounds.push([ev.lat, ev.lng]);
+  });
+
+  if (bounds.length === 1) {
+    _map.setView(bounds[0], 14);
+  } else {
+    _map.fitBounds(bounds, { padding: [40, 40] });
+  }
+  setTimeout(() => _map.invalidateSize(), 50);
+}
 /* ── SCROLL REVEAL ── */
 const revealObs = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
