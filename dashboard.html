@@ -184,6 +184,10 @@
 </nav>
 
 <div class="dash-wrap">
+  <div id="verifyBanner" style="display:none; background:#FEF3C7; border:1px solid #F59E0B; color:#78350F; padding:14px 22px; border-radius:14px; margin-bottom:20px; font-size:.9rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+  <span>📬 Please verify your email. You need to verify before creating events.</span>
+  <a href="verify-email.html" style="padding:8px 18px; background:#F59E0B; color:#fff; border-radius:100px; text-decoration:none; font-weight:800; font-size:.82rem;">Verify now</a>
+</div>
   <div class="hero-strip">
     <div class="greeting">
       <div class="greeting-eyebrow">👋 <span id="timeOfDay">Hello</span>,</div>
@@ -374,6 +378,17 @@ renderUserUI(user || {});
    Load dashboard data from Firestore
    ================================================================== */
 async function loadDashboard() {
+  // Show "verify email" banner if unverified
+  try {
+    let au = window._auth?.currentUser;
+    if (au) {
+      await au.reload();
+      if (!au.emailVerified) {
+        const banner = document.getElementById('verifyBanner');
+        if (banner) banner.style.display = 'flex';
+      }
+    }
+  } catch (_) {}
   // Wait up to 3 seconds for Firebase Auth to populate currentUser
   let authUser = window._auth.currentUser;
   if (!authUser) {
