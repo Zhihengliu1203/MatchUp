@@ -9,7 +9,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -26,6 +26,7 @@
     window._auth = auth;
     window._db = db;
     window._fbSignOut = () => signOut(auth);
+    window._fbSendVerification = (user) => sendEmailVerification(user);
     window._firestore = { collection, addDoc };
 
     onAuthStateChanged(auth, user => {
@@ -349,6 +350,36 @@
 /* Auth guard */
 const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
 if (!user) window.location.href = 'index.html';
+
+/* Email verification gate — block unverified users from creating events */
+(async function verifyGate() {
+  let tries = 0;
+  while (!window._auth && tries < 40) { await new Promise(r => setTimeout(r, 50)); tries++; }
+  if (!window._auth) return;
+
+  let au = window._auth.currentUser;
+  if (!au) {
+    au = await new Promise(resolve => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 3000);
+      const unsub = window._auth.onAuthStateChanged(u => {
+        if (!done) { done = true; clearTimeout(t); unsub(); resolve(u); }
+      });
+    });
+  }
+  if (!au) return;
+
+  await au.reload();
+  if (!au.emailVerified) {
+    document.body.innerHTML = `
+      <div style="max-width:440px; margin:80px auto; padding:40px 32px; background:#fff; border:1px solid #E5E7EB; border-radius:22px; text-align:center; font-family:Nunito,sans-serif; box-shadow:0 14px 44px rgba(0,0,0,.08);">
+        <div style="width:78px; height:78px; margin:0 auto 20px; border-radius:22px; background:linear-gradient(135deg,#FF5722,#FF8A65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:2.2rem;">📬</div>
+        <h1 style="font-family:Syne,sans-serif; font-weight:800; font-size:1.4rem; margin-bottom:10px; color:#1A1A2E;">Verify your email first</h1>
+        <p style="color:#6B7280; line-height:1.55; margin-bottom:22px;">You must verify <strong>${au.email}</strong> before creating events. This protects your community from spam.</p>
+        <a href="verify-email.html" style="display:inline-block; padding:12px 24px; background:#FF5722; color:#fff; border-radius:100px; text-decoration:none; font-weight:800;">Go to verification</a>
+      </div>`;
+  }
+})();
 
 /* Populate nav */
 if (user) {
