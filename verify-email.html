@@ -1,209 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verify your email — MatchUp</title>
- 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, sendEmailVerification }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
- 
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain:        "matchup-165ee.firebaseapp.com",
-      projectId:         "matchup-165ee",
-      storageBucket:     "matchup-165ee.firebasestorage.app",
-      messagingSenderId: "1038165665131",
-      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    window._auth = auth;
-    window._fbSendVerification = (user) => sendEmailVerification(user, {
-      url: window.location.origin + window.location.pathname.replace(/verify-email\.html$/, 'dashboard.html'),
-      handleCodeInApp: false
-    });
-    window._fbSignOut = () => signOut(auth);
-  </script>
- 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --orange:#FF5722; --orange-lt:#FF7043; --orange-bg:#FFF3EF;
-      --blue:#1565C0; --blue-bg:#E3F2FD;
-      --green:#16A34A; --green-bg:#F0FDF4;
-      --off:#F8F9FA;
-      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
-    }
-    html, body { height: 100%; }
-    body {
-      font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text);
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .card {
-      background: #fff; border: 1px solid var(--border); border-radius: 22px;
-      padding: 40px 36px; max-width: 440px; width: 100%; text-align: center;
-      box-shadow: 0 14px 44px rgba(0,0,0,.08);
-    }
-    .icon {
-      width: 78px; height: 78px; border-radius: 22px;
-      background: linear-gradient(135deg, var(--orange), #FF8A65);
-      color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem; margin: 0 auto 20px;
-      box-shadow: 0 8px 24px rgba(255,87,34,.3);
-    }
-    h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
-    p  { color: var(--muted); font-size: .92rem; line-height: 1.55; margin-bottom: 16px; }
-    .email { font-weight: 800; color: var(--text); word-break: break-all; }
-    .status {
-      margin: 18px 0; padding: 12px 14px; border-radius: 12px;
-      font-size: .85rem; font-weight: 700;
-      background: var(--blue-bg); color: var(--blue);
-    }
-    .status.ok { background: var(--green-bg); color: var(--green); }
-    .status.err { background: #FEE2E2; color: #B91C1C; }
-    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
-    button {
-      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem;
-      padding: 12px 20px; border-radius: 100px; border: none; cursor: pointer;
-      transition: transform .15s, background .15s;
-    }
-    .btn-primary { background: var(--orange); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--orange-lt); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
-    .btn-secondary { background: var(--off); color: var(--text); }
-    .btn-secondary:hover { background: var(--border); }
-    .tip { font-size: .78rem; color: var(--muted); margin-top: 16px; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify your email — MatchUp</title>
+
+    <script type="module">
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {getAuth, onAuthStateChanged, signOut, sendEmailVerification}
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+            authDomain: "matchup-165ee.firebaseapp.com",
+            projectId: "matchup-165ee",
+            storageBucket: "matchup-165ee.firebasestorage.app",
+            messagingSenderId: "1038165665131",
+            appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window._auth = auth;
+        window._fbSendVerification = (user) => sendEmailVerification(user, {
+            url: window.location.origin + window.location.pathname.replace(/verify-email\.html$/, 'dashboard.html'),
+            handleCodeInApp: false
+        });
+        window._fbSignOut = () => signOut(auth);
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/verify-email.css" />
 </head>
 <body>
-  <div class="card">
+<div class="card">
     <div class="icon">📬</div>
     <h1>Check your email</h1>
     <p>We sent a verification link to <span class="email" id="userEmail">your inbox</span>.<br>
-    Click the link to activate your account.</p>
- 
+        Click the link to activate your account.</p>
+
     <div class="status" id="status">⏳ Waiting for verification…</div>
- 
+
     <div class="actions">
-      <button class="btn-primary" id="resendBtn">Resend email</button>
-      <button class="btn-secondary" id="checkBtn">I verified — check now</button>
-      <button class="btn-secondary" onclick="doLogOut()">Log out</button>
+        <button class="btn-primary" id="resendBtn">Resend email</button>
+        <button class="btn-secondary" id="checkBtn">I verified — check now</button>
+        <button class="btn-secondary" onclick="doLogOut()">Log out</button>
     </div>
- 
+
     <p class="tip">Didn't get it? Check your spam folder. Verification link expires in 24 hours.</p>
-  </div>
- 
+</div>
+
 <script>
-(async function main() {
-  let tries = 0;
-  while (!window._auth && tries < 40) {
-    await new Promise(r => setTimeout(r, 50));
-    tries++;
-  }
-  if (!window._auth) {
-    document.getElementById('status').className = 'status err';
-    document.getElementById('status').textContent = '⚠️ Firebase did not load.';
-    return;
-  }
- 
-  let user = window._auth.currentUser;
-  if (!user) {
-    user = await new Promise(resolve => {
-      let done = false;
-      const timer = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 3000);
-      const unsub = window._auth.onAuthStateChanged(u => {
-        if (!done) { done = true; clearTimeout(timer); unsub(); resolve(u); }
-      });
-    });
-  }
- 
-  if (!user) {
-    window.location.href = 'index.html';
-    return;
-  }
- 
-  if (user.emailVerified) {
-    document.getElementById('status').className = 'status ok';
-    document.getElementById('status').textContent = '✅ Already verified! Redirecting…';
-    setTimeout(() => window.location.href = 'dashboard.html', 1000);
-    return;
-  }
- 
-  document.getElementById('userEmail').textContent = user.email || 'your inbox';
- 
-  const resendBtn = document.getElementById('resendBtn');
-  let cooldown = 0;
-  resendBtn.addEventListener('click', async () => {
-    if (cooldown > 0) return;
-    resendBtn.disabled = true;
-    document.getElementById('status').className = 'status';
-    document.getElementById('status').textContent = '📧 Sending…';
-    try {
-      await window._fbSendVerification(user);
-      document.getElementById('status').className = 'status ok';
-      document.getElementById('status').textContent = '✅ Email sent! Check your inbox.';
-      cooldown = 60;
-      const tick = setInterval(() => {
-        cooldown--;
-        if (cooldown <= 0) {
-          clearInterval(tick);
-          resendBtn.disabled = false;
-          resendBtn.textContent = 'Resend email';
-        } else {
-          resendBtn.textContent = `Resend in ${cooldown}s`;
+    (async function main() {
+        let tries = 0;
+        while (!window._auth && tries < 40) {
+            await new Promise(r => setTimeout(r, 50));
+            tries++;
         }
-      }, 1000);
-    } catch (err) {
-      document.getElementById('status').className = 'status err';
-      document.getElementById('status').textContent = '❌ ' + (err.message || 'Failed to send');
-      resendBtn.disabled = false;
+        if (!window._auth) {
+            document.getElementById('status').className = 'status err';
+            document.getElementById('status').textContent = '⚠️ Firebase did not load.';
+            return;
+        }
+
+        let user = window._auth.currentUser;
+        if (!user) {
+            user = await new Promise(resolve => {
+                let done = false;
+                const timer = setTimeout(() => {
+                    if (!done) {
+                        done = true;
+                        resolve(null);
+                    }
+                }, 3000);
+                const unsub = window._auth.onAuthStateChanged(u => {
+                    if (!done) {
+                        done = true;
+                        clearTimeout(timer);
+                        unsub();
+                        resolve(u);
+                    }
+                });
+            });
+        }
+
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        if (user.emailVerified) {
+            document.getElementById('status').className = 'status ok';
+            document.getElementById('status').textContent = '✅ Already verified! Redirecting…';
+            setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            return;
+        }
+
+        document.getElementById('userEmail').textContent = user.email || 'your inbox';
+
+        const resendBtn = document.getElementById('resendBtn');
+        let cooldown = 0;
+        resendBtn.addEventListener('click', async () => {
+            if (cooldown > 0) return;
+            resendBtn.disabled = true;
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').textContent = '📧 Sending…';
+            try {
+                await window._fbSendVerification(user);
+                document.getElementById('status').className = 'status ok';
+                document.getElementById('status').textContent = '✅ Email sent! Check your inbox.';
+                cooldown = 60;
+                const tick = setInterval(() => {
+                    cooldown--;
+                    if (cooldown <= 0) {
+                        clearInterval(tick);
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = 'Resend email';
+                    } else {
+                        resendBtn.textContent = `Resend in ${cooldown}s`;
+                    }
+                }, 1000);
+            } catch (err) {
+                document.getElementById('status').className = 'status err';
+                document.getElementById('status').textContent = '❌ ' + (err.message || 'Failed to send');
+                resendBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('checkBtn').addEventListener('click', async () => {
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').textContent = '⏳ Checking…';
+            try {
+                await user.reload();
+                if (user.emailVerified) {
+                    document.getElementById('status').className = 'status ok';
+                    document.getElementById('status').textContent = '✅ Verified! Redirecting…';
+                    setTimeout(() => window.location.href = 'dashboard.html', 800);
+                } else {
+                    document.getElementById('status').className = 'status err';
+                    document.getElementById('status').textContent = 'Still not verified. Click the link in the email.';
+                }
+            } catch (err) {
+                document.getElementById('status').className = 'status err';
+                document.getElementById('status').textContent = '❌ ' + err.message;
+            }
+        });
+
+        let pollCount = 0;
+        const poll = setInterval(async () => {
+            pollCount++;
+            if (pollCount > 240) {
+                clearInterval(poll);
+                return;
+            }
+            try {
+                await user.reload();
+                if (user.emailVerified) {
+                    clearInterval(poll);
+                    document.getElementById('status').className = 'status ok';
+                    document.getElementById('status').textContent = '✅ Verified! Redirecting…';
+                    setTimeout(() => window.location.href = 'dashboard.html', 800);
+                }
+            } catch (_) {
+            }
+        }, 5000);
+    })();
+
+    function doLogOut() {
+        localStorage.removeItem('mu_current_user');
+        if (window._fbSignOut) window._fbSignOut();
+        window.location.href = 'index.html';
     }
-  });
- 
-  document.getElementById('checkBtn').addEventListener('click', async () => {
-    document.getElementById('status').className = 'status';
-    document.getElementById('status').textContent = '⏳ Checking…';
-    try {
-      await user.reload();
-      if (user.emailVerified) {
-        document.getElementById('status').className = 'status ok';
-        document.getElementById('status').textContent = '✅ Verified! Redirecting…';
-        setTimeout(() => window.location.href = 'dashboard.html', 800);
-      } else {
-        document.getElementById('status').className = 'status err';
-        document.getElementById('status').textContent = 'Still not verified. Click the link in the email.';
-      }
-    } catch (err) {
-      document.getElementById('status').className = 'status err';
-      document.getElementById('status').textContent = '❌ ' + err.message;
-    }
-  });
- 
-  let pollCount = 0;
-  const poll = setInterval(async () => {
-    pollCount++;
-    if (pollCount > 240) { clearInterval(poll); return; }
-    try {
-      await user.reload();
-      if (user.emailVerified) {
-        clearInterval(poll);
-        document.getElementById('status').className = 'status ok';
-        document.getElementById('status').textContent = '✅ Verified! Redirecting…';
-        setTimeout(() => window.location.href = 'dashboard.html', 800);
-      }
-    } catch (_) {}
-  }, 5000);
-})();
- 
-function doLogOut() {
-  localStorage.removeItem('mu_current_user');
-  if (window._fbSignOut) window._fbSignOut();
-  window.location.href = 'index.html';
-}
 </script>
 </body>
 </html>

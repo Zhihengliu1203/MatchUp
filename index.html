@@ -1,1233 +1,924 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MatchUp — Find Your Game, Find Your People</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MatchUp — Find Your Game, Find Your People</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- Leaflet for map view -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet for map view -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- ═══════════════════════════════
-       FIREBASE — Firestore Integration
-  ═══════════════════════════════ -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
-   import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
-    import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
+    <!-- ═══════════════════════════════
+         FIREBASE — Firestore Integration
+    ═══════════════════════════════ -->
+    <script type="module">
+        import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js';
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signOut,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            sendEmailVerification,
+            sendPasswordResetEmail
+        } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            query,
+            where,
+            doc,
+            setDoc,
+            getDoc,
+            serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain: "matchup-165ee.firebaseapp.com",
-      projectId: "matchup-165ee",
-      storageBucket: "matchup-165ee.firebasestorage.app",
-      messagingSenderId: "1038165665131",
-      appId: "1:1038165665131:web:d38bcec6f394d7cf22582e",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const googleProvider = new GoogleAuthProvider();
-
-    // Export to window for global access
-    window._auth = auth;
-    window._db = db;
-    window._fbCreate = createUserWithEmailAndPassword;
-    window._fbLogin = signInWithEmailAndPassword;
-    window._fbGoogle = () => signInWithPopup(auth, googleProvider);
-    window._fbSendVerification = (user) => sendEmailVerification(user, {
-      url: window.location.origin + window.location.pathname.replace(/index\.html$/, 'dashboard.html').replace(/\/$/, '/dashboard.html'),
-      handleCodeInApp: false
-    });
-    window._fbSignOut = () => signOut(auth);
-    window._fbResetPassword = (email) => sendPasswordResetEmail(auth, email);
-    window._firestore = { collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp };
-    // Listen for auth state changes
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
-        const name = stored.fname || (user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0]);
-        if (!stored.fname) {
-          localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email: user.email }));
-        }
-        if (typeof updateNavForUser === 'function') updateNavForUser(name);
-      }
-   });
-
-    // Helper: create or merge user doc in Firestore
-    window._saveUserDoc = async function(userData) {
-      try {
-        const uid = auth.currentUser?.uid;
-        if (!uid) { console.warn('[users] no authenticated user'); return null; }
-
-        const userRef = doc(db, 'users', uid);
-        const existing = await getDoc(userRef);
-
-        const payload = {
-          ...userData,
-          updatedAt: serverTimestamp()
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+            authDomain: "matchup-165ee.firebaseapp.com",
+            projectId: "matchup-165ee",
+            storageBucket: "matchup-165ee.firebasestorage.app",
+            messagingSenderId: "1038165665131",
+            appId: "1:1038165665131:web:d38bcec6f394d7cf22582e",
         };
-        if (!existing.exists()) {
-          payload.createdAt = serverTimestamp();
-        }
 
-        await setDoc(userRef, payload, { merge: true });
-        console.log('[users] saved user doc for uid:', uid);
-        return uid;
-      } catch (err) {
-        console.error('[users] failed to save user doc:', err);
-        return null;
-      }
-    };
-  </script>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --orange:    #FF5722;
-      --orange-lt: #FF7043;
-      --orange-bg: #FFF3EF;
-      --blue:      #1565C0;
-      --blue-lt:   #1E88E5;
-      --blue-bg:   #E3F2FD;
-      --white:     #FFFFFF;
-      --off:       #F8F9FA;
-      --text:      #1A1A2E;
-      --muted:     #6B7280;
-      --border:    #E5E7EB;
-      --shadow:    0 4px 24px rgba(0,0,0,.08);
-      --shadow-h:  0 14px 44px rgba(0,0,0,.14);
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Nunito', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; }
+        // Export to window for global access
+        window._auth = auth;
+        window._db = db;
+        window._fbCreate = createUserWithEmailAndPassword;
+        window._fbLogin = signInWithEmailAndPassword;
+        window._fbGoogle = () => signInWithPopup(auth, googleProvider);
+        window._fbSendVerification = (user) => sendEmailVerification(user, {
+            url: window.location.origin + window.location.pathname.replace(/index\.html$/, 'dashboard.html').replace(/\/$/, '/dashboard.html'),
+            handleCodeInApp: false
+        });
+        window._fbSignOut = () => signOut(auth);
+        window._fbResetPassword = (email) => sendPasswordResetEmail(auth, email);
+        window._firestore = {collection, getDocs, query, where, doc, setDoc, getDoc, serverTimestamp};
+        // Listen for auth state changes
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+                const name = stored.fname || (user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0]);
+                if (!stored.fname) {
+                    localStorage.setItem('mu_current_user', JSON.stringify({...stored, fname: name, email: user.email}));
+                }
+                if (typeof updateNavForUser === 'function') updateNavForUser(name);
+            }
+        });
 
-    /* TOPBAR */
-    .topbar { background: var(--orange); text-align: center; padding: 9px 16px; font-size: .82rem; font-weight: 700; color: #fff; letter-spacing: .03em; }
-    .topbar a { color: #fff; text-decoration: underline; cursor: pointer; }
+        // Helper: create or merge user doc in Firestore
+        window._saveUserDoc = async function (userData) {
+            try {
+                const uid = auth.currentUser?.uid;
+                if (!uid) {
+                    console.warn('[users] no authenticated user');
+                    return null;
+                }
 
-    /* NAV */
-    nav {
-      position: sticky; top: 0; z-index: 300;
-      background: #fff; border-bottom: 1px solid var(--border);
-      padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px;
-    }
-    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; }
-    .search-bar { flex: 1; max-width: 540px; display: flex; border: 2px solid var(--border); border-radius: 100px; overflow: hidden; transition: border-color .2s, box-shadow .2s; }
-    .search-bar:focus-within { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
-    .search-bar input { flex: 1; padding: 10px 18px; font-family: 'Nunito', sans-serif; font-size: .9rem; border: none; outline: none; background: transparent; color: var(--text); }
-    .sb-div { width: 1px; background: var(--border); margin: 8px 0; }
-    .search-bar .loc { padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem; border: none; outline: none; background: transparent; color: var(--muted); min-width: 130px; }
-    .search-btn { width: 42px; height: 42px; margin: 4px; background: var(--orange); border: none; border-radius: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; transition: background .2s, transform .15s; flex-shrink: 0; }
-    .search-btn:hover { background: var(--orange-lt); transform: scale(1.05); }
-    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto; }
-    .nav-links a { padding: 8px 14px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; cursor: pointer; transition: background .15s, color .15s; }
-    .nav-links a:hover { background: var(--off); color: var(--text); }
-    .nav-links .btn-su { background: var(--blue); color: #fff !important; padding: 9px 22px !important; transition: background .2s, transform .15s !important; }
-    .nav-links .btn-su:hover { background: var(--blue-lt) !important; transform: translateY(-1px); }
+                const userRef = doc(db, 'users', uid);
+                const existing = await getDoc(userRef);
 
-    /* HERO */
-    #hero { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 72px 40px 80px; display: flex; align-items: center; gap: 56px; position: relative; overflow: hidden; }
-    #hero::before { content: ''; position: absolute; top: -140px; right: -140px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(255,87,34,.1), transparent 70%); pointer-events: none; }
-    .hero-text { flex: 1; position: relative; z-index: 1; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--orange-bg); border: 1.5px solid rgba(255,87,34,.25); color: var(--orange); font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 22px; }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: blink 1.4s infinite; }
-    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-    .hero-h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 4vw, 3.8rem); line-height: 1.08; margin-bottom: 20px; }
-    .hero-h1 .oc { color: var(--orange); }
-    .hero-h1 .bc { color: var(--blue); }
-    .hero-sub { font-size: 1.05rem; line-height: 1.75; color: var(--muted); max-width: 440px; margin-bottom: 34px; }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
-    .btn-orange { background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px; text-decoration: none; border: none; cursor: pointer; transition: transform .18s, box-shadow .2s, background .2s; display: inline-block; }
-    .btn-orange:hover { background: var(--orange-lt); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,87,34,.35); }
-    .btn-ob { border: 2px solid var(--blue); color: var(--blue); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent; cursor: pointer; transition: background .18s, transform .18s; display: inline-block; }
-    .btn-ob:hover { background: var(--blue-bg); transform: translateY(-2px); }
-    .hero-trust { display: flex; align-items: center; gap: 16px; }
-    .trust-av { display: flex; }
-    .trust-av img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; margin-left: -8px; object-fit: cover; }
-    .trust-av img:first-child { margin-left: 0; }
-    .trust-txt { font-size: .84rem; font-weight: 700; color: var(--muted); }
-    .trust-txt strong { color: var(--text); }
-    .hero-visual { flex: 1; position: relative; z-index: 1; min-width: 0; }
-    .hgrid { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 205px 175px; gap: 12px; }
-    .hgi { border-radius: 18px; overflow: hidden; position: relative; }
-    .hgi:first-child { grid-row: span 2; }
-    .hgi img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
-    .hgi:hover img { transform: scale(1.06); }
-    .hgi-pill { position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-radius: 100px; padding: 5px 12px; font-size: .74rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 5px; }
-    .hgi-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+                const payload = {
+                    ...userData,
+                    updatedAt: serverTimestamp()
+                };
+                if (!existing.exists()) {
+                    payload.createdAt = serverTimestamp();
+                }
 
-    /* SPORT TABS */
-    .cat-strip { border-bottom: 2px solid var(--border); padding: 0 40px; background: #fff; }
-    .cat-inner { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
-    .cat-inner::-webkit-scrollbar { display: none; }
-    .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 28px 12px; border: none; background: transparent; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700; color: #555; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
-    .cat-btn .ci { font-size: 1.6rem; line-height: 1; }
-    .cat-btn:hover { color: var(--text); }
-    .cat-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 800; }
+                await setDoc(userRef, payload, {merge: true});
+                console.log('[users] saved user doc for uid:', uid);
+                return uid;
+            } catch (err) {
+                console.error('[users] failed to save user doc:', err);
+                return null;
+            }
+        };
+    </script>
 
-    /* MAIN */
-    .main-wrap { max-width: 1180px; margin: 0 auto; padding: 36px 40px 80px; }
-    .filters-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 14px; }
-    .filters-row h2 { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; }
-    .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .fpill { display: flex; align-items: center; gap: 7px; border: 1.5px solid var(--border); border-radius: 100px; padding: 8px 18px; font-family: 'Nunito', sans-serif; font-size: .85rem; font-weight: 700; color: var(--text); background: #fff; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.06); transition: border-color .15s, box-shadow .15s; white-space: nowrap; }
-    .fpill:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-    .fpill .chev { font-size: .7rem; color: var(--muted); margin-left: 2px; }
-    .reset-btn { background: none; border: none; font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; color: var(--blue); cursor: pointer; text-decoration: underline; padding: 4px 0; }
-
-    /* NEW: Filter dropdowns (popovers) */
-    .fpill { position: relative; }
-    .fpill.active { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
-    .fpill-pop {
-      position: absolute; top: calc(100% + 8px); left: 0; z-index: 200;
-      background: #fff; border: 1px solid var(--border); border-radius: 14px;
-      box-shadow: 0 10px 32px rgba(0,0,0,.14); padding: 10px; min-width: 200px;
-      display: none; flex-direction: column; gap: 4px;
-    }
-    .fpill-pop.open { display: flex; }
-    .fpill-opt {
-      text-align: left; background: none; border: none; padding: 9px 12px;
-      border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: .86rem;
-      font-weight: 700; color: var(--text); cursor: pointer;
-    }
-    .fpill-opt:hover { background: var(--off); }
-    .fpill-opt.selected { background: var(--orange-bg); color: var(--orange); }
-
-    /* NEW: Distance slider inside popover */
-    .dist-wrap { padding: 12px 12px 8px; min-width: 230px; }
-    .dist-wrap label { font-size: .78rem; font-weight: 800; color: var(--muted); display: block; margin-bottom: 8px; }
-    .dist-wrap input[type=range] { width: 100%; accent-color: var(--orange); }
-    .dist-wrap .dist-val { font-weight: 800; color: var(--orange); }
-    .dist-wrap .geo-btn {
-      margin-top: 10px; width: 100%; background: var(--blue-bg); color: var(--blue);
-      border: none; border-radius: 8px; padding: 8px; font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: .82rem; cursor: pointer;
-    }
-    .dist-wrap .geo-btn:hover { background: #D1E7FD; }
-    .dist-wrap .geo-status { font-size: .72rem; color: var(--muted); margin-top: 6px; text-align: center; font-weight: 700; }
-    .dist-wrap .geo-status.ok { color: var(--blue); }
-    .dist-wrap .geo-status.err { color: #B91C1C; }
-
-    /* NEW: View toggle (List / Map) */
-    .view-toggle {
-      display: inline-flex; background: var(--off); border: 1.5px solid var(--border);
-      border-radius: 100px; padding: 3px; gap: 2px;
-    }
-    .view-toggle button {
-      background: none; border: none; padding: 7px 16px; border-radius: 100px;
-      font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 800;
-      color: var(--muted); cursor: pointer; transition: background .15s, color .15s;
-    }
-    .view-toggle button.active { background: #fff; color: var(--orange); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-
-    /* NEW: Map container */
-    #eventsMap {
-      display: none; height: 560px; border-radius: 20px; overflow: hidden;
-      border: 1px solid var(--border); box-shadow: var(--shadow);
-    }
-    #eventsMap.active { display: block; }
-    .events-grid.hidden-view { display: none; }
-    .leaflet-container { font-family: 'Nunito', sans-serif !important; }
-    .map-popup { font-family: 'Nunito', sans-serif; }
-    .map-popup strong { font-family: 'Syne', sans-serif; font-size: .95rem; }
-    .map-popup a { color: var(--orange); font-weight: 800; text-decoration: none; font-size: .82rem; }
-
-    /* NEW: result count */
-    .result-count { font-size: .84rem; color: var(--muted); font-weight: 700; margin-top: -18px; margin-bottom: 18px; }
-    .result-count strong { color: var(--text); }
-
-    /* NEW: Skeleton loading cards */
-    .skeleton-card {
-      background: #fff; border-radius: 20px; border: 1px solid var(--border);
-      height: 340px; overflow: hidden; position: relative;
-    }
-    .skeleton-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(90deg, #f0f0f0 0%, #f9f9f9 50%, #f0f0f0 100%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-    @keyframes shimmer { 0%{background-position:200% 0}100%{background-position:-200% 0} }
-
-    /* EVENT CARDS */
-    .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .event-card { background: #fff; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; transition: transform .25s, box-shadow .25s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
-    .event-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-h); }
-    .event-card.hidden { display: none; }
-    .card-img { position: relative; height: 198px; overflow: hidden; background: var(--off); }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
-    .event-card:hover .card-img img { transform: scale(1.07); }
-    .card-price { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.93); backdrop-filter: blur(6px); border-radius: 100px; padding: 4px 12px; font-size: .8rem; font-weight: 800; color: var(--text); }
-    .card-price.free { background: var(--orange); color: #fff; }
-    .card-sport { position: absolute; top: 12px; right: 12px; background: var(--blue); color: #fff; border-radius: 100px; padding: 4px 11px; font-size: .72rem; font-weight: 800; }
-    .card-body { padding: 16px 18px 18px; }
-    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .96rem; line-height: 1.35; margin-bottom: 7px; }
-    .card-meta { font-size: .79rem; color: var(--muted); margin-bottom: 14px; line-height: 1.55; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; }
-    .card-avs { display: flex; }
-    .card-avs img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; margin-left: -6px; object-fit: cover; }
-    .card-avs img:first-child { margin-left: 0; }
-    .card-rating { font-size: .74rem; color: var(--muted); margin-top: 2px; }
-    .card-rating .s { color: var(--orange); }
-    .card-going { font-size: .77rem; font-weight: 800; color: var(--blue); background: var(--blue-bg); padding: 4px 10px; border-radius: 100px; }
-    .no-results { grid-column: span 3; text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1rem; font-weight: 600; display: none; }
-    .no-results .icon { font-size: 3rem; display: block; margin-bottom: 12px; }
-    .inline-banner { grid-column: span 3; background: linear-gradient(118deg, var(--orange), #FF8A65); border-radius: 20px; padding: 34px 38px; display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #fff; }
-    .inline-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 5px; }
-    .inline-banner p { font-size: .88rem; opacity: .85; }
-    .btn-white { background: #fff; color: var(--orange); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem; padding: 12px 26px; border-radius: 100px; text-decoration: none; white-space: nowrap; border: none; cursor: pointer; transition: transform .18s, box-shadow .18s; display: inline-block; }
-    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
-
-    /* MARQUEE */
-    .marquee-wrap { background: var(--off); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 13px 0; overflow: hidden; }
-    .marquee-track { display: flex; gap: 48px; width: max-content; animation: marquee 32s linear infinite; }
-    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
-    .mitem { display: flex; align-items: center; gap: 9px; font-size: .77rem; font-weight: 800; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-    .mitem .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
-
-    /* HOW */
-    #how { background: linear-gradient(135deg, #FFF8F5 0%, #EEF6FF 100%); padding: 80px 40px; }
-    .how-inner { max-width: 1100px; margin: 0 auto; }
-    .sec-eye { font-size: .77rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
-    .sec-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.8rem); margin-bottom: 52px; }
-    .sec-title span { color: var(--blue); }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .step { background: #fff; border-radius: 20px; padding: 34px 26px; border: 1px solid var(--border); transition: transform .25s, box-shadow .25s; }
-    .step:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
-    .step-num { font-family: 'Syne', sans-serif; font-size: 4rem; font-weight: 800; color: rgba(255,87,34,.07); line-height: 1; margin-bottom: 16px; }
-    .step-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; margin-bottom: 18px; }
-    .si-o { background: var(--orange-bg); }
-    .si-b { background: var(--blue-bg); }
-    .step h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 9px; }
-    .step p { font-size: .88rem; line-height: 1.7; color: var(--muted); }
-
-    /* SPORTS */
-    #sports { max-width: 1180px; margin: 0 auto; padding: 80px 40px; }
-    .sports-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-    .sc { border-radius: 16px; overflow: hidden; aspect-ratio: 3/4; position: relative; cursor: pointer; }
-    .sc img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
-    .sc:hover img { transform: scale(1.08); }
-    .sc .sco { position: absolute; inset: 0; background: linear-gradient(to top, rgba(21,101,192,.75), transparent 55%); }
-    .sc .sci { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 12px; }
-    .sc .scn { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; display: block; margin-bottom: 2px; color: #fff; }
-    .sc .scc { font-size: .7rem; font-weight: 700; color: rgba(255,255,255,.7); }
-    .sc.feat { grid-column: span 2; aspect-ratio: unset; min-height: 270px; }
-    .sc.feat .scn { font-size: 1.55rem; }
-    .sc .shot { position: absolute; top: 10px; right: 10px; background: var(--orange); color: #fff; font-size: .67rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; }
-
-    /* TESTIMONIALS */
-    #testimonials { background: var(--off); padding: 80px 40px; }
-    .testi-inner { max-width: 1100px; margin: 0 auto; }
-    .tgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
-    .tc { background: #fff; border-radius: 20px; padding: 26px 24px; border: 1px solid var(--border); transition: transform .25s, box-shadow .25s; }
-    .tc:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
-    .tc .stars { font-size: .84rem; letter-spacing: 2px; color: var(--orange); margin-bottom: 12px; }
-    .tc blockquote { font-size: .9rem; line-height: 1.7; color: #444; font-style: italic; margin-bottom: 18px; }
-    .tc .author { display: flex; align-items: center; gap: 11px; }
-    .tc .av { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); flex-shrink: 0; }
-    .tc .av img { width: 100%; height: 100%; object-fit: cover; }
-    .tc .aname { font-weight: 800; font-size: .86rem; }
-    .tc .asport { font-size: .74rem; color: var(--muted); }
-
-    /* CTA */
-    #cta { background: linear-gradient(120deg, var(--blue), #1976D2); padding: 80px 40px; text-align: center; color: #fff; position: relative; overflow: hidden; }
-    #cta::before { content:'⚡'; position: absolute; font-size: 22rem; opacity: .04; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
-    #cta h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 14px; position: relative; }
-    #cta p { font-size: 1.02rem; opacity: .85; max-width: 460px; margin: 0 auto 34px; line-height: 1.7; position: relative; }
-    .cta-btns { display: flex; justify-content: center; gap: 13px; flex-wrap: wrap; position: relative; }
-    .btn-ws { background: #fff; color: var(--blue); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 14px 32px; border-radius: 100px; text-decoration: none; border: none; cursor: pointer; transition: transform .18s, box-shadow .2s; display: inline-block; }
-    .btn-ws:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.25); }
-    .btn-gw { border: 2px solid rgba(255,255,255,.4); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; padding: 13px 28px; border-radius: 100px; text-decoration: none; background: transparent; cursor: pointer; transition: background .18s, transform .18s; display: inline-block; }
-    .btn-gw:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
-
-    /* FOOTER */
-    footer { background: #111827; padding: 60px 40px 0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-    .f-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--orange); display: block; margin-bottom: 12px; }
-    .f-brand p { font-size: .87rem; line-height: 1.7; color: rgba(255,255,255,.38); max-width: 260px; }
-    .f-social { display: flex; gap: 8px; margin-top: 18px; }
-    .f-social a { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: .84rem; text-decoration: none; color: rgba(255,255,255,.45); transition: border-color .2s, color .2s; cursor: pointer; }
-    .f-social a:hover { border-color: var(--orange); color: var(--orange); }
-    .f-col h4 { font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.28); margin-bottom: 16px; }
-    .f-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .f-col a { font-size: .85rem; color: rgba(255,255,255,.48); text-decoration: none; cursor: pointer; transition: color .15s; }
-    .f-col a:hover { color: #fff; }
-    .foot-bottom { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827; }
-
-    /* REVEAL */
-    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* ═══════════════════════════════
-       AUTH MODAL — FIXED SIZING
-    ═══════════════════════════════ */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 1000;
-      background: rgba(10,10,30,.55); backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-      opacity: 0; pointer-events: none;
-      transition: opacity .25s ease;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal {
-      background: #fff; border-radius: 24px;
-      width: 100%;
-      max-width: 440px;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      padding: 32px 32px 28px;
-      position: relative;
-      transform: translateY(20px) scale(.97);
-      transition: transform .28s cubic-bezier(.34,1.3,.64,1);
-      box-shadow: 0 24px 80px rgba(0,0,0,.22);
-    }
-    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-    .modal::-webkit-scrollbar { width: 6px; }
-    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    .modal-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--off); border: none; cursor: pointer;
-      font-size: 1rem; display: flex; align-items: center; justify-content: center;
-      color: var(--muted); transition: background .15s, color .15s;
-      z-index: 2;
-    }
-    .modal-close:hover { background: var(--border); color: var(--text); }
-    .modal-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--orange); margin-bottom: 14px; }
-    .modal-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
-    .mtab { flex: 1; padding: 9px; text-align: center; font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; }
-    .mtab.active { color: var(--orange); border-bottom-color: var(--orange); }
-
-    /* Social buttons */
-    .social-auth { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-    .btn-social {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 10px 12px; border-radius: 10px;
-      font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 700;
-      cursor: pointer; border: 1.5px solid var(--border); background: #fff;
-      color: var(--text);
-      transition: background .15s, border-color .15s, box-shadow .15s;
-    }
-    .btn-social:hover { background: var(--off); border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .btn-social.disabled { opacity: .55; cursor: not-allowed; }
-    .btn-social.disabled:hover { background: #fff; border-color: var(--border); box-shadow: none; }
-    .btn-social .si { width: 18px; height: 18px; flex-shrink: 0; }
-    .soon-tag { margin-left: auto; font-size: .68rem; font-weight: 800; color: var(--muted); background: var(--off); padding: 2px 7px; border-radius: 100px; letter-spacing: .04em; text-transform: uppercase; }
-
-    .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .auth-divider span { font-size: .75rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-
-    /* Form fields */
-    .form-group { margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .form-group label { display: block; font-size: .78rem; font-weight: 800; color: var(--text); margin-bottom: 5px; }
-    .form-group input {
-      width: 100%; padding: 10px 14px; border-radius: 10px;
-      border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif;
-      font-size: .9rem; color: var(--text); background: #fff; outline: none;
-      transition: border-color .18s, box-shadow .18s;
-    }
-    .form-group input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12); }
-    .form-group input.error { border-color: #e53e3e; }
-    .field-error { font-size: .72rem; color: #e53e3e; font-weight: 700; margin-top: 3px; display: none; }
-    .field-error.show { display: block; }
-    .sport-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
-    .sport-opt { padding: 7px 4px; border-radius: 8px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: .74rem; font-weight: 700; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, color .15s; }
-    .sport-opt:hover { border-color: var(--orange); background: var(--orange-bg); }
-    .sport-opt.sel { border-color: var(--orange); background: var(--orange); color: #fff; }
-    .form-submit { width: 100%; padding: 12px; border-radius: 100px; background: var(--orange); color: #fff; font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 800; border: none; cursor: pointer; margin-top: 4px; transition: background .2s, transform .15s, box-shadow .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .form-submit:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
-    .form-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; }
-    .switch-auth { text-align: center; margin-top: 12px; font-size: .82rem; color: var(--muted); }
-    .switch-auth a { color: var(--orange); font-weight: 800; cursor: pointer; text-decoration: none; }
-    .switch-auth a:hover { text-decoration: underline; }
-    .privacy-note { font-size: .7rem; color: var(--muted); text-align: center; margin-top: 10px; line-height: 1.5; }
-    .privacy-note a { color: var(--blue); }
-    .modal-success { text-align: center; display: none; padding: 16px 0; }
-    .modal-success.show { display: block; }
-    .modal-form-wrap.hide { display: none; }
-    .success-icon { font-size: 3.5rem; margin-bottom: 12px; display: block; }
-    .modal-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; margin-bottom: 6px; }
-    .modal-success p { font-size: .88rem; color: var(--muted); line-height: 1.6; }
-    .spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .form-submit.loading .spinner { display: inline-block; }
-    .form-submit.loading .btn-label { display: none; }
-    .auth-alert { padding: 9px 12px; border-radius: 8px; font-size: .8rem; font-weight: 700; margin-bottom: 12px; display: none; }
-    .auth-alert.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
-    .auth-alert.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
-    .auth-alert.show { display: block; }
-
-    /* RESPONSIVE */
-    @media (max-width: 960px) {
-      nav { padding: 0 20px; gap: 10px; }
-      .nav-links li:not(:last-child) { display: none; }
-      #hero { flex-direction: column; padding: 48px 24px 56px; }
-      .hero-visual { width: 100%; }
-      .events-grid { grid-template-columns: 1fr 1fr; }
-      .inline-banner, .no-results { grid-column: span 2; }
-      .steps, .sports-grid { grid-template-columns: 1fr 1fr; }
-      .sc.feat { grid-column: span 2; }
-      .tgrid { grid-template-columns: 1fr; }
-      footer { grid-template-columns: 1fr 1fr; padding: 40px 24px 0; }
-      .main-wrap, #sports, .how-inner, .testi-inner { padding-left: 20px; padding-right: 20px; }
-      .cat-strip, #how, #testimonials { padding-left: 20px; padding-right: 20px; }
-    }
-    @media (max-width: 600px) {
-      .events-grid, .steps { grid-template-columns: 1fr; }
-      .inline-banner, .no-results { grid-column: span 1; }
-      .inline-banner { flex-direction: column; }
-      .sports-grid { grid-template-columns: 1fr 1fr; }
-      footer { grid-template-columns: 1fr; }
-      .foot-bottom { flex-direction: column; gap: 6px; text-align: center; }
-      .sb-div, .loc { display: none; }
-      .modal { padding: 26px 22px 22px; border-radius: 18px; }
-      .form-row { grid-template-columns: 1fr; }
-    }
-  </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
 
 <!-- AUTH MODAL -->
 <div class="modal-overlay" id="authModal" role="dialog" aria-modal="true">
-  <div class="modal">
-    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
-    <div class="modal-logo">🏆 MatchUp</div>
+    <div class="modal">
+        <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+        <div class="modal-logo">🏆 MatchUp</div>
 
-    <div class="modal-success" id="modalSuccess">
-      <span class="success-icon">🎉</span>
-      <h3 id="successTitle">Welcome aboard!</h3>
-      <p id="successMsg">Your account is ready. Start finding your game!</p>
+        <div class="modal-success" id="modalSuccess">
+            <span class="success-icon">🎉</span>
+            <h3 id="successTitle">Welcome aboard!</h3>
+            <p id="successMsg">Your account is ready. Start finding your game!</p>
+        </div>
+
+        <div class="modal-form-wrap" id="modalFormWrap">
+            <div class="modal-tabs">
+                <button class="mtab active" id="tabSignup" onclick="switchTab('signup')">Create account</button>
+                <button class="mtab" id="tabLogin" onclick="switchTab('login')">Log in</button>
+            </div>
+
+            <div class="auth-alert" id="authAlert"></div>
+
+            <div class="social-auth">
+                <button class="btn-social" onclick="googleSignIn()">
+                    <svg class="si" viewBox="0 0 24 24">
+                        <path fill="#4285F4"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
+            <div class="auth-divider"><span>or with email</span></div>
+
+            <!-- SIGNUP FORM -->
+            <form id="signupForm" autocomplete="on" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="su-fname">First name</label>
+                        <input type="text" id="su-fname" placeholder="Alex" autocomplete="given-name" />
+                        <div class="field-error" id="err-fname">Required</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="su-lname">Last name</label>
+                        <input type="text" id="su-lname" placeholder="Tremblay" autocomplete="family-name" />
+                        <div class="field-error" id="err-lname">Required</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="su-email">Email address</label>
+                    <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" />
+                    <div class="field-error" id="err-email">Enter a valid email</div>
+                </div>
+                <div class="form-group">
+                    <label for="su-password">Password</label>
+                    <input type="password" id="su-password" placeholder="At least 8 characters" autocomplete="new-password" />
+                    <div class="field-error" id="err-password">At least 8 characters</div>
+                </div>
+                <div class="form-group">
+                    <label>Your favourite sport(s)</label>
+                    <div class="sport-picker">
+                        <button type="button" class="sport-opt" data-sport="football">⚽ Football</button>
+                        <button type="button" class="sport-opt" data-sport="basketball">🏀 Basketball</button>
+                        <button type="button" class="sport-opt" data-sport="tennis">🎾 Tennis</button>
+                        <button type="button" class="sport-opt" data-sport="badminton">🏸 Badminton</button>
+                        <button type="button" class="sport-opt" data-sport="running">🏃 Running</button>
+                        <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
+                    </div>
+                </div>
+                <div
+                    style="display:flex; gap:10px; align-items:flex-start; margin:16px 0; padding:12px 14px; background:#fff3ef; border-radius:12px; font-size:.82rem;">
+                    <input type="checkbox" id="su-waiver" style="margin-top:3px; cursor:pointer; accent-color:#ff5722;" />
+                    <label for="su-waiver" style="cursor:pointer; line-height:1.45; color:#1a1a2e;">
+                        I agree to MatchUp's <a href="terms.html" target="_blank" style="color:#ff5722; font-weight:800;">Terms of Service</a>
+                        and <a href="privacy.html" target="_blank" style="color:#ff5722; font-weight:800;">Privacy Policy</a>.
+                        I understand that sports activities carry risks of injury, and I participate at my own risk.
+                        MatchUp is not responsible for injuries, losses, or damages from events.
+                    </label>
+                </div>
+                <div id="err-waiver" style="display:none; font-size:.75rem; color:#e53e3e; font-weight:700; margin-top:-10px; margin-bottom:10px;">Please accept
+                    the terms to continue.
+                </div>
+                <button type="submit" class="form-submit" id="signupBtn">
+                    <span class="btn-label">Join MatchUp — It's Free 🚀</span>
+                    <span class="spinner"></span>
+                </button>
+                <p class="privacy-note">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+            </form>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" style="display:none" autocomplete="on" novalidate>
+                <div class="form-group">
+                    <label for="li-email">Email address</label>
+                    <input type="email" id="li-email" placeholder="you@example.com" autocomplete="email" />
+                    <div class="field-error" id="err-li-email">Enter a valid email</div>
+                </div>
+                <div class="form-group">
+                    <label for="li-password">Password</label>
+                    <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password" />
+                    <div class="field-error" id="err-li-password">Required</div>
+                </div>
+                <div style="text-align:right; margin-bottom:12px;">
+                    <a style="font-size:.78rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="forgotPassword()">Forgot password?</a>
+                </div>
+                <button type="submit" class="form-submit" id="loginBtn">
+                    <span class="btn-label">Log in →</span>
+                    <span class="spinner"></span>
+                </button>
+            </form>
+
+            <div class="switch-auth" id="switchAuthText">
+                Already have an account? <a onclick="switchTab('login')">Log in</a>
+            </div>
+        </div>
     </div>
-
-    <div class="modal-form-wrap" id="modalFormWrap">
-      <div class="modal-tabs">
-        <button class="mtab active" id="tabSignup" onclick="switchTab('signup')">Create account</button>
-        <button class="mtab" id="tabLogin" onclick="switchTab('login')">Log in</button>
-      </div>
-
-      <div class="auth-alert" id="authAlert"></div>
-
-      <div class="social-auth">
-        <button class="btn-social" onclick="googleSignIn()">
-          <svg class="si" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Continue with Google
-        </button>
-      </div>
-      <div class="auth-divider"><span>or with email</span></div>
-
-      <!-- SIGNUP FORM -->
-      <form id="signupForm" autocomplete="on" novalidate>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="su-fname">First name</label>
-            <input type="text" id="su-fname" placeholder="Alex" autocomplete="given-name" />
-            <div class="field-error" id="err-fname">Required</div>
-          </div>
-          <div class="form-group">
-            <label for="su-lname">Last name</label>
-            <input type="text" id="su-lname" placeholder="Tremblay" autocomplete="family-name" />
-            <div class="field-error" id="err-lname">Required</div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="su-email">Email address</label>
-          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" />
-          <div class="field-error" id="err-email">Enter a valid email</div>
-        </div>
-        <div class="form-group">
-          <label for="su-password">Password</label>
-          <input type="password" id="su-password" placeholder="At least 8 characters" autocomplete="new-password" />
-          <div class="field-error" id="err-password">At least 8 characters</div>
-        </div>
-        <div class="form-group">
-          <label>Your favourite sport(s)</label>
-          <div class="sport-picker">
-            <button type="button" class="sport-opt" data-sport="football">⚽ Football</button>
-            <button type="button" class="sport-opt" data-sport="basketball">🏀 Basketball</button>
-            <button type="button" class="sport-opt" data-sport="tennis">🎾 Tennis</button>
-            <button type="button" class="sport-opt" data-sport="badminton">🏸 Badminton</button>
-            <button type="button" class="sport-opt" data-sport="running">🏃 Running</button>
-            <button type="button" class="sport-opt" data-sport="swimming">🏊 Swimming</button>
-          </div>
-        </div>
-        <div style="display:flex; gap:10px; align-items:flex-start; margin:16px 0; padding:12px 14px; background:#FFF3EF; border-radius:12px; font-size:.82rem;">
-  <input type="checkbox" id="su-waiver" style="margin-top:3px; cursor:pointer; accent-color:#FF5722;" />
-  <label for="su-waiver" style="cursor:pointer; line-height:1.45; color:#1A1A2E;">
-    I agree to MatchUp's <a href="terms.html" target="_blank" style="color:#FF5722; font-weight:800;">Terms of Service</a>
-    and <a href="privacy.html" target="_blank" style="color:#FF5722; font-weight:800;">Privacy Policy</a>.
-    I understand that sports activities carry risks of injury, and I participate at my own risk.
-    MatchUp is not responsible for injuries, losses, or damages from events.
-  </label>
-</div>
-<div id="err-waiver" style="display:none; font-size:.75rem; color:#e53e3e; font-weight:700; margin-top:-10px; margin-bottom:10px;">Please accept the terms to continue.</div>
-        <button type="submit" class="form-submit" id="signupBtn">
-          <span class="btn-label">Join MatchUp — It's Free 🚀</span>
-          <span class="spinner"></span>
-        </button>
-        <p class="privacy-note">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
-      </form>
-
-      <!-- LOGIN FORM -->
-      <form id="loginForm" style="display:none" autocomplete="on" novalidate>
-        <div class="form-group">
-          <label for="li-email">Email address</label>
-          <input type="email" id="li-email" placeholder="you@example.com" autocomplete="email" />
-          <div class="field-error" id="err-li-email">Enter a valid email</div>
-        </div>
-        <div class="form-group">
-          <label for="li-password">Password</label>
-          <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password" />
-          <div class="field-error" id="err-li-password">Required</div>
-        </div>
-        <div style="text-align:right; margin-bottom:12px;">
-          <a style="font-size:.78rem;color:var(--blue);font-weight:700;cursor:pointer;" onclick="forgotPassword()">Forgot password?</a>
-        </div>
-        <button type="submit" class="form-submit" id="loginBtn">
-          <span class="btn-label">Log in →</span>
-          <span class="spinner"></span>
-        </button>
-      </form>
-
-      <div class="switch-auth" id="switchAuthText">
-        Already have an account? <a onclick="switchTab('login')">Log in</a>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- PAGE -->
 <div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a onclick="openModal()">Claim your spot →</a></div>
 
 <nav>
-  <a class="nav-logo" href="#"><span class="logo-icon">🏆</span>MatchUp</a>
-  <div class="search-bar">
-    <input type="text" placeholder="Search sports, events, players…" />
-    <div class="sb-div"></div>
-    <input class="loc" type="text" value="Montréal, QC" />
-    <button class="search-btn">🔍</button>
-  </div>
-  <ul class="nav-links">
-    <li><a href="#how">How it works</a></li>
-    <li><a href="#sports">Sports</a></li>
-    <li><a onclick="openModal(); switchTab('login')">Log in</a></li>
-    <li><a class="btn-su" onclick="openModal()">Sign up</a></li>
-  </ul>
+    <a class="nav-logo" href="#"><span class="logo-icon">🏆</span>MatchUp</a>
+    <div class="search-bar">
+        <input type="text" placeholder="Search sports, events, players…" />
+        <div class="sb-div"></div>
+        <input class="loc" type="text" value="Montréal, QC" />
+        <button class="search-btn">🔍</button>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a onclick="openModal(); switchTab('login')">Log in</a></li>
+        <li><a class="btn-su" onclick="openModal()">Sign up</a></li>
+    </ul>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-text">
-    <div class="hero-badge"><span class="live-dot"></span>Live in Montréal, Toronto &amp; Vancouver</div>
-    <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
-    <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
-    <div class="hero-actions">
-      <button class="btn-orange" onclick="openModal()">Join for free</button>
-      <a class="btn-ob" href="#how">How it works</a>
+    <div class="hero-text">
+        <div class="hero-badge"><span class="live-dot"></span>Live in Montréal, Toronto &amp; Vancouver</div>
+        <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
+        <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes
+            sense.</p>
+        <div class="hero-actions">
+            <button class="btn-orange" onclick="openModal()">Join for free</button>
+            <a class="btn-ob" href="#how">How it works</a>
+        </div>
+        <div class="hero-trust">
+            <div class="trust-av">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
+            </div>
+            <span class="trust-txt"><strong>12,400+</strong> active players already matched</span>
+        </div>
     </div>
-    <div class="hero-trust">
-      <div class="trust-av">
-        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=72&h=72&fit=crop&crop=face&auto=format" alt="player" />
-      </div>
-      <span class="trust-txt"><strong>12,400+</strong> active players already matched</span>
+    <div class="hero-visual">
+        <div class="hgrid">
+            <div class="hgi">
+                <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=700&fit=crop&auto=format" alt="Basketball" />
+                <div class="hgi-pill"><span class="dot"></span>34 joining today</div>
+            </div>
+            <div class="hgi">
+                <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format" alt="Tennis" />
+                <div class="hgi-pill"><span class="dot"></span>Court booked</div>
+            </div>
+            <div class="hgi">
+                <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format" alt="Volleyball" />
+                <div class="hgi-pill"><span class="dot"></span>⚡ Starting soon</div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="hero-visual">
-    <div class="hgrid">
-      <div class="hgi">
-        <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=700&fit=crop&auto=format" alt="Basketball" />
-        <div class="hgi-pill"><span class="dot"></span>34 joining today</div>
-      </div>
-      <div class="hgi">
-        <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format" alt="Tennis" />
-        <div class="hgi-pill"><span class="dot"></span>Court booked</div>
-      </div>
-      <div class="hgi">
-        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format" alt="Volleyball" />
-        <div class="hgi-pill"><span class="dot"></span>⚡ Starting soon</div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <!-- SPORT TABS -->
 <div class="cat-strip">
-  <div class="cat-inner">
-    <button class="cat-btn active" data-filter="all"><span class="ci">✨</span>All Sports</button>
-    <button class="cat-btn" data-filter="football"><span class="ci">⚽</span>Football</button>
-    <button class="cat-btn" data-filter="basketball"><span class="ci">🏀</span>Basketball</button>
-    <button class="cat-btn" data-filter="tennis"><span class="ci">🎾</span>Tennis</button>
-    <button class="cat-btn" data-filter="badminton"><span class="ci">🏸</span>Badminton</button>
-    <button class="cat-btn" data-filter="running"><span class="ci">🏃</span>Running</button>
-    <button class="cat-btn" data-filter="pingpong"><span class="ci">🏓</span>Ping-Pong</button>
-    <button class="cat-btn" data-filter="swimming"><span class="ci">🏊</span>Swimming</button>
-    <button class="cat-btn" data-filter="volleyball"><span class="ci">🏐</span>Volleyball</button>
-    <button class="cat-btn" data-filter="yoga"><span class="ci">🧘</span>Yoga</button>
-  </div>
+    <div class="cat-inner">
+        <button class="cat-btn active" data-filter="all"><span class="ci">✨</span>All Sports</button>
+        <button class="cat-btn" data-filter="football"><span class="ci">⚽</span>Football</button>
+        <button class="cat-btn" data-filter="basketball"><span class="ci">🏀</span>Basketball</button>
+        <button class="cat-btn" data-filter="tennis"><span class="ci">🎾</span>Tennis</button>
+        <button class="cat-btn" data-filter="badminton"><span class="ci">🏸</span>Badminton</button>
+        <button class="cat-btn" data-filter="running"><span class="ci">🏃</span>Running</button>
+        <button class="cat-btn" data-filter="pingpong"><span class="ci">🏓</span>Ping-Pong</button>
+        <button class="cat-btn" data-filter="swimming"><span class="ci">🏊</span>Swimming</button>
+        <button class="cat-btn" data-filter="volleyball"><span class="ci">🏐</span>Volleyball</button>
+        <button class="cat-btn" data-filter="yoga"><span class="ci">🧘</span>Yoga</button>
+    </div>
 </div>
 
 <!-- EVENTS -->
 <div class="main-wrap">
-  <div class="filters-row">
-    <h2 id="sectionTitle">Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
-    <div class="filter-pills">
-      <div class="fpill-wrap" style="position:relative;">
-        <button class="fpill" id="pillDate" onclick="togglePop('popDate', event)"><span id="pillDateLabel">⏰ Any day</span> <span class="chev">▾</span></button>
-        <div class="fpill-pop" id="popDate">
-          <button class="fpill-opt selected" data-date="any" onclick="pickDate('any','⏰ Any day', this)">Any day</button>
-          <button class="fpill-opt" data-date="today" onclick="pickDate('today','📅 Today', this)">Today</button>
-          <button class="fpill-opt" data-date="week" onclick="pickDate('week','📅 This week', this)">This week</button>
-          <button class="fpill-opt" data-date="weekend" onclick="pickDate('weekend','📅 This weekend', this)">This weekend</button>
+    <div class="filters-row">
+        <h2 id="sectionTitle">Sports &amp; Fitness Events near <span style="color:var(--orange)">Montréal, QC</span></h2>
+        <div class="filter-pills">
+            <div class="fpill-wrap" style="position:relative;">
+                <button class="fpill" id="pillDate" onclick="togglePop('popDate', event)"><span id="pillDateLabel">⏰ Any day</span> <span class="chev">▾</span>
+                </button>
+                <div class="fpill-pop" id="popDate">
+                    <button class="fpill-opt selected" data-date="any" onclick="pickDate('any','⏰ Any day', this)">Any day</button>
+                    <button class="fpill-opt" data-date="today" onclick="pickDate('today','📅 Today', this)">Today</button>
+                    <button class="fpill-opt" data-date="week" onclick="pickDate('week','📅 This week', this)">This week</button>
+                    <button class="fpill-opt" data-date="weekend" onclick="pickDate('weekend','📅 This weekend', this)">This weekend</button>
+                </div>
+            </div>
+
+            <div class="fpill-wrap" style="position:relative;">
+                <button class="fpill" id="pillLevel" onclick="togglePop('popLevel', event)"><span id="pillLevelLabel">💪 Any level</span> <span
+                    class="chev">▾</span></button>
+                <div class="fpill-pop" id="popLevel">
+                    <button class="fpill-opt selected" data-level="any" onclick="pickLevel('any','💪 Any level', this)">Any level</button>
+                    <button class="fpill-opt" data-level="beginner" onclick="pickLevel('beginner','🌱 Beginner', this)">Beginner</button>
+                    <button class="fpill-opt" data-level="intermediate" onclick="pickLevel('intermediate','⚡ Intermediate', this)">Intermediate</button>
+                    <button class="fpill-opt" data-level="advanced" onclick="pickLevel('advanced','🔥 Advanced', this)">Advanced</button>
+                </div>
+            </div>
+
+            <div class="fpill-wrap" style="position:relative;">
+                <button class="fpill" id="pillDist" onclick="togglePop('popDist', event)"><span id="pillDistLabel">🗺️ Any distance</span> <span
+                    class="chev">▾</span></button>
+                <div class="fpill-pop" id="popDist">
+                    <div class="dist-wrap">
+                        <label>Within <span class="dist-val" id="distVal">30</span> km</label>
+                        <input type="range" id="distRange" min="1" max="100" value="30" oninput="updateDistLabel()" onchange="applyFilters()" />
+                        <button class="geo-btn" id="geoBtn" onclick="requestGeo()">📍 Use my location</button>
+                        <div class="geo-status" id="geoStatus">Tap to enable distance filter</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-toggle">
+                <button id="viewList" class="active" onclick="setView('list')">📋 List</button>
+                <button id="viewMap" onclick="setView('map')">🗺️ Map</button>
+            </div>
+
+            <button class="reset-btn" onclick="resetFilters()">Reset</button>
         </div>
-      </div>
-
-      <div class="fpill-wrap" style="position:relative;">
-        <button class="fpill" id="pillLevel" onclick="togglePop('popLevel', event)"><span id="pillLevelLabel">💪 Any level</span> <span class="chev">▾</span></button>
-        <div class="fpill-pop" id="popLevel">
-          <button class="fpill-opt selected" data-level="any" onclick="pickLevel('any','💪 Any level', this)">Any level</button>
-          <button class="fpill-opt" data-level="beginner" onclick="pickLevel('beginner','🌱 Beginner', this)">Beginner</button>
-          <button class="fpill-opt" data-level="intermediate" onclick="pickLevel('intermediate','⚡ Intermediate', this)">Intermediate</button>
-          <button class="fpill-opt" data-level="advanced" onclick="pickLevel('advanced','🔥 Advanced', this)">Advanced</button>
-        </div>
-      </div>
-
-      <div class="fpill-wrap" style="position:relative;">
-        <button class="fpill" id="pillDist" onclick="togglePop('popDist', event)"><span id="pillDistLabel">🗺️ Any distance</span> <span class="chev">▾</span></button>
-        <div class="fpill-pop" id="popDist">
-          <div class="dist-wrap">
-            <label>Within <span class="dist-val" id="distVal">30</span> km</label>
-            <input type="range" id="distRange" min="1" max="100" value="30" oninput="updateDistLabel()" onchange="applyFilters()" />
-            <button class="geo-btn" id="geoBtn" onclick="requestGeo()">📍 Use my location</button>
-            <div class="geo-status" id="geoStatus">Tap to enable distance filter</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="view-toggle">
-        <button id="viewList" class="active" onclick="setView('list')">📋 List</button>
-        <button id="viewMap" onclick="setView('map')">🗺️ Map</button>
-      </div>
-
-      <button class="reset-btn" onclick="resetFilters()">Reset</button>
     </div>
-  </div>
 
-  <div class="result-count" id="resultCount"></div>
+    <div class="result-count" id="resultCount"></div>
 
-  <div class="events-grid" id="eventsGrid">
-    <!-- Firestore events loaded here by JavaScript -->
-  </div>
+    <div class="events-grid" id="eventsGrid">
+        <!-- Firestore events loaded here by JavaScript -->
+    </div>
 
-  <div id="eventsMap"></div>
+    <div id="eventsMap"></div>
 </div>
 
-  <div class="events-grid" id="eventsGrid">
+<div class="events-grid" id="eventsGrid">
     <!-- Firestore events loaded here by JavaScript -->
-  </div>
+</div>
 </div>
 
 <!-- MARQUEE -->
 <div class="marquee-wrap">
-  <div class="marquee-track">
-    <span class="mitem"><span class="dot"></span>Football</span>
-    <span class="mitem"><span class="dot"></span>Basketball</span>
-    <span class="mitem"><span class="dot"></span>Tennis</span>
-    <span class="mitem"><span class="dot"></span>Volleyball</span>
-    <span class="mitem"><span class="dot"></span>Badminton</span>
-    <span class="mitem"><span class="dot"></span>Ping-Pong</span>
-    <span class="mitem"><span class="dot"></span>Swimming</span>
-    <span class="mitem"><span class="dot"></span>Yoga</span>
-    <span class="mitem"><span class="dot"></span>Cycling</span>
-    <span class="mitem"><span class="dot"></span>Boxing</span>
-    <span class="mitem"><span class="dot"></span>Running</span>
-    <span class="mitem"><span class="dot"></span>Padel</span>
-    <span class="mitem"><span class="dot"></span>Football</span>
-    <span class="mitem"><span class="dot"></span>Basketball</span>
-    <span class="mitem"><span class="dot"></span>Tennis</span>
-    <span class="mitem"><span class="dot"></span>Volleyball</span>
-    <span class="mitem"><span class="dot"></span>Badminton</span>
-    <span class="mitem"><span class="dot"></span>Ping-Pong</span>
-    <span class="mitem"><span class="dot"></span>Swimming</span>
-    <span class="mitem"><span class="dot"></span>Yoga</span>
-    <span class="mitem"><span class="dot"></span>Cycling</span>
-    <span class="mitem"><span class="dot"></span>Boxing</span>
-    <span class="mitem"><span class="dot"></span>Running</span>
-    <span class="mitem"><span class="dot"></span>Padel</span>
-  </div>
+    <div class="marquee-track">
+        <span class="mitem"><span class="dot"></span>Football</span>
+        <span class="mitem"><span class="dot"></span>Basketball</span>
+        <span class="mitem"><span class="dot"></span>Tennis</span>
+        <span class="mitem"><span class="dot"></span>Volleyball</span>
+        <span class="mitem"><span class="dot"></span>Badminton</span>
+        <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+        <span class="mitem"><span class="dot"></span>Swimming</span>
+        <span class="mitem"><span class="dot"></span>Yoga</span>
+        <span class="mitem"><span class="dot"></span>Cycling</span>
+        <span class="mitem"><span class="dot"></span>Boxing</span>
+        <span class="mitem"><span class="dot"></span>Running</span>
+        <span class="mitem"><span class="dot"></span>Padel</span>
+        <span class="mitem"><span class="dot"></span>Football</span>
+        <span class="mitem"><span class="dot"></span>Basketball</span>
+        <span class="mitem"><span class="dot"></span>Tennis</span>
+        <span class="mitem"><span class="dot"></span>Volleyball</span>
+        <span class="mitem"><span class="dot"></span>Badminton</span>
+        <span class="mitem"><span class="dot"></span>Ping-Pong</span>
+        <span class="mitem"><span class="dot"></span>Swimming</span>
+        <span class="mitem"><span class="dot"></span>Yoga</span>
+        <span class="mitem"><span class="dot"></span>Cycling</span>
+        <span class="mitem"><span class="dot"></span>Boxing</span>
+        <span class="mitem"><span class="dot"></span>Running</span>
+        <span class="mitem"><span class="dot"></span>Padel</span>
+    </div>
 </div>
 
 <!-- HOW IT WORKS -->
 <section id="how">
-  <div class="how-inner">
-    <p class="sec-eye">Simple by design</p>
-    <h2 class="sec-title">How <span>MatchUp</span> works</h2>
-    <div class="steps">
-      <div class="step reveal">
-        <div class="step-num">01</div>
-        <div class="step-icon si-o">🎯</div>
-        <h3>Pick your sport</h3>
-        <p>Tell us what you love to play. We cover 18+ sports — filter by level, schedule, and distance from home.</p>
-      </div>
-      <div class="step reveal">
-        <div class="step-num">02</div>
-        <div class="step-icon si-b">⚡</div>
-        <h3>Get matched instantly</h3>
-        <p>Our smart algorithm surfaces compatible players and events near you in seconds — no guesswork, no waiting.</p>
-      </div>
-      <div class="step reveal">
-        <div class="step-num">03</div>
-        <div class="step-icon si-o">📍</div>
-        <h3>Play, book &amp; repeat</h3>
-        <p>Book a court, join a group session, or create your own event. Split costs automatically — no clubs, no contracts.</p>
-      </div>
+    <div class="how-inner">
+        <p class="sec-eye">Simple by design</p>
+        <h2 class="sec-title">How <span>MatchUp</span> works</h2>
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-num">01</div>
+                <div class="step-icon si-o">🎯</div>
+                <h3>Pick your sport</h3>
+                <p>Tell us what you love to play. We cover 18+ sports — filter by level, schedule, and distance from home.</p>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">02</div>
+                <div class="step-icon si-b">⚡</div>
+                <h3>Get matched instantly</h3>
+                <p>Our smart algorithm surfaces compatible players and events near you in seconds — no guesswork, no waiting.</p>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">03</div>
+                <div class="step-icon si-o">📍</div>
+                <h3>Play, book &amp; repeat</h3>
+                <p>Book a court, join a group session, or create your own event. Split costs automatically — no clubs, no contracts.</p>
+            </div>
+        </div>
     </div>
-  </div>
 </section>
 
 <!-- SPORTS -->
 <section id="sports">
-  <p class="sec-eye">All your favourites</p>
-  <h2 class="sec-title" style="margin-bottom:28px">Sports for <span style="color:var(--orange)">everyone</span></h2>
-  <div class="sports-grid">
-    <div class="sc feat reveal">
-      <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=900&h=600&fit=crop&auto=format" alt="Football" loading="lazy" />
-      <div class="sco"></div>
-      <div class="sci"><span class="scn">Football</span><span class="scc">4,200 players near you</span></div>
-      <span class="shot">🔥 #1 sport</span>
+    <p class="sec-eye">All your favourites</p>
+    <h2 class="sec-title" style="margin-bottom:28px">Sports for <span style="color:var(--orange)">everyone</span></h2>
+    <div class="sports-grid">
+        <div class="sc feat reveal">
+            <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=900&h=600&fit=crop&auto=format" alt="Football" loading="lazy" />
+            <div class="sco"></div>
+            <div class="sci"><span class="scn">Football</span><span class="scc">4,200 players near you</span></div>
+            <span class="shot">🔥 #1 sport</span>
+        </div>
+        <div class="sc reveal">
+            <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=600&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+            <div class="sco"></div>
+            <div class="sci"><span class="scn">Basketball</span><span class="scc">1,850 players</span></div>
+        </div>
+        <div class="sc reveal">
+            <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=600&fit=crop&auto=format" alt="Tennis" loading="lazy" />
+            <div class="sco"></div>
+            <div class="sci"><span class="scn">Tennis</span><span class="scc">2,100 players</span></div>
+        </div>
+        <div class="sc reveal">
+            <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=600&fit=crop&auto=format" alt="Swimming" loading="lazy" />
+            <div class="sco"></div>
+            <div class="sci"><span class="scn">Swimming</span><span class="scc">980 players</span></div>
+        </div>
+        <div class="sc reveal">
+            <img src="https://images.unsplash.com/flagged/photo-1556746834-cbb4a38ee593?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
+            <div class="sco"></div>
+            <div class="sci"><span class="scn">Running</span><span class="scc">3,400 players</span></div>
+        </div>
     </div>
-    <div class="sc reveal">
-      <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=600&fit=crop&auto=format" alt="Basketball" loading="lazy" />
-      <div class="sco"></div>
-      <div class="sci"><span class="scn">Basketball</span><span class="scc">1,850 players</span></div>
-    </div>
-    <div class="sc reveal">
-      <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=600&fit=crop&auto=format" alt="Tennis" loading="lazy" />
-      <div class="sco"></div>
-      <div class="sci"><span class="scn">Tennis</span><span class="scc">2,100 players</span></div>
-    </div>
-    <div class="sc reveal">
-      <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=600&fit=crop&auto=format" alt="Swimming" loading="lazy" />
-      <div class="sco"></div>
-      <div class="sci"><span class="scn">Swimming</span><span class="scc">980 players</span></div>
-    </div>
-    <div class="sc reveal">
-      <img src="https://images.unsplash.com/flagged/photo-1556746834-cbb4a38ee593?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
-      <div class="sco"></div>
-      <div class="sci"><span class="scn">Running</span><span class="scc">3,400 players</span></div>
-    </div>
-  </div>
 </section>
 
 <!-- TESTIMONIALS -->
 <section id="testimonials">
-  <div class="testi-inner">
-    <p class="sec-eye">Real players, real stories</p>
-    <h2 class="sec-title">They found <span style="color:var(--blue)">their team</span></h2>
-    <div class="tgrid">
-      <div class="tc reveal">
-        <div class="stars">★★★★★</div>
-        <blockquote>"I moved to Montréal not knowing anyone. Within a week I had a regular football crew thanks to MatchUp. Absolute game-changer."</blockquote>
-        <div class="author">
-          <div class="av"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=84&h=84&fit=crop&crop=face&auto=format" alt="Thomas" /></div>
-          <div><div class="aname">Thomas R.</div><div class="asport">⚽ Football · Montréal</div></div>
+    <div class="testi-inner">
+        <p class="sec-eye">Real players, real stories</p>
+        <h2 class="sec-title">They found <span style="color:var(--blue)">their team</span></h2>
+        <div class="tgrid">
+            <div class="tc reveal">
+                <div class="stars">★★★★★</div>
+                <blockquote>"I moved to Montréal not knowing anyone. Within a week I had a regular football crew thanks to MatchUp. Absolute game-changer."
+                </blockquote>
+                <div class="author">
+                    <div class="av"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=84&h=84&fit=crop&crop=face&auto=format"
+                                         alt="Thomas" /></div>
+                    <div>
+                        <div class="aname">Thomas R.</div>
+                        <div class="asport">⚽ Football · Montréal</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tc reveal">
+                <div class="stars">★★★★★</div>
+                <blockquote>"Finally an app that gets it — no expensive club memberships. MatchUp lets me play tennis 3× a week for a fraction of the cost."
+                </blockquote>
+                <div class="author">
+                    <div class="av"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=84&h=84&fit=crop&crop=face&auto=format"
+                                         alt="Camille" /></div>
+                    <div>
+                        <div class="aname">Camille D.</div>
+                        <div class="asport">🎾 Tennis · Québec City</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tc reveal">
+                <div class="stars">★★★★★</div>
+                <blockquote>"Organized our 5v5 tournament in 20 minutes. The cost-split feature is brilliantly simple. Our whole crew uses MatchUp now."
+                </blockquote>
+                <div class="author">
+                    <div class="av"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=84&h=84&fit=crop&crop=face&auto=format"
+                                         alt="Marcus" /></div>
+                    <div>
+                        <div class="aname">Marcus K.</div>
+                        <div class="asport">🏀 Basketball · Toronto</div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="tc reveal">
-        <div class="stars">★★★★★</div>
-        <blockquote>"Finally an app that gets it — no expensive club memberships. MatchUp lets me play tennis 3× a week for a fraction of the cost."</blockquote>
-        <div class="author">
-          <div class="av"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=84&h=84&fit=crop&crop=face&auto=format" alt="Camille" /></div>
-          <div><div class="aname">Camille D.</div><div class="asport">🎾 Tennis · Québec City</div></div>
-        </div>
-      </div>
-      <div class="tc reveal">
-        <div class="stars">★★★★★</div>
-        <blockquote>"Organized our 5v5 tournament in 20 minutes. The cost-split feature is brilliantly simple. Our whole crew uses MatchUp now."</blockquote>
-        <div class="author">
-          <div class="av"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=84&h=84&fit=crop&crop=face&auto=format" alt="Marcus" /></div>
-          <div><div class="aname">Marcus K.</div><div class="asport">🏀 Basketball · Toronto</div></div>
-        </div>
-      </div>
     </div>
-  </div>
 </section>
 
 <!-- CTA -->
 <section id="cta">
-  <h2>Ready to play?</h2>
-  <p>Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
-  <div class="cta-btns">
-    <button class="btn-ws" onclick="openModal()">Create your free account →</button>
-    <a class="btn-gw" href="#how">Learn more</a>
-  </div>
+    <h2>Ready to play?</h2>
+    <p>Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
+    <div class="cta-btns">
+        <button class="btn-ws" onclick="openModal()">Create your free account →</button>
+        <a class="btn-gw" href="#how">Learn more</a>
+    </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="f-brand">
-    <span class="f-logo">🏆 MatchUp</span>
-    <p>Find your game, find your people. Sport shouldn't be complicated or expensive — we're here to change that.</p>
-    <div class="f-social">
-      <a aria-label="Instagram">📸</a>
-      <a aria-label="X">𝕏</a>
-      <a aria-label="TikTok">🎵</a>
-      <a aria-label="LinkedIn">💼</a>
+    <div class="f-brand">
+        <span class="f-logo">🏆 MatchUp</span>
+        <p>Find your game, find your people. Sport shouldn't be complicated or expensive — we're here to change that.</p>
+        <div class="f-social">
+            <a aria-label="Instagram">📸</a>
+            <a aria-label="X">𝕏</a>
+            <a aria-label="TikTok">🎵</a>
+            <a aria-label="LinkedIn">💼</a>
+        </div>
     </div>
-  </div>
-  <div class="f-col">
-    <h4>Product</h4>
-    <ul>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#sports">Browse sports</a></li>
-      <li><a href="#">Find courts</a></li>
-      <li><a href="#">Pricing</a></li>
-    </ul>
-  </div>
-  <div class="f-col">
-    <h4>Company</h4>
-    <ul>
-      <li><a href="#">About us</a></li>
-      <li><a href="#">Blog</a></li>
-      <li><a href="#">Careers</a></li>
-      <li><a href="#">Press</a></li>
-    </ul>
-  </div>
-  <div class="f-col">
-    <h4>Legal</h4>
-    <ul>
-      <li><a href="#">Privacy policy</a></li>
-      <li><a href="#">Terms of use</a></li>
-      <li><a href="#">Cookies</a></li>
-      <li><a href="#">Contact</a></li>
-    </ul>
-  </div>
+    <div class="f-col">
+        <h4>Product</h4>
+        <ul>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#sports">Browse sports</a></li>
+            <li><a href="#">Find courts</a></li>
+            <li><a href="#">Pricing</a></li>
+        </ul>
+    </div>
+    <div class="f-col">
+        <h4>Company</h4>
+        <ul>
+            <li><a href="#">About us</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+        </ul>
+    </div>
+    <div class="f-col">
+        <h4>Legal</h4>
+        <ul>
+            <li><a href="#">Privacy policy</a></li>
+            <li><a href="#">Terms of use</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </div>
 </footer>
 <div class="foot-bottom">
-  <span>© 2025 MatchUp Inc. — Built with ❤️ for players everywhere</span>
-  <span>🇨🇦 Made in Canada</span>
+    <span>© 2025 MatchUp Inc. — Built with ❤️ for players everywhere</span>
+    <span>🇨🇦 Made in Canada</span>
 </div>
 
 <script>
-/* ── MODAL ── */
-function openModal() {
-  const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-  if (user && user.fname) {
-    window.location.href = 'event.html';
-    return;
-  }
-  document.getElementById('authModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeModal() {
-  document.getElementById('authModal').classList.remove('open');
-  document.body.style.overflow = '';
-  document.getElementById('modalSuccess').classList.remove('show');
-  document.getElementById('modalFormWrap').classList.remove('hide');
-}
-document.getElementById('modalClose').onclick = closeModal;
-document.getElementById('authModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    /* ── MODAL ── */
+    function openModal() {
+        const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+        if (user && user.fname) {
+            window.location.href = 'event.html';
+            return;
+        }
+        document.getElementById('authModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
 
-function switchTab(tab) {
-  const isSignup = tab === 'signup';
-  document.getElementById('tabSignup').classList.toggle('active', isSignup);
-  document.getElementById('tabLogin').classList.toggle('active', !isSignup);
-  document.getElementById('signupForm').style.display = isSignup ? '' : 'none';
-  document.getElementById('loginForm').style.display  = isSignup ? 'none' : '';
-  document.getElementById('switchAuthText').innerHTML = isSignup
-    ? 'Already have an account? <a onclick="switchTab(\'login\')">Log in</a>'
-    : 'No account yet? <a onclick="switchTab(\'signup\')">Create one for free</a>';
-  clearAlert();
-}
+    function closeModal() {
+        document.getElementById('authModal').classList.remove('open');
+        document.body.style.overflow = '';
+        document.getElementById('modalSuccess').classList.remove('show');
+        document.getElementById('modalFormWrap').classList.remove('hide');
+    }
 
-function showAlert(msg, type) {
-  const el = document.getElementById('authAlert');
-  el.textContent = msg;
-  el.className = 'auth-alert ' + type + ' show';
-  document.querySelector('.modal').scrollTop = 0;
-}
-function clearAlert() {
-  const el = document.getElementById('authAlert');
-  el.className = 'auth-alert';
-  el.textContent = '';
-}
-
-async function forgotPassword() {
-  // Try to pre-fill email from login form
-  let email = document.getElementById('li-email')?.value.trim() || '';
-  if (!email) {
-    email = prompt('Enter the email address for your account:');
-    if (!email) return;
-    email = email.trim();
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    showAlert('Please enter a valid email address.', 'error');
-    return;
-  }
-
-  try {
-    showAlert('Sending reset link…', 'success');
-    await window._fbResetPassword(email);
-    showAlert(`✅ Check your inbox! We sent a password reset link to ${email}.`, 'success');
-  } catch (err) {
-    console.error('[reset] failed:', err);
-    const code = err.code || '';
-    let msg = err.message || 'Something went wrong. Try again.';
-    if (code === 'auth/user-not-found') msg = 'No account found with that email.';
-    else if (code === 'auth/invalid-email') msg = 'That email address looks invalid.';
-    else if (code === 'auth/too-many-requests') msg = 'Too many attempts. Please wait a few minutes and try again.';
-    showAlert('❌ ' + msg, 'error');
-  }
-}
-
-/* Sport option toggles */
-document.querySelectorAll('.sport-opt').forEach(btn => {
-  btn.addEventListener('click', () => btn.classList.toggle('sel'));
-});
-
-/* ── SIGNUP ── */
-document.getElementById('signupForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  clearAlert();
-
-  const fname    = document.getElementById('su-fname').value.trim();
-  const lname    = document.getElementById('su-lname').value.trim();
-  const email    = document.getElementById('su-email').value.trim();
-  const password = document.getElementById('su-password').value;
-  let valid = true;
-
-  [['su-fname','err-fname',fname],['su-lname','err-lname',lname]].forEach(([id,errId,val]) => {
-    const input = document.getElementById(id);
-    const err   = document.getElementById(errId);
-    if (!val) { input.classList.add('error'); err.classList.add('show'); valid = false; }
-    else      { input.classList.remove('error'); err.classList.remove('show'); }
-  });
-  const emailEl  = document.getElementById('su-email');
-  const emailErr = document.getElementById('err-email');
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
-  } else { emailEl.classList.remove('error'); emailErr.classList.remove('show'); }
-  const passEl  = document.getElementById('su-password');
-  const passErr = document.getElementById('err-password');
-  if (password.length < 8) {
-    passEl.classList.add('error'); passErr.classList.add('show'); valid = false;
-  } else { passEl.classList.remove('error'); passErr.classList.remove('show'); }
-
-  const waiverEl = document.getElementById('su-waiver');
-  const waiverErr = document.getElementById('err-waiver');
-  if (!waiverEl || !waiverEl.checked) {
-    if (waiverErr) waiverErr.style.display = 'block';
-    valid = false;
-  } else {
-    if (waiverErr) waiverErr.style.display = 'none';
-  }
-
-  if (!valid) return;
-
-  const btn = document.getElementById('signupBtn');
-  btn.classList.add('loading'); btn.disabled = true;
-
-  try {
-    await window._fbCreate(window._auth, email, password);
-  } catch (err) {
-    btn.classList.remove('loading'); btn.disabled = false;
-    const msg = err.code === 'auth/email-already-in-use'
-      ? 'This email is already registered. Try logging in!'
-      : err.message;
-    showAlert(msg, 'error');
-    return;
-  }
-
-  btn.classList.remove('loading'); btn.disabled = false;
-
- const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
-  const user = { fname, lname, email, sports, joined: new Date().toISOString() };
-  localStorage.setItem('mu_current_user', JSON.stringify(user));
-
-  // Save to Firestore users/{uid}
-  // Save to Firestore users/{uid} + record waiver acceptance
-  if (window._saveUserDoc) {
-    await window._saveUserDoc({
-      fname,
-      lname,
-      email,
-      sports,
-      city: '',
-      phone: '',
-      bio: '',
-      level: '',
-      photoURL: '',
-      waiverAccepted: true,
-      waiverAcceptedAt: new Date().toISOString()
+    document.getElementById('modalClose').onclick = closeModal;
+    document.getElementById('authModal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal();
     });
-  }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
 
-  // Send verification email
-  try {
-    if (window._fbSendVerification && window._auth.currentUser) {
-      await window._fbSendVerification(window._auth.currentUser);
-      console.log('[signup] verification email sent');
-    }
-  } catch (err) {
-    console.warn('[signup] could not send verification:', err);
-  }
-
-  document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
-  document.getElementById('successMsg').textContent   = `Account created! Check your email to verify, then start finding your game.`;
-  document.getElementById('modalFormWrap').classList.add('hide');
-  document.getElementById('modalSuccess').classList.add('show');
-  updateNavForUser(fname);
-  setTimeout(() => { window.location.href = 'verify-email.html'; }, 2500);
-});
-
-/* ── LOGIN ── */
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  clearAlert();
-
-  const email    = document.getElementById('li-email').value.trim();
-  const password = document.getElementById('li-password').value;
-  let valid = true;
-
-  const emailEl  = document.getElementById('li-email');
-  const emailErr = document.getElementById('err-li-email');
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
-  } else { emailEl.classList.remove('error'); emailErr.classList.remove('show'); }
-  const passEl  = document.getElementById('li-password');
-  const passErr = document.getElementById('err-li-password');
-  if (!password) {
-    passEl.classList.add('error'); passErr.classList.add('show'); valid = false;
-  } else { passEl.classList.remove('error'); passErr.classList.remove('show'); }
-  if (!valid) return;
-
-  const btn = document.getElementById('loginBtn');
-  btn.classList.add('loading'); btn.disabled = true;
-
-  try {
-    const cred   = await window._fbLogin(window._auth, email, password);
-    const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
-    const name   = stored.fname || cred.user.email.split('@')[0];
-    localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email }));
-
-    // Ensure Firestore user doc exists (creates one on first login for pre-existing users)
-    if (window._saveUserDoc) {
-      await window._saveUserDoc({
-        fname: name,
-        lname: stored.lname || '',
-        email,
-        sports: stored.sports || [],
-        city: stored.city || '',
-        phone: stored.phone || '',
-        bio: stored.bio || '',
-        level: stored.level || '',
-        photoURL: stored.photo || ''
-      });
+    function switchTab(tab) {
+        const isSignup = tab === 'signup';
+        document.getElementById('tabSignup').classList.toggle('active', isSignup);
+        document.getElementById('tabLogin').classList.toggle('active', !isSignup);
+        document.getElementById('signupForm').style.display = isSignup ? '' : 'none';
+        document.getElementById('loginForm').style.display = isSignup ? 'none' : '';
+        document.getElementById('switchAuthText').innerHTML = isSignup
+            ? 'Already have an account? <a onclick="switchTab(\'login\')">Log in</a>'
+            : 'No account yet? <a onclick="switchTab(\'signup\')">Create one for free</a>';
+        clearAlert();
     }
 
-    document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
-    document.getElementById('successMsg').textContent   = "You're logged in. Ready to find your next game!";
-    document.getElementById('modalFormWrap').classList.add('hide');
-    document.getElementById('modalSuccess').classList.add('show');
-    updateNavForUser(name);
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
-  } catch (err) {
-    btn.classList.remove('loading'); btn.disabled = false;
-    showAlert('Wrong email or password. Please try again.', 'error');
-  }
-});
-
-/* ── GOOGLE SIGN-IN ── */
-async function googleSignIn() {
-  clearAlert();
-  try {
-    const result = await window._fbGoogle();
-    const user   = result.user;
-    const name   = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-    const lname  = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
-
-    localStorage.setItem('mu_current_user', JSON.stringify({
-      fname: name, lname, email: user.email,
-      photo: user.photoURL, joined: new Date().toISOString()
-    }));
-
-    // Save to Firestore users/{uid}
-    if (window._saveUserDoc) {
-      await window._saveUserDoc({
-        fname: name,
-        lname,
-        email: user.email,
-        sports: [],
-        city: '',
-        phone: '',
-        bio: '',
-        level: '',
-        photoURL: user.photoURL || ''
-      });
+    function showAlert(msg, type) {
+        const el = document.getElementById('authAlert');
+        el.textContent = msg;
+        el.className = 'auth-alert ' + type + ' show';
+        document.querySelector('.modal').scrollTop = 0;
     }
 
-    document.getElementById('successTitle').textContent = `Welcome, ${name}! 🎉`;
-    document.getElementById('successMsg').textContent   = "You're signed in with Google. Let's find your next game!";
-    document.getElementById('modalFormWrap').classList.add('hide');
-    document.getElementById('modalSuccess').classList.add('show');
-    updateNavForUser(name);
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
-  } catch (err) {
-    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-      return;
+    function clearAlert() {
+        const el = document.getElementById('authAlert');
+        el.className = 'auth-alert';
+        el.textContent = '';
     }
-    showAlert('Google sign-in failed: ' + err.message, 'error');
-  }
-}
 
-/* ── NAV UPDATE ── */
-function updateNavForUser(fname) {
-  const links = document.querySelector('.nav-links');
-  if (links) {
-    links.innerHTML = `
+    async function forgotPassword() {
+        // Try to pre-fill email from login form
+        let email = document.getElementById('li-email')?.value.trim() || '';
+        if (!email) {
+            email = prompt('Enter the email address for your account:');
+            if (!email) return;
+            email = email.trim();
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showAlert('Please enter a valid email address.', 'error');
+            return;
+        }
+
+        try {
+            showAlert('Sending reset link…', 'success');
+            await window._fbResetPassword(email);
+            showAlert(`✅ Check your inbox! We sent a password reset link to ${email}.`, 'success');
+        } catch (err) {
+            console.error('[reset] failed:', err);
+            const code = err.code || '';
+            let msg = err.message || 'Something went wrong. Try again.';
+            if (code === 'auth/user-not-found') msg = 'No account found with that email.';
+            else if (code === 'auth/invalid-email') msg = 'That email address looks invalid.';
+            else if (code === 'auth/too-many-requests') msg = 'Too many attempts. Please wait a few minutes and try again.';
+            showAlert('❌ ' + msg, 'error');
+        }
+    }
+
+    /* Sport option toggles */
+    document.querySelectorAll('.sport-opt').forEach(btn => {
+        btn.addEventListener('click', () => btn.classList.toggle('sel'));
+    });
+
+    /* ── SIGNUP ── */
+    document.getElementById('signupForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearAlert();
+
+        const fname = document.getElementById('su-fname').value.trim();
+        const lname = document.getElementById('su-lname').value.trim();
+        const email = document.getElementById('su-email').value.trim();
+        const password = document.getElementById('su-password').value;
+        let valid = true;
+
+        [['su-fname', 'err-fname', fname], ['su-lname', 'err-lname', lname]].forEach(([id, errId, val]) => {
+            const input = document.getElementById(id);
+            const err = document.getElementById(errId);
+            if (!val) {
+                input.classList.add('error');
+                err.classList.add('show');
+                valid = false;
+            } else {
+                input.classList.remove('error');
+                err.classList.remove('show');
+            }
+        });
+        const emailEl = document.getElementById('su-email');
+        const emailErr = document.getElementById('err-email');
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            emailEl.classList.add('error');
+            emailErr.classList.add('show');
+            valid = false;
+        } else {
+            emailEl.classList.remove('error');
+            emailErr.classList.remove('show');
+        }
+        const passEl = document.getElementById('su-password');
+        const passErr = document.getElementById('err-password');
+        if (password.length < 8) {
+            passEl.classList.add('error');
+            passErr.classList.add('show');
+            valid = false;
+        } else {
+            passEl.classList.remove('error');
+            passErr.classList.remove('show');
+        }
+
+        const waiverEl = document.getElementById('su-waiver');
+        const waiverErr = document.getElementById('err-waiver');
+        if (!waiverEl || !waiverEl.checked) {
+            if (waiverErr) waiverErr.style.display = 'block';
+            valid = false;
+        } else {
+            if (waiverErr) waiverErr.style.display = 'none';
+        }
+
+        if (!valid) return;
+
+        const btn = document.getElementById('signupBtn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        try {
+            await window._fbCreate(window._auth, email, password);
+        } catch (err) {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            const msg = err.code === 'auth/email-already-in-use'
+                ? 'This email is already registered. Try logging in!'
+                : err.message;
+            showAlert(msg, 'error');
+            return;
+        }
+
+        btn.classList.remove('loading');
+        btn.disabled = false;
+
+        const sports = [...document.querySelectorAll('.sport-opt.sel')].map(b => b.dataset.sport);
+        const user = {fname, lname, email, sports, joined: new Date().toISOString()};
+        localStorage.setItem('mu_current_user', JSON.stringify(user));
+
+        // Save to Firestore users/{uid}
+        // Save to Firestore users/{uid} + record waiver acceptance
+        if (window._saveUserDoc) {
+            await window._saveUserDoc({
+                fname,
+                lname,
+                email,
+                sports,
+                city: '',
+                phone: '',
+                bio: '',
+                level: '',
+                photoURL: '',
+                waiverAccepted: true,
+                waiverAcceptedAt: new Date().toISOString()
+            });
+        }
+
+        // Send verification email
+        try {
+            if (window._fbSendVerification && window._auth.currentUser) {
+                await window._fbSendVerification(window._auth.currentUser);
+                console.log('[signup] verification email sent');
+            }
+        } catch (err) {
+            console.warn('[signup] could not send verification:', err);
+        }
+
+        document.getElementById('successTitle').textContent = `Welcome, ${fname}! 🎉`;
+        document.getElementById('successMsg').textContent = `Account created! Check your email to verify, then start finding your game.`;
+        document.getElementById('modalFormWrap').classList.add('hide');
+        document.getElementById('modalSuccess').classList.add('show');
+        updateNavForUser(fname);
+        setTimeout(() => {
+            window.location.href = 'verify-email.html';
+        }, 2500);
+    });
+
+    /* ── LOGIN ── */
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearAlert();
+
+        const email = document.getElementById('li-email').value.trim();
+        const password = document.getElementById('li-password').value;
+        let valid = true;
+
+        const emailEl = document.getElementById('li-email');
+        const emailErr = document.getElementById('err-li-email');
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            emailEl.classList.add('error');
+            emailErr.classList.add('show');
+            valid = false;
+        } else {
+            emailEl.classList.remove('error');
+            emailErr.classList.remove('show');
+        }
+        const passEl = document.getElementById('li-password');
+        const passErr = document.getElementById('err-li-password');
+        if (!password) {
+            passEl.classList.add('error');
+            passErr.classList.add('show');
+            valid = false;
+        } else {
+            passEl.classList.remove('error');
+            passErr.classList.remove('show');
+        }
+        if (!valid) return;
+
+        const btn = document.getElementById('loginBtn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        try {
+            const cred = await window._fbLogin(window._auth, email, password);
+            const stored = JSON.parse(localStorage.getItem('mu_current_user') || '{}');
+            const name = stored.fname || cred.user.email.split('@')[0];
+            localStorage.setItem('mu_current_user', JSON.stringify({...stored, fname: name, email}));
+
+            // Ensure Firestore user doc exists (creates one on first login for pre-existing users)
+            if (window._saveUserDoc) {
+                await window._saveUserDoc({
+                    fname: name,
+                    lname: stored.lname || '',
+                    email,
+                    sports: stored.sports || [],
+                    city: stored.city || '',
+                    phone: stored.phone || '',
+                    bio: stored.bio || '',
+                    level: stored.level || '',
+                    photoURL: stored.photo || ''
+                });
+            }
+
+            document.getElementById('successTitle').textContent = `Welcome back, ${name}! 👋`;
+            document.getElementById('successMsg').textContent = "You're logged in. Ready to find your next game!";
+            document.getElementById('modalFormWrap').classList.add('hide');
+            document.getElementById('modalSuccess').classList.add('show');
+            updateNavForUser(name);
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        } catch (err) {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            showAlert('Wrong email or password. Please try again.', 'error');
+        }
+    });
+
+    /* ── GOOGLE SIGN-IN ── */
+    async function googleSignIn() {
+        clearAlert();
+        try {
+            const result = await window._fbGoogle();
+            const user = result.user;
+            const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+            const lname = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+
+            localStorage.setItem('mu_current_user', JSON.stringify({
+                fname: name, lname, email: user.email,
+                photo: user.photoURL, joined: new Date().toISOString()
+            }));
+
+            // Save to Firestore users/{uid}
+            if (window._saveUserDoc) {
+                await window._saveUserDoc({
+                    fname: name,
+                    lname,
+                    email: user.email,
+                    sports: [],
+                    city: '',
+                    phone: '',
+                    bio: '',
+                    level: '',
+                    photoURL: user.photoURL || ''
+                });
+            }
+
+            document.getElementById('successTitle').textContent = `Welcome, ${name}! 🎉`;
+            document.getElementById('successMsg').textContent = "You're signed in with Google. Let's find your next game!";
+            document.getElementById('modalFormWrap').classList.add('hide');
+            document.getElementById('modalSuccess').classList.add('show');
+            updateNavForUser(name);
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        } catch (err) {
+            if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+                return;
+            }
+            showAlert('Google sign-in failed: ' + err.message, 'error');
+        }
+    }
+
+    /* ── NAV UPDATE ── */
+    function updateNavForUser(fname) {
+        const links = document.querySelector('.nav-links');
+        if (links) {
+            links.innerHTML = `
       <li><a href="dashboard.html">🏠 Dashboard</a></li>
       <li><a href="create-event.html" style="color:var(--orange);font-weight:800;">➕ Create</a></li>
       <li><a href="profile.html">👤 Profile</a></li>
       <li><span style="padding:8px 14px;font-size:.88rem;font-weight:800;color:var(--text)">👋 ${fname}</span></li>
       <li><a class="btn-su" href="#" onclick="logOut();return false;">Log out</a></li>`;
-  }
-}
-  
-function logOut() {
-  localStorage.removeItem('mu_current_user');
-  if (window._fbSignOut) window._fbSignOut();
-  location.reload();
-}
+        }
+    }
 
-/* ── RESTORE SESSION ── */
-window.addEventListener('load', () => {
-  const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-  if (user && user.fname) {
-    updateNavForUser(user.fname);
-  }
-});
+    function logOut() {
+        localStorage.removeItem('mu_current_user');
+        if (window._fbSignOut) window._fbSignOut();
+        location.reload();
+    }
 
-/* ── LOAD EVENTS FROM FIRESTORE ── */
-let _allEvents = [];
+    /* ── RESTORE SESSION ── */
+    window.addEventListener('load', () => {
+        const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+        if (user && user.fname) {
+            updateNavForUser(user.fname);
+        }
+    });
 
-function showGridLoading() {
-  const grid = document.getElementById('eventsGrid');
-  if (!grid) return;
-  grid.innerHTML = `
+    /* ── LOAD EVENTS FROM FIRESTORE ── */
+    let _allEvents = [];
+
+    function showGridLoading() {
+        const grid = document.getElementById('eventsGrid');
+        if (!grid) return;
+        grid.innerHTML = `
     <div class="skeleton-card"></div>
     <div class="skeleton-card"></div>
     <div class="skeleton-card"></div>
@@ -1235,12 +926,12 @@ function showGridLoading() {
     <div class="skeleton-card"></div>
     <div class="skeleton-card"></div>
   `;
-}
+    }
 
-function showGridError(msg) {
-  const grid = document.getElementById('eventsGrid');
-  if (!grid) return;
-  grid.innerHTML = `
+    function showGridError(msg) {
+        const grid = document.getElementById('eventsGrid');
+        if (!grid) return;
+        grid.innerHTML = `
     <div class="no-results" style="display:block;">
       <span class="icon">⚠️</span>
       <div style="font-weight:800; margin-bottom:6px;">Couldn't load events</div>
@@ -1248,99 +939,99 @@ function showGridError(msg) {
       <button onclick="loadEventsFromFirestore()" style="padding:10px 22px; background:var(--orange); color:#fff; border:none; border-radius:100px; font-weight:800; cursor:pointer;">🔄 Try again</button>
     </div>
   `;
-}
+    }
 
-async function loadEventsFromFirestore() {
-  showGridLoading();
-  try {
-    const { collection, getDocs, query, where } = window._firestore;
-    const eventsRef = collection(window._db, 'events');
-    const q = query(eventsRef, where('status', '==', 'active'));
-    const querySnapshot = await getDocs(q);
+    async function loadEventsFromFirestore() {
+        showGridLoading();
+        try {
+            const {collection, getDocs, query, where} = window._firestore;
+            const eventsRef = collection(window._db, 'events');
+            const q = query(eventsRef, where('status', '==', 'active'));
+            const querySnapshot = await getDocs(q);
 
-    const events = [];
-    querySnapshot.forEach(doc => {
-      events.push({ id: doc.id, ...doc.data() });
-    });
+            const events = [];
+            querySnapshot.forEach(doc => {
+                events.push({id: doc.id, ...doc.data()});
+            });
 
-    events.sort((a, b) => new Date(a.date) - new Date(b.date));
-    _allEvents = events;
+            events.sort((a, b) => new Date(a.date) - new Date(b.date));
+            _allEvents = events;
 
-    applyFilters();
-  } catch (error) {
-    console.error('Error loading events from Firestore:', error);
-    const online = navigator.onLine;
-    showGridError(online
-      ? 'Something went wrong on our end. Please try again in a moment.'
-      : 'You appear to be offline. Please check your connection.');
-  }
-}
+            applyFilters();
+        } catch (error) {
+            console.error('Error loading events from Firestore:', error);
+            const online = navigator.onLine;
+            showGridError(online
+                ? 'Something went wrong on our end. Please try again in a moment.'
+                : 'You appear to be offline. Please check your connection.');
+        }
+    }
 
-// Sport emoji mapping
-const sportEmoji = {
-  football: '⚽',
-  basketball: '🏀',
-  tennis: '🎾',
-  badminton: '🏸',
-  running: '🏃',
-  swimming: '🏊',
-  pingpong: '🏓',
-  volleyball: '🏐',
-  yoga: '🧘'
-};
+    // Sport emoji mapping
+    const sportEmoji = {
+        football: '⚽',
+        basketball: '🏀',
+        tennis: '🎾',
+        badminton: '🏸',
+        running: '🏃',
+        swimming: '🏊',
+        pingpong: '🏓',
+        volleyball: '🏐',
+        yoga: '🧘'
+    };
 
-// Sport image mapping
-const sportImages = {
-  football: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format',
-  basketball: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format',
-  tennis: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format',
-  badminton: 'https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format',
-  running: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format',
-  swimming: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=600&h=400&fit=crop&auto=format',
-  pingpong: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format',
-  volleyball: 'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=600&h=400&fit=crop&auto=format',
-  yoga: 'https://images.unsplash.com/photo-1588286840104-8957b019727f?w=600&h=400&fit=crop&auto=format'
-};
+    // Sport image mapping
+    const sportImages = {
+        football: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop&auto=format',
+        basketball: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format',
+        tennis: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&h=400&fit=crop&auto=format',
+        badminton: 'https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=600&h=400&fit=crop&auto=format',
+        running: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format',
+        swimming: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=600&h=400&fit=crop&auto=format',
+        pingpong: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=600&h=400&fit=crop&auto=format',
+        volleyball: 'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=600&h=400&fit=crop&auto=format',
+        yoga: 'https://images.unsplash.com/photo-1588286840104-8957b019727f?w=600&h=400&fit=crop&auto=format'
+    };
 
-function renderEventCards(events) {
-  const container = document.getElementById('eventsGrid');
-  container.innerHTML = '';
+    function renderEventCards(events) {
+        const container = document.getElementById('eventsGrid');
+        container.innerHTML = '';
 
-  if (events.length === 0) {
-    const hasAnyEvents = _allEvents.length > 0;
-    if (hasAnyEvents) {
-      // There are events but none match the filters
-      container.innerHTML = `
+        if (events.length === 0) {
+            const hasAnyEvents = _allEvents.length > 0;
+            if (hasAnyEvents) {
+                // There are events but none match the filters
+                container.innerHTML = `
         <div class="no-results" style="display:block;">
           <span class="icon">🔍</span>
           <div style="font-weight:800; margin-bottom:6px;">No events match your filters</div>
           <div style="font-size:.88rem; margin-bottom:16px; color:var(--muted);">Try widening your search or resetting filters.</div>
           <button onclick="resetFilters()" style="padding:10px 22px; background:var(--orange); color:#fff; border:none; border-radius:100px; font-weight:800; cursor:pointer;">Reset filters</button>
         </div>`;
-    } else {
-      // No events at all in the system
-      container.innerHTML = `
+            } else {
+                // No events at all in the system
+                container.innerHTML = `
         <div class="no-results" style="display:block;">
           <span class="icon">🎾</span>
           <div style="font-weight:800; margin-bottom:6px;">No events yet in your area</div>
           <div style="font-size:.88rem; margin-bottom:16px; color:var(--muted);">Be the first to start something!</div>
           <a href="create-event.html" style="display:inline-block; padding:11px 24px; background:var(--orange); color:#fff; border-radius:100px; text-decoration:none; font-weight:800;">➕ Create an event</a>
         </div>`;
-    }
-    return;
-  }
+            }
+            return;
+        }
 
-  events.forEach(event => {
-    const emoji = sportEmoji[event.sport] || '🎯';
-    const imgSrc = sportImages[event.sport] || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format';
-    const going = event.going || 1;
-    const capacity = event.maxPlayers || 10;
+        events.forEach(event => {
+            const emoji = sportEmoji[event.sport] || '🎯';
+            const imgSrc = sportImages[event.sport] || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format';
+            const going = event.going || 1;
+            const capacity = event.maxPlayers || 10;
 
-    const card = document.createElement('a');
-    card.href = `event.html?id=${event.id}`;
-    card.className = 'event-card';
-    card.dataset.sport = event.sport;
-    card.innerHTML = `
+            const card = document.createElement('a');
+            card.href = `event.html?id=${event.id}`;
+            card.className = 'event-card';
+            card.dataset.sport = event.sport;
+            card.innerHTML = `
       <div class="card-img">
         <img src="${imgSrc}" alt="${event.title}" loading="lazy" />
         <span class="card-price ${event.price === 0 ? 'free' : ''}">${event.price === 0 ? 'FREE' : 'CA$' + event.price.toFixed(2)}</span>
@@ -1359,330 +1050,356 @@ function renderEventCards(events) {
         </div>
       </div>
     `;
-    container.appendChild(card);
-  });
+            container.appendChild(card);
+        });
 
-  // Add inline banner
-  const banner = document.createElement('div');
-  banner.className = 'inline-banner';
-  banner.innerHTML = `
+        // Add inline banner
+        const banner = document.createElement('div');
+        banner.className = 'inline-banner';
+        banner.innerHTML = `
     <div>
       <h3>🏆 Create your own event</h3>
       <p>Organize a pickup game, a league, or a one-off session. Open it to your community.</p>
     </div>
     <button class="btn-white" onclick="window.location.href='create-event.html'">Start for free →</button>
   `;
-  container.appendChild(banner);
-}
-
-/* ── FILTER STATE ── */
-const _filters = {
-  sport: 'all',
-  date: 'any',
-  level: 'any',
-  distKm: 30,
-  userLat: null,
-  userLng: null,
-  view: 'list'
-};
-
-const _sportNames = { all:'All Sports', football:'Football ⚽', basketball:'Basketball 🏀', tennis:'Tennis 🎾', badminton:'Badminton 🏸', running:'Running 🏃', pingpong:'Ping-Pong 🏓', swimming:'Swimming 🏊', volleyball:'Volleyball 🏐', yoga:'Yoga 🧘' };
-
-/* ── SPORT TABS ── */
-document.querySelectorAll('.cat-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    _filters.sport = btn.dataset.filter;
-    applyFilters();
-  });
-});
-
-/* ── DROPDOWN TOGGLES ── */
-function togglePop(popId, evt) {
-  if (evt) evt.stopPropagation();
-  document.querySelectorAll('.fpill-pop').forEach(p => {
-    if (p.id !== popId) p.classList.remove('open');
-  });
-  document.getElementById(popId).classList.toggle('open');
-}
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.fpill-wrap')) {
-    document.querySelectorAll('.fpill-pop').forEach(p => p.classList.remove('open'));
-  }
-});
-
-/* ── DATE FILTER ── */
-function pickDate(val, label, btn) {
-  _filters.date = val;
-  document.getElementById('pillDateLabel').textContent = label;
-  document.querySelectorAll('#popDate .fpill-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('pillDate').classList.toggle('active', val !== 'any');
-  document.getElementById('popDate').classList.remove('open');
-  applyFilters();
-}
-
-/* ── LEVEL FILTER ── */
-function pickLevel(val, label, btn) {
-  _filters.level = val;
-  document.getElementById('pillLevelLabel').textContent = label;
-  document.querySelectorAll('#popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('pillLevel').classList.toggle('active', val !== 'any');
-  document.getElementById('popLevel').classList.remove('open');
-  applyFilters();
-}
-
-/* ── DISTANCE FILTER ── */
-function updateDistLabel() {
-  const v = document.getElementById('distRange').value;
-  _filters.distKm = parseInt(v, 10);
-  document.getElementById('distVal').textContent = v;
-  document.getElementById('pillDistLabel').textContent =
-    (_filters.userLat != null) ? `🗺️ Within ${v} km` : '🗺️ Any distance';
-}
-function requestGeo() {
-  const status = document.getElementById('geoStatus');
-  if (!navigator.geolocation) {
-    status.textContent = 'Geolocation not supported';
-    status.className = 'geo-status err';
-    return;
-  }
-  status.textContent = 'Getting your location…';
-  status.className = 'geo-status';
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      _filters.userLat = pos.coords.latitude;
-      _filters.userLng = pos.coords.longitude;
-      status.textContent = '✅ Location locked in';
-      status.className = 'geo-status ok';
-      const v = document.getElementById('distRange').value;
-      document.getElementById('pillDistLabel').textContent = `🗺️ Within ${v} km`;
-      document.getElementById('pillDist').classList.add('active');
-      applyFilters();
-    },
-    (err) => {
-      status.textContent = '❌ ' + (err.message || 'Permission denied');
-      status.className = 'geo-status err';
-    },
-    { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
-  );
-}
-
-/* ── VIEW TOGGLE (List / Map) ── */
-function setView(v) {
-  _filters.view = v;
-  document.getElementById('viewList').classList.toggle('active', v === 'list');
-  document.getElementById('viewMap').classList.toggle('active', v === 'map');
-  const grid = document.getElementById('eventsGrid');
-  const map = document.getElementById('eventsMap');
-  if (v === 'map') {
-    grid.classList.add('hidden-view');
-    map.classList.add('active');
-    renderMap();
-  } else {
-    grid.classList.remove('hidden-view');
-    map.classList.remove('active');
-  }
-}
-
-/* ── DISTANCE HELPER (Haversine, km) ── */
-function kmBetween(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const toRad = d => d * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat/2) ** 2 +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-
-/* ── DATE MATCH HELPER ── */
-function dateMatches(eventDateStr, filter) {
-  if (filter === 'any') return true;
-  if (!eventDateStr) return false;
-  const d = new Date(eventDateStr);
-  if (isNaN(d)) return false;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const eDay = new Date(d); eDay.setHours(0,0,0,0);
-  const diffDays = Math.round((eDay - today) / 86400000);
-
-  if (filter === 'today') return diffDays === 0;
-  if (filter === 'week')  return diffDays >= 0 && diffDays <= 7;
-  if (filter === 'weekend') {
-    const dow = eDay.getDay(); // 0 Sun, 6 Sat
-    return (dow === 0 || dow === 6) && diffDays >= 0 && diffDays <= 7;
-  }
-  return true;
-}
-
-/* ── APPLY ALL FILTERS ── */
-function applyFilters() {
-  const title = document.getElementById('sectionTitle');
-  const count = document.getElementById('resultCount');
-
-  let filtered = _allEvents.filter(ev => {
-    if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
-    if (!dateMatches(ev.date, _filters.date)) return false;
-    if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
-    if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
-      const km = kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng);
-      if (km > _filters.distKm) return false;
+        container.appendChild(banner);
     }
-    return true;
-  });
 
-  title.innerHTML = `<span style="color:var(--orange)">${_sportNames[_filters.sport] || _filters.sport}</span> Events near Montréal, QC`;
-  count.innerHTML = `<strong>${filtered.length}</strong> event${filtered.length === 1 ? '' : 's'} match your filters`;
+    /* ── FILTER STATE ── */
+    const _filters = {
+        sport: 'all',
+        date: 'any',
+        level: 'any',
+        distKm: 30,
+        userLat: null,
+        userLng: null,
+        view: 'list'
+    };
 
-  renderEventCards(filtered);
-  if (_filters.view === 'map') renderMap();
-}
+    const _sportNames = {
+        all: 'All Sports',
+        football: 'Football ⚽',
+        basketball: 'Basketball 🏀',
+        tennis: 'Tennis 🎾',
+        badminton: 'Badminton 🏸',
+        running: 'Running 🏃',
+        pingpong: 'Ping-Pong 🏓',
+        swimming: 'Swimming 🏊',
+        volleyball: 'Volleyball 🏐',
+        yoga: 'Yoga 🧘'
+    };
 
-function resetFilters() {
-  _filters.sport = 'all';
-  _filters.date = 'any';
-  _filters.level = 'any';
-  _filters.distKm = 30;
-  _filters.userLat = null;
-  _filters.userLng = null;
-
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  const allBtn = document.querySelector('.cat-btn[data-filter="all"]');
-  if (allBtn) allBtn.classList.add('active');
-
-  document.getElementById('pillDateLabel').textContent = '⏰ Any day';
-  document.getElementById('pillLevelLabel').textContent = '💪 Any level';
-  document.getElementById('pillDistLabel').textContent = '🗺️ Any distance';
-  document.getElementById('pillDate').classList.remove('active');
-  document.getElementById('pillLevel').classList.remove('active');
-  document.getElementById('pillDist').classList.remove('active');
-
-  document.querySelectorAll('#popDate .fpill-opt, #popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
-  document.querySelector('#popDate .fpill-opt[data-date="any"]').classList.add('selected');
-  document.querySelector('#popLevel .fpill-opt[data-level="any"]').classList.add('selected');
-
-  document.getElementById('distRange').value = 30;
-  document.getElementById('distVal').textContent = '30';
-  document.getElementById('geoStatus').textContent = 'Tap to enable distance filter';
-  document.getElementById('geoStatus').className = 'geo-status';
-
-  applyFilters();
-}
-
-/* ── MAP VIEW ── */
-let _map = null;
-let _markers = [];
-
-function renderMap() {
-  const mapEl = document.getElementById('eventsMap');
-  if (!mapEl || typeof L === 'undefined') return;
-
-  const filtered = _allEvents.filter(ev => {
-    if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
-    if (!dateMatches(ev.date, _filters.date)) return false;
-    if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
-    if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
-      if (kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng) > _filters.distKm) return false;
-    }
-    return typeof ev.lat === 'number' && typeof ev.lng === 'number';
-  });
-
-  if (!_map) {
-    _map = L.map('eventsMap', { scrollWheelZoom: true }).setView([45.5017, -73.5673], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(_map);
-  }
-
-  _markers.forEach(m => _map.removeLayer(m));
-  _markers = [];
-
-  if (filtered.length === 0) {
-    setTimeout(() => _map.invalidateSize(), 50);
-    return;
-  }
-
-  const bounds = [];
-  filtered.forEach(ev => {
-    const emoji = sportEmoji[ev.sport] || '🎯';
-    const icon = L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background:#FF5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${emoji}</span></div>`,
-      iconSize: [34, 34],
-      iconAnchor: [17, 34]
+    /* ── SPORT TABS ── */
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            _filters.sport = btn.dataset.filter;
+            applyFilters();
+        });
     });
-    const m = L.marker([ev.lat, ev.lng], { icon }).addTo(_map);
-    const priceTxt = ev.price === 0 ? 'FREE' : 'CA$' + (ev.price || 0).toFixed(2);
-    m.bindPopup(`
+
+    /* ── DROPDOWN TOGGLES ── */
+    function togglePop(popId, evt) {
+        if (evt) evt.stopPropagation();
+        document.querySelectorAll('.fpill-pop').forEach(p => {
+            if (p.id !== popId) p.classList.remove('open');
+        });
+        document.getElementById(popId).classList.toggle('open');
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.fpill-wrap')) {
+            document.querySelectorAll('.fpill-pop').forEach(p => p.classList.remove('open'));
+        }
+    });
+
+    /* ── DATE FILTER ── */
+    function pickDate(val, label, btn) {
+        _filters.date = val;
+        document.getElementById('pillDateLabel').textContent = label;
+        document.querySelectorAll('#popDate .fpill-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('pillDate').classList.toggle('active', val !== 'any');
+        document.getElementById('popDate').classList.remove('open');
+        applyFilters();
+    }
+
+    /* ── LEVEL FILTER ── */
+    function pickLevel(val, label, btn) {
+        _filters.level = val;
+        document.getElementById('pillLevelLabel').textContent = label;
+        document.querySelectorAll('#popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('pillLevel').classList.toggle('active', val !== 'any');
+        document.getElementById('popLevel').classList.remove('open');
+        applyFilters();
+    }
+
+    /* ── DISTANCE FILTER ── */
+    function updateDistLabel() {
+        const v = document.getElementById('distRange').value;
+        _filters.distKm = parseInt(v, 10);
+        document.getElementById('distVal').textContent = v;
+        document.getElementById('pillDistLabel').textContent =
+            (_filters.userLat != null) ? `🗺️ Within ${v} km` : '🗺️ Any distance';
+    }
+
+    function requestGeo() {
+        const status = document.getElementById('geoStatus');
+        if (!navigator.geolocation) {
+            status.textContent = 'Geolocation not supported';
+            status.className = 'geo-status err';
+            return;
+        }
+        status.textContent = 'Getting your location…';
+        status.className = 'geo-status';
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                _filters.userLat = pos.coords.latitude;
+                _filters.userLng = pos.coords.longitude;
+                status.textContent = '✅ Location locked in';
+                status.className = 'geo-status ok';
+                const v = document.getElementById('distRange').value;
+                document.getElementById('pillDistLabel').textContent = `🗺️ Within ${v} km`;
+                document.getElementById('pillDist').classList.add('active');
+                applyFilters();
+            },
+            (err) => {
+                status.textContent = '❌ ' + (err.message || 'Permission denied');
+                status.className = 'geo-status err';
+            },
+            {enableHighAccuracy: false, timeout: 8000, maximumAge: 300000}
+        );
+    }
+
+    /* ── VIEW TOGGLE (List / Map) ── */
+    function setView(v) {
+        _filters.view = v;
+        document.getElementById('viewList').classList.toggle('active', v === 'list');
+        document.getElementById('viewMap').classList.toggle('active', v === 'map');
+        const grid = document.getElementById('eventsGrid');
+        const map = document.getElementById('eventsMap');
+        if (v === 'map') {
+            grid.classList.add('hidden-view');
+            map.classList.add('active');
+            renderMap();
+        } else {
+            grid.classList.remove('hidden-view');
+            map.classList.remove('active');
+        }
+    }
+
+    /* ── DISTANCE HELPER (Haversine, km) ── */
+    function kmBetween(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    /* ── DATE MATCH HELPER ── */
+    function dateMatches(eventDateStr, filter) {
+        if (filter === 'any') return true;
+        if (!eventDateStr) return false;
+        const d = new Date(eventDateStr);
+        if (isNaN(d)) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const eDay = new Date(d);
+        eDay.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((eDay - today) / 86400000);
+
+        if (filter === 'today') return diffDays === 0;
+        if (filter === 'week') return diffDays >= 0 && diffDays <= 7;
+        if (filter === 'weekend') {
+            const dow = eDay.getDay(); // 0 Sun, 6 Sat
+            return (dow === 0 || dow === 6) && diffDays >= 0 && diffDays <= 7;
+        }
+        return true;
+    }
+
+    /* ── APPLY ALL FILTERS ── */
+    function applyFilters() {
+        const title = document.getElementById('sectionTitle');
+        const count = document.getElementById('resultCount');
+
+        let filtered = _allEvents.filter(ev => {
+            if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
+            if (!dateMatches(ev.date, _filters.date)) return false;
+            if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
+            if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
+                const km = kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng);
+                if (km > _filters.distKm) return false;
+            }
+            return true;
+        });
+
+        title.innerHTML = `<span style="color:var(--orange)">${_sportNames[_filters.sport] || _filters.sport}</span> Events near Montréal, QC`;
+        count.innerHTML = `<strong>${filtered.length}</strong> event${filtered.length === 1 ? '' : 's'} match your filters`;
+
+        renderEventCards(filtered);
+        if (_filters.view === 'map') renderMap();
+    }
+
+    function resetFilters() {
+        _filters.sport = 'all';
+        _filters.date = 'any';
+        _filters.level = 'any';
+        _filters.distKm = 30;
+        _filters.userLat = null;
+        _filters.userLng = null;
+
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        const allBtn = document.querySelector('.cat-btn[data-filter="all"]');
+        if (allBtn) allBtn.classList.add('active');
+
+        document.getElementById('pillDateLabel').textContent = '⏰ Any day';
+        document.getElementById('pillLevelLabel').textContent = '💪 Any level';
+        document.getElementById('pillDistLabel').textContent = '🗺️ Any distance';
+        document.getElementById('pillDate').classList.remove('active');
+        document.getElementById('pillLevel').classList.remove('active');
+        document.getElementById('pillDist').classList.remove('active');
+
+        document.querySelectorAll('#popDate .fpill-opt, #popLevel .fpill-opt').forEach(b => b.classList.remove('selected'));
+        document.querySelector('#popDate .fpill-opt[data-date="any"]').classList.add('selected');
+        document.querySelector('#popLevel .fpill-opt[data-level="any"]').classList.add('selected');
+
+        document.getElementById('distRange').value = 30;
+        document.getElementById('distVal').textContent = '30';
+        document.getElementById('geoStatus').textContent = 'Tap to enable distance filter';
+        document.getElementById('geoStatus').className = 'geo-status';
+
+        applyFilters();
+    }
+
+    /* ── MAP VIEW ── */
+    let _map = null;
+    let _markers = [];
+
+    function renderMap() {
+        const mapEl = document.getElementById('eventsMap');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        const filtered = _allEvents.filter(ev => {
+            if (_filters.sport !== 'all' && ev.sport !== _filters.sport) return false;
+            if (!dateMatches(ev.date, _filters.date)) return false;
+            if (_filters.level !== 'any' && ev.level && ev.level.toLowerCase() !== _filters.level) return false;
+            if (_filters.userLat != null && typeof ev.lat === 'number' && typeof ev.lng === 'number') {
+                if (kmBetween(_filters.userLat, _filters.userLng, ev.lat, ev.lng) > _filters.distKm) return false;
+            }
+            return typeof ev.lat === 'number' && typeof ev.lng === 'number';
+        });
+
+        if (!_map) {
+            _map = L.map('eventsMap', {scrollWheelZoom: true}).setView([45.5017, -73.5673], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(_map);
+        }
+
+        _markers.forEach(m => _map.removeLayer(m));
+        _markers = [];
+
+        if (filtered.length === 0) {
+            setTimeout(() => _map.invalidateSize(), 50);
+            return;
+        }
+
+        const bounds = [];
+        filtered.forEach(ev => {
+            const emoji = sportEmoji[ev.sport] || '🎯';
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background:#ff5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${emoji}</span></div>`,
+                iconSize: [34, 34],
+                iconAnchor: [17, 34]
+            });
+            const m = L.marker([ev.lat, ev.lng], {icon}).addTo(_map);
+            const priceTxt = ev.price === 0 ? 'FREE' : 'CA$' + (ev.price || 0).toFixed(2);
+            m.bindPopup(`
       <div class="map-popup">
         <strong>${ev.title}</strong><br>
-        <span style="color:#6B7280; font-size:.82rem;">${ev.date} · ${ev.time}<br>${ev.venue || ''}</span><br>
-        <span style="color:#1565C0; font-weight:800; font-size:.78rem;">${priceTxt} · ${ev.going || 1} going</span><br>
+        <span style="color:#6b7280; font-size:.82rem;">${ev.date} · ${ev.time}<br>${ev.venue || ''}</span><br>
+        <span style="color:#1565c0; font-weight:800; font-size:.78rem;">${priceTxt} · ${ev.going || 1} going</span><br>
         <a href="event.html?id=${ev.id}">View details →</a>
       </div>
     `);
-    _markers.push(m);
-    bounds.push([ev.lat, ev.lng]);
-  });
+            _markers.push(m);
+            bounds.push([ev.lat, ev.lng]);
+        });
 
-  if (bounds.length === 1) {
-    _map.setView(bounds[0], 14);
-  } else {
-    _map.fitBounds(bounds, { padding: [40, 40] });
-  }
-  setTimeout(() => _map.invalidateSize(), 50);
-}
-/* ── SCROLL REVEAL ── */
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 75);
-      revealObs.unobserve(e.target);
+        if (bounds.length === 1) {
+            _map.setView(bounds[0], 14);
+        } else {
+            _map.fitBounds(bounds, {padding: [40, 40]});
+        }
+        setTimeout(() => _map.invalidateSize(), 50);
     }
-  });
-}, { threshold: 0.08 });
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-/* ── LOAD EVENTS ON PAGE LOAD (only if logged in) ── */
-window.addEventListener('load', async () => {
-  // Wait for Firebase module to initialize
-  let tries = 0;
-  while (!window._auth && tries < 40) {
-    await new Promise(r => setTimeout(r, 50));
-    tries++;
-  }
-  if (!window._auth) return;
+    /* ── SCROLL REVEAL ── */
+    const revealObs = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+            if (e.isIntersecting) {
+                setTimeout(() => e.target.classList.add('visible'), i * 75);
+                revealObs.unobserve(e.target);
+            }
+        });
+    }, {threshold: 0.08});
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-  // Wait briefly for auth state to settle
-  const au = window._auth.currentUser || await new Promise(resolve => {
-    let done = false;
-    const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 2000);
-    const unsub = window._auth.onAuthStateChanged(u => {
-      if (!done) { done = true; clearTimeout(t); unsub(); resolve(u); }
+    /* ── LOAD EVENTS ON PAGE LOAD (only if logged in) ── */
+    window.addEventListener('load', async () => {
+        // Wait for Firebase module to initialize
+        let tries = 0;
+        while (!window._auth && tries < 40) {
+            await new Promise(r => setTimeout(r, 50));
+            tries++;
+        }
+        if (!window._auth) return;
+
+        // Wait briefly for auth state to settle
+        const au = window._auth.currentUser || await new Promise(resolve => {
+            let done = false;
+            const t = setTimeout(() => {
+                if (!done) {
+                    done = true;
+                    resolve(null);
+                }
+            }, 2000);
+            const unsub = window._auth.onAuthStateChanged(u => {
+                if (!done) {
+                    done = true;
+                    clearTimeout(t);
+                    unsub();
+                    resolve(u);
+                }
+            });
+        });
+
+        if (!au) {
+            // Not logged in — show a friendly empty state instead of crashing
+            const grid = document.getElementById('eventsGrid');
+            if (grid) {
+                grid.innerHTML = '<div class="no-results" style="display:block;"><span class="icon">👋</span>Log in to browse events and find games near you.</div>';
+            }
+            return;
+        }
+
+        loadEventsFromFirestore();
     });
-  });
-
-  if (!au) {
-    // Not logged in — show a friendly empty state instead of crashing
-    const grid = document.getElementById('eventsGrid');
-    if (grid) {
-      grid.innerHTML = '<div class="no-results" style="display:block;"><span class="icon">👋</span>Log in to browse events and find games near you.</div>';
-    }
-    return;
-  }
-
-  loadEventsFromFirestore();
-});
 </script>
-  <footer style="background:#fff; border-top:1px solid #E5E7EB; padding:24px 40px; text-align:center; font-size:.82rem; color:#6B7280; font-weight:700;">
-  <div style="max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:center;">
-    <span>© 2026 MatchUp</span>
-    <a href="terms.html" style="color:#6B7280; text-decoration:none;">Terms</a>
-    <a href="privacy.html" style="color:#6B7280; text-decoration:none;">Privacy</a>
-    <a href="mailto:support@matchup.app" style="color:#6B7280; text-decoration:none;">Contact</a>
-  </div>
+<footer style="background:#fff; border-top:1px solid #e5e7eb; padding:24px 40px; text-align:center; font-size:.82rem; color:#6b7280; font-weight:700;">
+    <div style="max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:center;">
+        <span>© 2026 MatchUp</span>
+        <a href="terms.html" style="color:#6b7280; text-decoration:none;">Terms</a>
+        <a href="privacy.html" style="color:#6b7280; text-decoration:none;">Privacy</a>
+        <a href="mailto:support@matchup.app" style="color:#6b7280; text-decoration:none;">Contact</a>
+    </div>
 </footer>
 </body>
 </html>

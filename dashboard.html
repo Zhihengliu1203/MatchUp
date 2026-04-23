@@ -1,450 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — MatchUp</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — MatchUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, collectionGroup, query, where, getDocs, doc, getDoc }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <script type="module">
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {getAuth, onAuthStateChanged, signOut}
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import {getFirestore, collection, collectionGroup, query, where, getDocs, doc, getDoc}
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain:        "matchup-165ee.firebaseapp.com",
-      projectId:         "matchup-165ee",
-      storageBucket:     "matchup-165ee.firebasestorage.app",
-      messagingSenderId: "1038165665131",
-      appId:             "1:1038165665131:web:d38bcec6f394d7cf22582e"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    window._auth = auth;
-    window._db = db;
-    window._firestore = { collection, collectionGroup, query, where, getDocs, doc, getDoc };
-    window._fbSignOut = () => signOut(auth);
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+            authDomain: "matchup-165ee.firebaseapp.com",
+            projectId: "matchup-165ee",
+            storageBucket: "matchup-165ee.firebasestorage.app",
+            messagingSenderId: "1038165665131",
+            appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window._auth = auth;
+        window._db = db;
+        window._firestore = {collection, collectionGroup, query, where, getDocs, doc, getDoc};
+        window._fbSignOut = () => signOut(auth);
 
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        const stored = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-        if (!stored) window.location.href = 'index.html';
-      }
-    });
-  </script>
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                const stored = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+                if (!stored) window.location.href = 'index.html';
+            }
+        });
+    </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --orange:#FF5722; --orange-lt:#FF7043; --orange-bg:#FFF3EF;
-      --blue:#1565C0; --blue-lt:#1E88E5; --blue-bg:#E3F2FD;
-      --green:#16A34A; --green-bg:#F0FDF4;
-      --white:#FFFFFF; --off:#F8F9FA;
-      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
-      --shadow:0 4px 24px rgba(0,0,0,.06);
-      --shadow-h:0 14px 44px rgba(0,0,0,.12);
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text); min-height: 100vh; }
-
-    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px; }
-    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
-    .nav-center { display: flex; gap: 4px; margin-left: 20px; }
-    .nav-center a { padding: 8px 16px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: background .15s, color .15s; }
-    .nav-center a:hover { background: var(--off); color: var(--text); }
-    .nav-center a.active { background: var(--orange-bg); color: var(--orange); }
-    .nav-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
-    .nav-icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--off); border: none; cursor: pointer; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; transition: background .15s, transform .15s; position: relative; }
-    .nav-icon-btn:hover { background: var(--border); transform: translateY(-1px); }
-    .notif-dot { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); border: 2px solid var(--off); }
-    .nav-profile { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 100px; background: var(--off); cursor: pointer; text-decoration: none; color: inherit; transition: background .15s; }
-    .nav-profile:hover { background: var(--border); }
-    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; }
-    .nav-profile-name { font-size: .85rem; font-weight: 800; }
-
-    .dash-wrap { max-width: 1240px; margin: 0 auto; padding: 36px 40px 80px; }
-
-    .hero-strip { background: linear-gradient(120deg, var(--orange), #FF8A65); border-radius: 24px; padding: 36px 44px; color: #fff; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; position: relative; overflow: hidden; }
-    .hero-strip::before { content: '🏆'; position: absolute; right: -20px; bottom: -40px; font-size: 14rem; opacity: .12; transform: rotate(-12deg); }
-    .greeting { position: relative; z-index: 1; }
-    .greeting-eyebrow { font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .82; margin-bottom: 6px; }
-    .greeting h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; margin-bottom: 10px; }
-    .greeting p { font-size: .95rem; opacity: .9; max-width: 450px; line-height: 1.55; }
-    .hero-cta { background: #fff; color: var(--orange); padding: 12px 24px; border-radius: 100px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem; white-space: nowrap; position: relative; z-index: 1; text-decoration: none; display: inline-block; transition: transform .18s, box-shadow .18s; }
-    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
-
-    .dash-grid { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
-
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
-    .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; transition: transform .2s, box-shadow .2s; }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-h); }
-    .stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
-    .sc-o { background: var(--orange-bg); }
-    .sc-b { background: var(--blue-bg); }
-    .sc-g { background: var(--green-bg); }
-    .stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; line-height: 1; }
-    .stat-label { font-size: .76rem; color: var(--muted); font-weight: 700; margin-top: 3px; }
-
-    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
-    .section-head h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; }
-    .section-head a { font-size: .85rem; font-weight: 800; color: var(--orange); text-decoration: none; }
-    .section-head a:hover { text-decoration: underline; }
-
-    .event-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
-    .ev-item { display: flex; align-items: center; gap: 16px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 14px 18px; text-decoration: none; color: inherit; transition: border-color .2s, transform .2s, box-shadow .2s; }
-    .ev-item:hover { border-color: var(--orange); transform: translateX(3px); box-shadow: var(--shadow); }
-    .ev-date { flex-shrink: 0; text-align: center; width: 54px; background: var(--orange-bg); border-radius: 12px; padding: 8px 4px; }
-    .ev-date .m { font-size: .68rem; font-weight: 800; color: var(--orange); letter-spacing: .04em; text-transform: uppercase; }
-    .ev-date .d { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; line-height: 1; margin-top: 2px; color: var(--text); }
-    .ev-info { flex: 1; min-width: 0; }
-    .ev-sport { font-size: .7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
-    .ev-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ev-meta { font-size: .78rem; color: var(--muted); }
-    .ev-status { flex-shrink: 0; padding: 5px 11px; border-radius: 100px; font-size: .72rem; font-weight: 800; letter-spacing: .02em; }
-    .ev-status.confirmed { background: var(--green-bg); color: var(--green); }
-    .ev-status.pending { background: var(--orange-bg); color: var(--orange); }
-
-    .suggest-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .suggest-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: transform .2s, box-shadow .2s; text-decoration: none; color: inherit; }
-    .suggest-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
-    .sg-img { height: 140px; position: relative; overflow: hidden; }
-    .sg-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
-    .suggest-card:hover .sg-img img { transform: scale(1.07); }
-    .sg-tag { position: absolute; top: 10px; left: 10px; background: var(--orange); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: .7rem; font-weight: 800; }
-    .sg-body { padding: 14px 16px 16px; }
-    .sg-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem; margin-bottom: 4px; }
-    .sg-meta { font-size: .77rem; color: var(--muted); margin-bottom: 10px; }
-    .sg-footer { display: flex; align-items: center; justify-content: space-between; }
-    .sg-going { font-size: .72rem; font-weight: 800; color: var(--blue); background: var(--blue-bg); padding: 3px 9px; border-radius: 100px; }
-    .sg-join { font-size: .77rem; font-weight: 800; color: var(--orange); text-decoration: none; }
-
-    .sidebar-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
-    .side-head { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .profile-card { text-align: center; padding: 24px 20px; }
-    .pc-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #FF8A65); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; margin: 0 auto 12px; }
-    .pc-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 3px; }
-    .pc-email { font-size: .8rem; color: var(--muted); margin-bottom: 14px; word-break: break-all; }
-    .pc-sports { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 16px; }
-    .pc-sport-tag { background: var(--orange-bg); color: var(--orange); font-size: .74rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
-    .pc-edit { display: inline-block; padding: 9px 20px; background: var(--off); color: var(--text); border-radius: 100px; font-size: .82rem; font-weight: 800; text-decoration: none; transition: background .15s; }
-    .pc-edit:hover { background: var(--border); }
-
-    .activity { display: flex; flex-direction: column; gap: 12px; }
-    .act-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.5; }
-    .act-dot { flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); margin-top: 7px; }
-    .act-item.blue .act-dot { background: var(--blue); }
-    .act-item.green .act-dot { background: var(--green); }
-    .act-time { font-size: .72rem; color: var(--muted); font-weight: 700; }
-
-    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .qa-btn { padding: 14px 8px; border-radius: 14px; background: var(--off); border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: .78rem; font-weight: 800; color: var(--text); transition: background .15s, transform .15s; display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
-    .qa-btn:hover { background: var(--orange-bg); color: var(--orange); transform: translateY(-2px); }
-    .qa-btn .qai { font-size: 1.4rem; }
-
-    @media (max-width: 960px) {
-      nav { padding: 0 20px; gap: 10px; }
-      .nav-center { display: none; }
-      .nav-profile-name { display: none; }
-      .dash-wrap { padding: 24px 20px 60px; }
-      .hero-strip { padding: 26px 24px; flex-direction: column; align-items: flex-start; gap: 18px; }
-      .dash-grid { grid-template-columns: 1fr; }
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .suggest-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 500px) {
-      .stats-row { grid-template-columns: 1fr; }
-    }
-  </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/dashboard.css" />
 </head>
 <body>
 
 <nav>
-  <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
-  <div class="nav-center">
-    <a href="dashboard.html" class="active">🏠 Dashboard</a>
-    <a href="index.html">🗓️ Events</a>
-    <a href="index.html#sports">⚽ Sports</a>
-    <a href="#">👥 Players</a>
-  </div>
-  <div class="nav-right">
-    <button class="nav-icon-btn" title="Notifications">🔔<span class="notif-dot"></span></button>
-    <button class="nav-icon-btn" title="Messages">💬</button>
-    <a class="nav-profile" href="profile.html">
-      <div class="nav-avatar" id="navAvatar">?</div>
-      <span class="nav-profile-name" id="navName">Player</span>
-    </a>
-  </div>
+    <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
+    <div class="nav-center">
+        <a href="dashboard.html" class="active">🏠 Dashboard</a>
+        <a href="index.html">🗓️ Events</a>
+        <a href="index.html#sports">⚽ Sports</a>
+        <a href="#">👥 Players</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-icon-btn" title="Notifications">🔔<span class="notif-dot"></span></button>
+        <button class="nav-icon-btn" title="Messages">💬</button>
+        <a class="nav-profile" href="profile.html">
+            <div class="nav-avatar" id="navAvatar">?</div>
+            <span class="nav-profile-name" id="navName">Player</span>
+        </a>
+    </div>
 </nav>
 
 <div class="dash-wrap">
-  <div id="verifyBanner" style="display:none; background:#FEF3C7; border:1px solid #F59E0B; color:#78350F; padding:14px 22px; border-radius:14px; margin-bottom:20px; font-size:.9rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-  <span>📬 Please verify your email. You need to verify before creating events.</span>
-  <a href="verify-email.html" style="padding:8px 18px; background:#F59E0B; color:#fff; border-radius:100px; text-decoration:none; font-weight:800; font-size:.82rem;">Verify now</a>
-</div>
-  <div class="hero-strip">
-    <div class="greeting">
-      <div class="greeting-eyebrow">👋 <span id="timeOfDay">Hello</span>,</div>
-      <h1 id="greetName">Welcome back!</h1>
-      <p>You have <strong>2 upcoming games</strong> this week and <strong>5 new matches</strong> based on your sports.</p>
+    <div id="verifyBanner"
+         style="display:none; background:#fef3c7; border:1px solid #f59e0b; color:#78350f; padding:14px 22px; border-radius:14px; margin-bottom:20px; font-size:.9rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <span>📬 Please verify your email. You need to verify before creating events.</span>
+        <a href="verify-email.html"
+           style="padding:8px 18px; background:#f59e0b; color:#fff; border-radius:100px; text-decoration:none; font-weight:800; font-size:.82rem;">Verify
+            now</a>
     </div>
-    <a class="hero-cta" href="index.html">🎯 Browse all events</a>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-icon sc-o">🎯</div><div><div class="stat-num" id="statUpcoming">—</div><div class="stat-label">Upcoming games</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-b">🏆</div><div><div class="stat-num" id="statAttended">—</div><div class="stat-label">Events attended</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-g">👥</div><div><div class="stat-num" id="statPlayers">—</div><div class="stat-label">Players met</div></div></div>
-    <div class="stat-card"><div class="stat-icon sc-o">⭐</div><div><div class="stat-num" id="statRating">—</div><div class="stat-label">Your rating</div></div></div>
-  </div>
-
-  <div class="dash-grid">
-    <div>
-      <div class="section-head">
-        <h2>📅 Your upcoming games</h2>
-        <a href="#">View all →</a>
-      </div>
-      <div class="event-list" id="eventList">
-        <div style="text-align:center; padding:30px; color:var(--muted); font-weight:700; font-size:.9rem;">
-          Loading your events…
+    <div class="hero-strip">
+        <div class="greeting">
+            <div class="greeting-eyebrow">👋 <span id="timeOfDay">Hello</span>,</div>
+            <h1 id="greetName">Welcome back!</h1>
+            <p>You have <strong>2 upcoming games</strong> this week and <strong>5 new matches</strong> based on your sports.</p>
         </div>
-      </div>
-
-      <div class="section-head">
-        <h2>✨ Recommended for you</h2>
-        <a href="index.html">See more →</a>
-      </div>
-      <div class="suggest-grid">
-        <a class="suggest-card" href="index.html">
-          <div class="sg-img">
-            <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
-            <span class="sg-tag">🏀 Match 93%</span>
-          </div>
-          <div class="sg-body">
-            <div class="sg-title">3v3 Basketball Open Run</div>
-            <div class="sg-meta">Thu Apr 24 · 6:30 PM · Parc Jarry</div>
-            <div class="sg-footer">
-              <span class="sg-going">18 going</span>
-              <span class="sg-join">Join →</span>
-            </div>
-          </div>
-        </a>
-        <a class="suggest-card" href="index.html">
-          <div class="sg-img">
-            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
-            <span class="sg-tag">🏃 Match 88%</span>
-          </div>
-          <div class="sg-body">
-            <div class="sg-title">Lachine Canal 10K Group Run</div>
-            <div class="sg-meta">Sun Apr 20 · 8:00 AM · Free</div>
-            <div class="sg-footer">
-              <span class="sg-going">44 going</span>
-              <span class="sg-join">Join →</span>
-            </div>
-          </div>
-        </a>
-      </div>
+        <a class="hero-cta" href="index.html">🎯 Browse all events</a>
     </div>
 
-    <aside>
-      <div class="sidebar-card profile-card">
-        <div class="pc-avatar" id="pcAvatar">?</div>
-        <div class="pc-name" id="pcName">Player</div>
-        <div class="pc-email" id="pcEmail">email@example.com</div>
-        <div class="pc-sports" id="pcSports"></div>
-        <a href="profile.html" class="pc-edit">✏️ Edit profile</a>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="side-head">⚡ Quick actions</div>
-        <div class="quick-actions">
-          <a class="qa-btn" href="index.html"><span class="qai">🔍</span>Find games</a>
-          <a class="qa-btn" href="create-event.html"><span class="qai">➕</span>Create event</a>
-          <a class="qa-btn" href="profile.html"><span class="qai">👤</span>My profile</a>
-          <button class="qa-btn" onclick="doLogOut()"><span class="qai">🚪</span>Log out</button>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon sc-o">🎯</div>
+            <div>
+                <div class="stat-num" id="statUpcoming">—</div>
+                <div class="stat-label">Upcoming games</div>
+            </div>
         </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="side-head">📣 Recent activity</div>
-        <div class="activity">
-          <div class="act-item">
-            <span class="act-dot"></span>
-            <div><strong>Marcus K.</strong> invited you to <strong>3v3 Basketball</strong><div class="act-time">2 hours ago</div></div>
-          </div>
-          <div class="act-item blue">
-            <span class="act-dot"></span>
-            <div>New tennis event <strong>2 km from you</strong><div class="act-time">Yesterday</div></div>
-          </div>
-          <div class="act-item green">
-            <span class="act-dot"></span>
-            <div>You earned <strong>+50 MatchUp points</strong> for attending 3 events<div class="act-time">3 days ago</div></div>
-          </div>
+        <div class="stat-card">
+            <div class="stat-icon sc-b">🏆</div>
+            <div>
+                <div class="stat-num" id="statAttended">—</div>
+                <div class="stat-label">Events attended</div>
+            </div>
         </div>
-      </div>
-    </aside>
-  </div>
+        <div class="stat-card">
+            <div class="stat-icon sc-g">👥</div>
+            <div>
+                <div class="stat-num" id="statPlayers">—</div>
+                <div class="stat-label">Players met</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon sc-o">⭐</div>
+            <div>
+                <div class="stat-num" id="statRating">—</div>
+                <div class="stat-label">Your rating</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div>
+            <div class="section-head">
+                <h2>📅 Your upcoming games</h2>
+                <a href="#">View all →</a>
+            </div>
+            <div class="event-list" id="eventList">
+                <div style="text-align:center; padding:30px; color:var(--muted); font-weight:700; font-size:.9rem;">
+                    Loading your events…
+                </div>
+            </div>
+
+            <div class="section-head">
+                <h2>✨ Recommended for you</h2>
+                <a href="index.html">See more →</a>
+            </div>
+            <div class="suggest-grid">
+                <a class="suggest-card" href="index.html">
+                    <div class="sg-img">
+                        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&h=400&fit=crop&auto=format" alt="Basketball" loading="lazy" />
+                        <span class="sg-tag">🏀 Match 93%</span>
+                    </div>
+                    <div class="sg-body">
+                        <div class="sg-title">3v3 Basketball Open Run</div>
+                        <div class="sg-meta">Thu Apr 24 · 6:30 PM · Parc Jarry</div>
+                        <div class="sg-footer">
+                            <span class="sg-going">18 going</span>
+                            <span class="sg-join">Join →</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="suggest-card" href="index.html">
+                    <div class="sg-img">
+                        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&auto=format" alt="Running" loading="lazy" />
+                        <span class="sg-tag">🏃 Match 88%</span>
+                    </div>
+                    <div class="sg-body">
+                        <div class="sg-title">Lachine Canal 10K Group Run</div>
+                        <div class="sg-meta">Sun Apr 20 · 8:00 AM · Free</div>
+                        <div class="sg-footer">
+                            <span class="sg-going">44 going</span>
+                            <span class="sg-join">Join →</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <aside>
+            <div class="sidebar-card profile-card">
+                <div class="pc-avatar" id="pcAvatar">?</div>
+                <div class="pc-name" id="pcName">Player</div>
+                <div class="pc-email" id="pcEmail">email@example.com</div>
+                <div class="pc-sports" id="pcSports"></div>
+                <a href="profile.html" class="pc-edit">✏️ Edit profile</a>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="side-head">⚡ Quick actions</div>
+                <div class="quick-actions">
+                    <a class="qa-btn" href="index.html"><span class="qai">🔍</span>Find games</a>
+                    <a class="qa-btn" href="create-event.html"><span class="qai">➕</span>Create event</a>
+                    <a class="qa-btn" href="profile.html"><span class="qai">👤</span>My profile</a>
+                    <button class="qa-btn" onclick="doLogOut()"><span class="qai">🚪</span>Log out</button>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="side-head">📣 Recent activity</div>
+                <div class="activity">
+                    <div class="act-item">
+                        <span class="act-dot"></span>
+                        <div><strong>Marcus K.</strong> invited you to <strong>3v3 Basketball</strong>
+                            <div class="act-time">2 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="act-item blue">
+                        <span class="act-dot"></span>
+                        <div>New tennis event <strong>2 km from you</strong>
+                            <div class="act-time">Yesterday</div>
+                        </div>
+                    </div>
+                    <div class="act-item green">
+                        <span class="act-dot"></span>
+                        <div>You earned <strong>+50 MatchUp points</strong> for attending 3 events
+                            <div class="act-time">3 days ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
 </div>
 
 <script>
-const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-// Note: no hard redirect here — we wait for Firebase Auth to confirm
+    const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+    // Note: no hard redirect here — we wait for Firebase Auth to confirm
 
-const h = new Date().getHours();
-document.getElementById('timeOfDay').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    const h = new Date().getHours();
+    document.getElementById('timeOfDay').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 
-const sportLabels = {
-  football:'⚽ Football', basketball:'🏀 Basketball', tennis:'🎾 Tennis',
-  badminton:'🏸 Badminton', running:'🏃 Running', swimming:'🏊 Swimming',
-  pingpong:'🏓 Ping-Pong', volleyball:'🏐 Volleyball', yoga:'🧘 Yoga'
-};
+    const sportLabels = {
+        football: '⚽ Football', basketball: '🏀 Basketball', tennis: '🎾 Tennis',
+        badminton: '🏸 Badminton', running: '🏃 Running', swimming: '🏊 Swimming',
+        pingpong: '🏓 Ping-Pong', volleyball: '🏐 Volleyball', yoga: '🧘 Yoga'
+    };
 
-function renderUserUI(u) {
-  const fname   = u.fname || 'Player';
-  const lname   = u.lname || '';
-  const email   = u.email || 'you@matchup.app';
-  const initial = (fname[0] || 'P').toUpperCase();
-  const sports  = u.sports || [];
+    function renderUserUI(u) {
+        const fname = u.fname || 'Player';
+        const lname = u.lname || '';
+        const email = u.email || 'you@matchup.app';
+        const initial = (fname[0] || 'P').toUpperCase();
+        const sports = u.sports || [];
 
-  document.getElementById('greetName').textContent = `${fname}, ready to play?`;
-  document.getElementById('navName').textContent   = fname;
-  document.getElementById('navAvatar').textContent = initial;
-  document.getElementById('pcAvatar').textContent  = initial;
-  document.getElementById('pcName').textContent    = lname ? `${fname} ${lname}` : fname;
-  document.getElementById('pcEmail').textContent   = email;
+        document.getElementById('greetName').textContent = `${fname}, ready to play?`;
+        document.getElementById('navName').textContent = fname;
+        document.getElementById('navAvatar').textContent = initial;
+        document.getElementById('pcAvatar').textContent = initial;
+        document.getElementById('pcName').textContent = lname ? `${fname} ${lname}` : fname;
+        document.getElementById('pcEmail').textContent = email;
 
-  const sportsEl = document.getElementById('pcSports');
-  if (sports.length === 0) {
-    sportsEl.innerHTML = '<span style="font-size:.76rem;color:var(--muted);">No sports yet — <a href="profile.html" style="color:var(--orange);font-weight:800;">add some</a></span>';
-  } else {
-    sportsEl.innerHTML = sports.map(s => `<span class="pc-sport-tag">${sportLabels[s] || s}</span>`).join('');
-  }
-}
-
-// First paint: whatever we have in localStorage (instant) or empty defaults
-renderUserUI(user || {});
-
-// Now fetch fresh data from Firestore
-(async function loadUserFromFirestore() {
-  let tries = 0;
-  while ((!window._auth || !window._db || !window._firestore) && tries < 40) {
-    await new Promise(r => setTimeout(r, 50));
-    tries++;
-  }
-  if (!window._auth) return;
-
-  let authUser = window._auth.currentUser;
-  if (!authUser) {
-    authUser = await new Promise((resolve) => {
-      let resolved = false;
-      const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 3000);
-      const unsub = window._auth.onAuthStateChanged((u) => {
-        if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
-      });
-    });
-  }
-
-  // If Firebase says NOT logged in and we also had no localStorage, redirect
-  if (!authUser) {
-    if (!user) window.location.href = 'index.html';
-    return;
-  }
-
-  try {
-    const { doc, getDoc } = window._firestore;
-    const userRef = doc(window._db, 'users', authUser.uid);
-    const snap = await getDoc(userRef);
-
-    if (snap.exists()) {
-      const firestoreUser = snap.data();
-      const merged = { ...(user || {}), ...firestoreUser };
-      renderUserUI(merged);
-      localStorage.setItem('mu_current_user', JSON.stringify(merged));
-      console.log('[dashboard] user loaded from Firestore for uid:', authUser.uid);
-    } else {
-      console.log('[dashboard] no Firestore user doc yet');
+        const sportsEl = document.getElementById('pcSports');
+        if (sports.length === 0) {
+            sportsEl.innerHTML = '<span style="font-size:.76rem;color:var(--muted);">No sports yet — <a href="profile.html" style="color:var(--orange);font-weight:800;">add some</a></span>';
+        } else {
+            sportsEl.innerHTML = sports.map(s => `<span class="pc-sport-tag">${sportLabels[s] || s}</span>`).join('');
+        }
     }
-  } catch (err) {
-    console.error('[dashboard] user load failed:', err);
-  }
-})();
-/* ==================================================================
-   Load dashboard data from Firestore
-   ================================================================== */
-async function loadDashboard() {
-  // Show "verify email" banner if unverified
-  try {
-    let au = window._auth?.currentUser;
-    if (au) {
-      await au.reload();
-      if (!au.emailVerified) {
-        const banner = document.getElementById('verifyBanner');
-        if (banner) banner.style.display = 'flex';
-      }
-    }
-  } catch (_) {}
-  // Wait up to 3 seconds for Firebase Auth to populate currentUser
-  let authUser = window._auth.currentUser;
-  if (!authUser) {
-    authUser = await new Promise((resolve) => {
-      let resolved = false;
-      const timer = setTimeout(() => { if (!resolved) { resolved = true; resolve(null); } }, 3000);
-      const unsub = window._auth.onAuthStateChanged((u) => {
-        if (!resolved) { resolved = true; clearTimeout(timer); unsub(); resolve(u); }
-      });
-    });
-  }
 
-  if (!authUser) {
-    console.warn('No Firebase Auth user — dashboard cannot load events.');
-    document.getElementById('eventList').innerHTML =
-      '<div style="text-align:center;padding:30px;color:var(--muted);font-weight:700;font-size:.9rem;">Please log in to see your events.</div>';
-    return;
-  }
+    // First paint: whatever we have in localStorage (instant) or empty defaults
+    renderUserUI(user || {});
 
-  try {
-    const { collectionGroup, query, where, getDocs, doc, getDoc } = window._firestore;
+    // Now fetch fresh data from Firestore
+    (async function loadUserFromFirestore() {
+        let tries = 0;
+        while ((!window._auth || !window._db || !window._firestore) && tries < 40) {
+            await new Promise(r => setTimeout(r, 50));
+            tries++;
+        }
+        if (!window._auth) return;
 
-    // 1. Find every "attendees" subcollection doc where userId == current user's uid
-    const attendeesQuery = query(
-      collectionGroup(window._db, 'attendees'),
-      where('userId', '==', authUser.uid)
-    );
-    const attendeesSnap = await getDocs(attendeesQuery);
+        let authUser = window._auth.currentUser;
+        if (!authUser) {
+            authUser = await new Promise((resolve) => {
+                let resolved = false;
+                const timer = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(null);
+                    }
+                }, 3000);
+                const unsub = window._auth.onAuthStateChanged((u) => {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timer);
+                        unsub();
+                        resolve(u);
+                    }
+                });
+            });
+        }
 
-    // 2. For each attendance, fetch the parent event doc
-    const eventPromises = attendeesSnap.docs.map(async (attendeeDoc) => {
-      // attendeeDoc.ref.parent is the "attendees" collection
-      // .parent again is the parent event doc
-      const eventRef = attendeeDoc.ref.parent.parent;
-      const eventSnap = await getDoc(eventRef);
-      if (!eventSnap.exists()) return null;
-      return { id: eventSnap.id, ...eventSnap.data() };
-    });
+        // If Firebase says NOT logged in and we also had no localStorage, redirect
+        if (!authUser) {
+            if (!user) window.location.href = 'index.html';
+            return;
+        }
 
-    const rawEvents = (await Promise.all(eventPromises)).filter(Boolean);
+        try {
+            const {doc, getDoc} = window._firestore;
+            const userRef = doc(window._db, 'users', authUser.uid);
+            const snap = await getDoc(userRef);
 
-    // 3. Split into upcoming vs past using event.date (format: "YYYY-MM-DD")
-    const todayStr = new Date().toISOString().split('T')[0];
-    const upcoming = rawEvents
-      .filter(e => e.date && e.date >= todayStr)
-      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-    const past = rawEvents.filter(e => e.date && e.date < todayStr);
+            if (snap.exists()) {
+                const firestoreUser = snap.data();
+                const merged = {...(user || {}), ...firestoreUser};
+                renderUserUI(merged);
+                localStorage.setItem('mu_current_user', JSON.stringify(merged));
+                console.log('[dashboard] user loaded from Firestore for uid:', authUser.uid);
+            } else {
+                console.log('[dashboard] no Firestore user doc yet');
+            }
+        } catch (err) {
+            console.error('[dashboard] user load failed:', err);
+        }
+    })();
 
-    // 4. Update stat cards
-    document.getElementById('statUpcoming').textContent = upcoming.length;
-    document.getElementById('statAttended').textContent = past.length;
+    /* ==================================================================
+       Load dashboard data from Firestore
+       ================================================================== */
+    async function loadDashboard() {
+        // Show "verify email" banner if unverified
+        try {
+            let au = window._auth?.currentUser;
+            if (au) {
+                await au.reload();
+                if (!au.emailVerified) {
+                    const banner = document.getElementById('verifyBanner');
+                    if (banner) banner.style.display = 'flex';
+                }
+            }
+        } catch (_) {
+        }
+        // Wait up to 3 seconds for Firebase Auth to populate currentUser
+        let authUser = window._auth.currentUser;
+        if (!authUser) {
+            authUser = await new Promise((resolve) => {
+                let resolved = false;
+                const timer = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(null);
+                    }
+                }, 3000);
+                const unsub = window._auth.onAuthStateChanged((u) => {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timer);
+                        unsub();
+                        resolve(u);
+                    }
+                });
+            });
+        }
 
-    // 5. Render event list
-    const listEl = document.getElementById('eventList');
-    if (upcoming.length === 0) {
-      listEl.innerHTML = `
+        if (!authUser) {
+            console.warn('No Firebase Auth user — dashboard cannot load events.');
+            document.getElementById('eventList').innerHTML =
+                '<div style="text-align:center;padding:30px;color:var(--muted);font-weight:700;font-size:.9rem;">Please log in to see your events.</div>';
+            return;
+        }
+
+        try {
+            const {collectionGroup, query, where, getDocs, doc, getDoc} = window._firestore;
+
+            // 1. Find every "attendees" subcollection doc where userId == current user's uid
+            const attendeesQuery = query(
+                collectionGroup(window._db, 'attendees'),
+                where('userId', '==', authUser.uid)
+            );
+            const attendeesSnap = await getDocs(attendeesQuery);
+
+            // 2. For each attendance, fetch the parent event doc
+            const eventPromises = attendeesSnap.docs.map(async (attendeeDoc) => {
+                // attendeeDoc.ref.parent is the "attendees" collection
+                // .parent again is the parent event doc
+                const eventRef = attendeeDoc.ref.parent.parent;
+                const eventSnap = await getDoc(eventRef);
+                if (!eventSnap.exists()) return null;
+                return {id: eventSnap.id, ...eventSnap.data()};
+            });
+
+            const rawEvents = (await Promise.all(eventPromises)).filter(Boolean);
+
+            // 3. Split into upcoming vs past using event.date (format: "YYYY-MM-DD")
+            const todayStr = new Date().toISOString().split('T')[0];
+            const upcoming = rawEvents
+            .filter(e => e.date && e.date >= todayStr)
+            .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+            const past = rawEvents.filter(e => e.date && e.date < todayStr);
+
+            // 4. Update stat cards
+            document.getElementById('statUpcoming').textContent = upcoming.length;
+            document.getElementById('statAttended').textContent = past.length;
+
+            // 5. Render event list
+            const listEl = document.getElementById('eventList');
+            if (upcoming.length === 0) {
+                listEl.innerHTML = `
         <div style="text-align:center; padding:40px 20px; background:#fff; border:1px dashed var(--border); border-radius:16px;">
           <div style="font-size:2.2rem; margin-bottom:10px;">🎾</div>
           <div style="font-weight:800; font-size:.95rem; margin-bottom:6px;">No upcoming games yet</div>
@@ -452,24 +385,24 @@ async function loadDashboard() {
           <a href="index.html" style="display:inline-block; padding:9px 20px; background:var(--orange); color:#fff; border-radius:100px; text-decoration:none; font-weight:800; font-size:.82rem;">🔍 Browse events</a>
         </div>
       `;
-    } else {
-      const sportMeta = {
-        football:'⚽ Football', basketball:'🏀 Basketball', tennis:'🎾 Tennis',
-        badminton:'🏸 Badminton', running:'🏃 Running', swimming:'🏊 Swimming',
-        pingpong:'🏓 Ping-Pong', volleyball:'🏐 Volleyball', yoga:'🧘 Yoga'
-      };
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      listEl.innerHTML = upcoming.map(e => {
-        const d = new Date(e.date + 'T00:00:00');
-        const monthLabel = months[d.getMonth()];
-        const dayLabel = d.getDate();
-        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
-        const timeLabel = e.time ? formatTime(e.time) : '';
-        const goingLabel = `${e.going || 0} going`;
-        const priceLabel = e.price > 0 ? ` · CA$${e.price}` : '';
-        const sportLabel = sportMeta[e.sport] || e.sport || '';
+            } else {
+                const sportMeta = {
+                    football: '⚽ Football', basketball: '🏀 Basketball', tennis: '🎾 Tennis',
+                    badminton: '🏸 Badminton', running: '🏃 Running', swimming: '🏊 Swimming',
+                    pingpong: '🏓 Ping-Pong', volleyball: '🏐 Volleyball', yoga: '🧘 Yoga'
+                };
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                listEl.innerHTML = upcoming.map(e => {
+                    const d = new Date(e.date + 'T00:00:00');
+                    const monthLabel = months[d.getMonth()];
+                    const dayLabel = d.getDate();
+                    const weekday = d.toLocaleDateString('en-US', {weekday: 'long'});
+                    const timeLabel = e.time ? formatTime(e.time) : '';
+                    const goingLabel = `${e.going || 0} going`;
+                    const priceLabel = e.price > 0 ? ` · CA$${e.price}` : '';
+                    const sportLabel = sportMeta[e.sport] || e.sport || '';
 
-        return `
+                    return `
           <a class="ev-item" href="event.html?id=${e.id}">
             <div class="ev-date"><div class="m">${monthLabel}</div><div class="d">${dayLabel}</div></div>
             <div class="ev-info">
@@ -480,25 +413,25 @@ async function loadDashboard() {
             <span class="ev-status confirmed">✓ Joined</span>
           </a>
         `;
-      }).join('');
-    }
+                }).join('');
+            }
 
-    // 6. Update the greeting paragraph with real count
-    const greetingP = document.querySelector('.hero-strip .greeting p');
-    if (greetingP) {
-      if (upcoming.length === 0) {
-        greetingP.innerHTML = 'No upcoming games yet — ready to find one?';
-      } else {
-        greetingP.innerHTML = `You have <strong>${upcoming.length} upcoming ${upcoming.length === 1 ? 'game' : 'games'}</strong>. Let's go!`;
-      }
-    }
-  } catch (err) {
-    console.error('[dashboard] error loading data:', err);
-    const online = navigator.onLine;
-    const msg = online
-      ? 'Something went wrong loading your events. Please try again.'
-      : 'You appear to be offline. Please check your connection.';
-    document.getElementById('eventList').innerHTML = `
+            // 6. Update the greeting paragraph with real count
+            const greetingP = document.querySelector('.hero-strip .greeting p');
+            if (greetingP) {
+                if (upcoming.length === 0) {
+                    greetingP.innerHTML = 'No upcoming games yet — ready to find one?';
+                } else {
+                    greetingP.innerHTML = `You have <strong>${upcoming.length} upcoming ${upcoming.length === 1 ? 'game' : 'games'}</strong>. Let's go!`;
+                }
+            }
+        } catch (err) {
+            console.error('[dashboard] error loading data:', err);
+            const online = navigator.onLine;
+            const msg = online
+                ? 'Something went wrong loading your events. Please try again.'
+                : 'You appear to be offline. Please check your connection.';
+            document.getElementById('eventList').innerHTML = `
       <div style="text-align:center; padding:40px 20px; background:#fff; border:1px solid var(--border); border-radius:16px;">
         <div style="font-size:2.2rem; margin-bottom:10px;">⚠️</div>
         <div style="font-weight:800; font-size:.95rem; margin-bottom:6px;">Couldn't load your events</div>
@@ -506,34 +439,36 @@ async function loadDashboard() {
         <button onclick="location.reload()" style="padding:9px 20px; background:var(--orange); color:#fff; border:none; border-radius:100px; cursor:pointer; font-weight:800; font-size:.82rem;">🔄 Try again</button>
       </div>
     `;
-  }
-}
+        }
+    }
 
-// Helpers
-function formatTime(hhmm) {
-  if (!hhmm || !hhmm.includes(':')) return hhmm || '';
-  const [h, m] = hhmm.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
-}
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+    // Helpers
+    function formatTime(hhmm) {
+        if (!hhmm || !hhmm.includes(':')) return hhmm || '';
+        const [h, m] = hhmm.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
+    }
 
-// Kick it off once the Firebase module has finished loading
-(function waitForFirebase() {
-  if (window._auth && window._db && window._firestore) {
-    loadDashboard();
-  } else {
-    setTimeout(waitForFirebase, 50);
-  }
-})();
-function doLogOut() {
-  localStorage.removeItem('mu_current_user');
-  if (window._fbSignOut) window._fbSignOut();
-  window.location.href = 'index.html';
-}
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    }
+
+    // Kick it off once the Firebase module has finished loading
+    (function waitForFirebase() {
+        if (window._auth && window._db && window._firestore) {
+            loadDashboard();
+        } else {
+            setTimeout(waitForFirebase, 50);
+        }
+    })();
+
+    function doLogOut() {
+        localStorage.removeItem('mu_current_user');
+        if (window._fbSignOut) window._fbSignOut();
+        window.location.href = 'index.html';
+    }
 </script>
 </body>
 </html>

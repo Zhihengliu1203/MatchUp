@@ -1,448 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event — MatchUp</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event — MatchUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- Leaflet for maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <script type="module">
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {getAuth, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            deleteDoc,
+            updateDoc,
+            increment,
+            collection,
+            getDocs,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
-      authDomain: "matchup-165ee.firebaseapp.com",
-      projectId: "matchup-165ee",
-      storageBucket: "matchup-165ee.firebasestorage.app",
-      messagingSenderId: "1038165665131",
-      appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    window._auth = auth;
-    window._db = db;
-    window._firestore = { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc, serverTimestamp };
-  </script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
+            authDomain: "matchup-165ee.firebaseapp.com",
+            projectId: "matchup-165ee",
+            storageBucket: "matchup-165ee.firebasestorage.app",
+            messagingSenderId: "1038165665131",
+            appId: "1:1038165665131:web:d38bcec6f394d7cf22582e"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window._auth = auth;
+        window._db = db;
+        window._firestore = {doc, getDoc, setDoc, deleteDoc, updateDoc, increment, collection, getDocs, addDoc, serverTimestamp};
+    </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --orange:#FF5722; --orange-lt:#FF7043; --orange-bg:#FFF3EF;
-      --blue:#1565C0; --blue-lt:#1E88E5; --blue-bg:#E3F2FD;
-      --green:#16A34A; --green-bg:#F0FDF4;
-      --white:#FFFFFF; --off:#F8F9FA;
-      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
-      --shadow:0 4px 24px rgba(0,0,0,.06);
-      --shadow-h:0 14px 44px rgba(0,0,0,.12);
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text); min-height: 100vh; }
-
-    /* NAV */
-    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px; }
-    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
-    .nav-center { display: flex; gap: 4px; margin-left: 20px; }
-    .nav-center a { padding: 8px 16px; border-radius: 100px; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: background .15s, color .15s; }
-    .nav-center a:hover { background: var(--off); color: var(--text); }
-    .nav-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
-    .nav-profile { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 100px; background: var(--off); text-decoration: none; color: inherit; transition: background .15s; }
-    .nav-profile:hover { background: var(--border); }
-    .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; }
-    .nav-profile-name { font-size: .85rem; font-weight: 800; }
-    .nav-login { padding: 8px 20px; border-radius: 100px; background: var(--blue); color: #fff; font-size: .88rem; font-weight: 800; text-decoration: none; transition: background .15s; }
-    .nav-login:hover { background: var(--blue-lt); }
-
-    /* HERO BANNER */
-    .event-hero {
-      position: relative; height: 380px; overflow: hidden;
-      background: linear-gradient(135deg, var(--orange), #FF8A65);
-    }
-    .event-hero img { width: 100%; height: 100%; object-fit: cover; }
-    .event-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.65), transparent 55%); }
-    .hero-inner {
-      position: absolute; bottom: 0; left: 0; right: 0; padding: 40px;
-      color: #fff; display: flex; flex-direction: column; gap: 12px;
-      max-width: 1200px; margin: 0 auto;
-    }
-    .ev-sport-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.2); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 100px; font-size: .82rem; font-weight: 800; align-self: flex-start; border: 1.5px solid rgba(255,255,255,.3); }
-    .ev-hero-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.1; max-width: 820px; }
-    .ev-hero-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: .92rem; font-weight: 700; opacity: .95; }
-    .ev-hero-meta span { display: flex; align-items: center; gap: 6px; }
-
-    /* LAYOUT */
-    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 32px 40px 80px; }
-    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .88rem; font-weight: 700; text-decoration: none; margin-bottom: 20px; transition: color .15s; }
-    .back-link:hover { color: var(--orange); }
-    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 28px; }
-
-    /* CARDS */
-    .card { background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 24px 26px; margin-bottom: 20px; }
-    .card h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .card p { font-size: .95rem; line-height: 1.7; color: #333; }
-
-    /* INFO LIST */
-    .info-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .info-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--off); border-radius: 12px; }
-    .info-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--orange-bg); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-    .info-icon.blue { background: var(--blue-bg); }
-    .info-icon.green { background: var(--green-bg); }
-    .info-label { font-size: .72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
-    .info-value { font-weight: 800; font-size: .92rem; }
-    .info-sub { font-size: .78rem; color: var(--muted); font-weight: 600; }
-
-    /* MAP */
-    #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
-    .leaflet-container { font-family: 'Nunito', sans-serif !important; }
-    .map-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-    .map-action { flex: 1; min-width: 140px; padding: 10px 14px; border-radius: 10px; background: var(--off); text-decoration: none; color: var(--text); font-weight: 800; font-size: .84rem; text-align: center; transition: background .15s; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; }
-    .map-action:hover { background: var(--orange-bg); color: var(--orange); }
-
-    /* ATTENDEES */
-    .attendees { display: flex; flex-wrap: wrap; gap: 12px; }
-    .attendee { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 60px; }
-    .att-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #FF8A65); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .95rem; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
-    .att-name { font-size: .72rem; font-weight: 700; color: var(--muted); text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    /* SIDEBAR - JOIN CARD */
-    .join-card { position: sticky; top: 92px; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); }
-    .join-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; margin-bottom: 4px; }
-    .join-price.free { color: var(--orange); }
-    .join-price-sub { font-size: .82rem; color: var(--muted); margin-bottom: 18px; font-weight: 700; }
-    .progress { background: var(--off); border-radius: 100px; height: 8px; overflow: hidden; margin-bottom: 8px; }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--orange), #FF8A65); border-radius: 100px; transition: width .5s ease; }
-    .spots-text { font-size: .82rem; font-weight: 700; color: var(--muted); margin-bottom: 18px; }
-    .spots-text strong { color: var(--text); }
-    .btn-join { display: block; width: 100%; padding: 14px; border-radius: 100px; background: var(--orange); color: #fff; border: none; cursor: pointer; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; transition: background .2s, transform .15s, box-shadow .2s; text-decoration: none; text-align: center; }
-    .btn-join:hover { background: var(--orange-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.35); }
-    .btn-join.joined { background: var(--green); }
-    .btn-join.full { background: var(--muted); cursor: not-allowed; opacity: .7; }
-    .join-note { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 10px; line-height: 1.5; }
-    .share-row { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .share-btn { flex: 1; padding: 9px 8px; background: var(--off); border: none; border-radius: 10px; font-size: .78rem; font-weight: 800; color: var(--text); cursor: pointer; font-family: 'Nunito', sans-serif; transition: background .15s, color .15s; }
-    .share-btn:hover { background: var(--orange-bg); color: var(--orange); }
-
-    /* ORGANIZER */
-    .organizer { display: flex; align-items: center; gap: 14px; }
-    .org-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--blue-lt)); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
-    .org-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
-    .org-meta { font-size: .8rem; color: var(--muted); }
-    .org-meta .s { color: var(--orange); }
-
-    /* TOAST */
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(30px); background: var(--green); color: #fff; padding: 14px 26px; border-radius: 100px; font-weight: 800; font-size: .9rem; box-shadow: 0 10px 30px rgba(22,163,74,.3); opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; z-index: 1000; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    @media (max-width: 960px) {
-      nav { padding: 0 20px; }
-      .nav-center { display: none; }
-      .nav-profile-name { display: none; }
-      .event-hero { height: 280px; }
-      .hero-inner { padding: 24px; }
-      .page-wrap { padding: 20px 18px 60px; }
-      .grid { grid-template-columns: 1fr; }
-      .join-card { position: static; }
-      .info-list { grid-template-columns: 1fr; }
-    }
-  </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/event.css" />
 </head>
 <body>
 
 <nav>
-  <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
-  <div class="nav-center">
-    <a href="dashboard.html">🏠 Dashboard</a>
-    <a href="index.html">🗓️ Events</a>
-    <a href="create-event.html">➕ Create</a>
-  </div>
-  <div class="nav-right" id="navRight">
-    <a class="nav-login" href="index.html">Log in</a>
-  </div>
+    <a class="nav-logo" href="index.html"><span class="logo-icon">🏆</span>MatchUp</a>
+    <div class="nav-center">
+        <a href="dashboard.html">🏠 Dashboard</a>
+        <a href="index.html">🗓️ Events</a>
+        <a href="create-event.html">➕ Create</a>
+    </div>
+    <div class="nav-right" id="navRight">
+        <a class="nav-login" href="index.html">Log in</a>
+    </div>
 </nav>
 
 <!-- HERO BANNER -->
 <div class="event-hero">
-  <img id="heroImg" src="" alt="" style="opacity:0;transition:opacity .3s;" />
-  <div class="hero-inner">
-    <span class="ev-sport-chip" id="heroSport">⚽ Football</span>
-    <h1 class="ev-hero-title" id="heroTitle">Loading event…</h1>
-    <div class="ev-hero-meta">
-      <span>📅 <span id="heroDate">—</span></span>
-      <span>⏰ <span id="heroTime">—</span></span>
-      <span>📍 <span id="heroVenue">—</span></span>
+    <img id="heroImg" src="" alt="" style="opacity:0;transition:opacity .3s;" />
+    <div class="hero-inner">
+        <span class="ev-sport-chip" id="heroSport">⚽ Football</span>
+        <h1 class="ev-hero-title" id="heroTitle">Loading event…</h1>
+        <div class="ev-hero-meta">
+            <span>📅 <span id="heroDate">—</span></span>
+            <span>⏰ <span id="heroTime">—</span></span>
+            <span>📍 <span id="heroVenue">—</span></span>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="page-wrap">
-  <a href="index.html" class="back-link">← Back to events</a>
+    <a href="index.html" class="back-link">← Back to events</a>
 
-  <div class="grid">
-    <!-- MAIN COLUMN -->
-    <div>
+    <div class="grid">
+        <!-- MAIN COLUMN -->
+        <div>
 
-      <!-- Info grid -->
-      <div class="card">
-        <h2>ℹ️ Event details</h2>
-        <div class="info-list">
-          <div class="info-item">
-            <div class="info-icon">📅</div>
-            <div><div class="info-label">Date</div><div class="info-value" id="infoDate">—</div><div class="info-sub" id="infoRecur">One-time event</div></div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon blue">⏰</div>
-            <div><div class="info-label">Time</div><div class="info-value" id="infoTime">—</div><div class="info-sub" id="infoDuration">—</div></div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon green">🎯</div>
-            <div><div class="info-label">Level</div><div class="info-value" id="infoLevel">All levels</div><div class="info-sub">Everyone welcome</div></div>
-          </div>
-          <div class="info-item">
-            <div class="info-icon">👥</div>
-            <div><div class="info-label">Players</div><div class="info-value"><span id="infoGoing">0</span> / <span id="infoMax">10</span> going</div><div class="info-sub" id="infoMin">Min 4 to run</div></div>
-          </div>
+            <!-- Info grid -->
+            <div class="card">
+                <h2>ℹ️ Event details</h2>
+                <div class="info-list">
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div>
+                            <div class="info-label">Date</div>
+                            <div class="info-value" id="infoDate">—</div>
+                            <div class="info-sub" id="infoRecur">One-time event</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon blue">⏰</div>
+                        <div>
+                            <div class="info-label">Time</div>
+                            <div class="info-value" id="infoTime">—</div>
+                            <div class="info-sub" id="infoDuration">—</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon green">🎯</div>
+                        <div>
+                            <div class="info-label">Level</div>
+                            <div class="info-value" id="infoLevel">All levels</div>
+                            <div class="info-sub">Everyone welcome</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">👥</div>
+                        <div>
+                            <div class="info-label">Players</div>
+                            <div class="info-value"><span id="infoGoing">0</span> / <span id="infoMax">10</span> going</div>
+                            <div class="info-sub" id="infoMin">Min 4 to run</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About -->
+            <div class="card">
+                <h2>📝 About this event</h2>
+                <p id="description">Loading description…</p>
+            </div>
+
+            <!-- Map -->
+            <div class="card">
+                <h2>📍 Location</h2>
+                <p style="margin-bottom:14px;font-size:.92rem;color:var(--muted);" id="addressLine">Loading address…</p>
+                <div id="map"></div>
+                <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button id="reportBtn" onclick="reportOrganizer()"
+                            style="padding:8px 14px; background:#fef3c7; color:#92400e; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">
+                        🚩 Report
+                    </button>
+                    <button id="blockBtn" onclick="blockOrganizer()"
+                            style="padding:8px 14px; background:#fee2e2; color:#991b1b; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">
+                        🚫 Block organizer
+                    </button>
+                </div>
+                <div class="map-actions">
+                    <button class="map-action" onclick="openInMaps()">🗺️ Open in Maps</button>
+                    <button class="map-action" onclick="copyAddress()">📋 Copy address</button>
+                    <button class="map-action" onclick="shareEvent()">🔗 Share event</button>
+                </div>
+            </div>
+
+            <!-- Attendees -->
+            <div class="card">
+                <h2>👥 Who's going</h2>
+                <div class="attendees" id="attendees">
+                    <!-- filled by JS -->
+                </div>
+            </div>
+
+            <!-- Organizer -->
+            <div class="card">
+                <h2>🎤 Organized by</h2>
+                <div class="organizer">
+                    <div class="org-avatar" id="orgAvatar">?</div>
+                    <div>
+                        <div class="org-name" id="orgName">Organizer</div>
+                        <div class="org-meta"><span class="s">★</span> 4.9 rating · <span id="orgEvents">1</span> event hosted</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-      </div>
 
-      <!-- About -->
-      <div class="card">
-        <h2>📝 About this event</h2>
-        <p id="description">Loading description…</p>
-      </div>
+        <!-- SIDEBAR: JOIN CARD -->
+        <aside>
+            <div class="join-card">
+                <div class="join-price" id="joinPrice">FREE</div>
+                <div class="join-price-sub" id="joinPriceSub">per player</div>
 
-      <!-- Map -->
-      <div class="card">
-        <h2>📍 Location</h2>
-        <p style="margin-bottom:14px;font-size:.92rem;color:var(--muted);" id="addressLine">Loading address…</p>
-        <div id="map"></div>
-        <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
-  <button id="reportBtn" onclick="reportOrganizer()" style="padding:8px 14px; background:#FEF3C7; color:#92400E; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">🚩 Report</button>
-  <button id="blockBtn" onclick="blockOrganizer()" style="padding:8px 14px; background:#FEE2E2; color:#991B1B; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.78rem;">🚫 Block organizer</button>
-</div>
-        <div class="map-actions">
-          <button class="map-action" onclick="openInMaps()">🗺️ Open in Maps</button>
-          <button class="map-action" onclick="copyAddress()">📋 Copy address</button>
-          <button class="map-action" onclick="shareEvent()">🔗 Share event</button>
-        </div>
-      </div>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width:0%;"></div>
+                </div>
+                <div class="spots-text"><strong id="spotsLeft">10</strong> spots left out of <strong id="spotsTotal">10</strong></div>
 
-      <!-- Attendees -->
-      <div class="card">
-        <h2>👥 Who's going</h2>
-        <div class="attendees" id="attendees">
-          <!-- filled by JS -->
-        </div>
-      </div>
+                <button class="btn-join" id="joinBtn" onclick="joinEvent()">🎉 Join this event</button>
+                <p class="join-note">By joining, you commit to attending. Cancel up to 2h before.</p>
 
-      <!-- Organizer -->
-      <div class="card">
-        <h2>🎤 Organized by</h2>
-        <div class="organizer">
-          <div class="org-avatar" id="orgAvatar">?</div>
-          <div>
-            <div class="org-name" id="orgName">Organizer</div>
-            <div class="org-meta"><span class="s">★</span> 4.9 rating · <span id="orgEvents">1</span> event hosted</div>
-          </div>
-        </div>
-      </div>
+                <!-- ORGANIZER-ONLY CONTROLS (hidden by default) -->
+                <div id="organizerControls" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                    <p style="font-size:.74rem; font-weight:800; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; text-align:center;">
+                        👑 You organize this</p>
+                    <button onclick="openEditModal()"
+                            style="width:100%; margin-bottom:8px; padding:11px; background:var(--blue); color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.88rem;">
+                        ✏️ Edit event
+                    </button>
+                    <button onclick="cancelEvent()"
+                            style="width:100%; padding:11px; background:#fee2e2; color:#991b1b; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.88rem;">
+                        🗑️ Cancel event
+                    </button>
+                </div>
 
+                <div class="share-row">
+                    <button class="share-btn" onclick="shareEvent()">🔗 Share</button>
+                    <button class="share-btn" onclick="saveEvent()">🔖 Save</button>
+                    <button class="share-btn" onclick="reportEvent()">🚩 Report</button>
+                </div>
+            </div>
+        </aside>
     </div>
-
-    <!-- SIDEBAR: JOIN CARD -->
-    <aside>
-      <div class="join-card">
-        <div class="join-price" id="joinPrice">FREE</div>
-        <div class="join-price-sub" id="joinPriceSub">per player</div>
-
-        <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%;"></div></div>
-        <div class="spots-text"><strong id="spotsLeft">10</strong> spots left out of <strong id="spotsTotal">10</strong></div>
-
-        <button class="btn-join" id="joinBtn" onclick="joinEvent()">🎉 Join this event</button>
-        <p class="join-note">By joining, you commit to attending. Cancel up to 2h before.</p>
-
-        <!-- ORGANIZER-ONLY CONTROLS (hidden by default) -->
-        <div id="organizerControls" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
-          <p style="font-size:.74rem; font-weight:800; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; text-align:center;">👑 You organize this</p>
-          <button onclick="openEditModal()" style="width:100%; margin-bottom:8px; padding:11px; background:var(--blue); color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.88rem;">✏️ Edit event</button>
-          <button onclick="cancelEvent()" style="width:100%; padding:11px; background:#FEE2E2; color:#991B1B; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:.88rem;">🗑️ Cancel event</button>
-        </div>
-
-        <div class="share-row">
-          <button class="share-btn" onclick="shareEvent()">🔗 Share</button>
-          <button class="share-btn" onclick="saveEvent()">🔖 Save</button>
-          <button class="share-btn" onclick="reportEvent()">🚩 Report</button>
-        </div>
-      </div>
-    </aside>
-  </div>
 </div>
 
 <!-- EDIT EVENT MODAL -->
-<div id="editModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(10,10,30,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; border-radius:22px; width:100%; max-width:520px; max-height:calc(100vh - 40px); overflow-y:auto; padding:30px 28px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-      <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem;">✏️ Edit event</h2>
-      <button onclick="closeEditModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted);">✕</button>
+<div id="editModal"
+     style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(10,10,30,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:22px; width:100%; max-width:520px; max-height:calc(100vh - 40px); overflow-y:auto; padding:30px 28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+            <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem;">✏️ Edit event</h2>
+            <button onclick="closeEditModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted);">✕</button>
+        </div>
+
+        <div id="editError"
+             style="display:none; background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:.85rem; font-weight:700;"></div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+                <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Title</label>
+                <input id="editTitle" type="text" maxlength="80"
+                       style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Date</label>
+                    <input id="editDate" type="date"
+                           style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+                </div>
+                <div>
+                    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Time</label>
+                    <input id="editTime" type="time"
+                           style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+                </div>
+            </div>
+
+            <div>
+                <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Venue</label>
+                <input id="editVenue" type="text"
+                       style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+            </div>
+
+            <div>
+                <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Description</label>
+                <textarea id="editDesc" rows="3"
+                          style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem; resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Max players</label>
+                    <input id="editMax" type="number" min="2" max="50"
+                           style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+                </div>
+                <div>
+                    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Price (CA$)</label>
+                    <input id="editPrice" type="number" min="0" step="0.01"
+                           style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:22px;">
+            <button onclick="closeEditModal()"
+                    style="flex:1; padding:12px; background:var(--off); color:var(--text); border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">
+                Cancel
+            </button>
+            <button id="saveEditBtn" onclick="saveEdit()"
+                    style="flex:1; padding:12px; background:var(--orange); color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">
+                💾 Save changes
+            </button>
+        </div>
     </div>
-
-    <div id="editError" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:.85rem; font-weight:700;"></div>
-
-    <div style="display:flex; flex-direction:column; gap:14px;">
-      <div>
-        <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Title</label>
-        <input id="editTitle" type="text" maxlength="80" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div>
-          <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Date</label>
-          <input id="editDate" type="date" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-        </div>
-        <div>
-          <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Time</label>
-          <input id="editTime" type="time" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-        </div>
-      </div>
-
-      <div>
-        <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Venue</label>
-        <input id="editVenue" type="text" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-      </div>
-
-      <div>
-        <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Description</label>
-        <textarea id="editDesc" rows="3" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem; resize:vertical;"></textarea>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div>
-          <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Max players</label>
-          <input id="editMax" type="number" min="2" max="50" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-        </div>
-        <div>
-          <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Price (CA$)</label>
-          <input id="editPrice" type="number" min="0" step="0.01" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex; gap:10px; margin-top:22px;">
-      <button onclick="closeEditModal()" style="flex:1; padding:12px; background:var(--off); color:var(--text); border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">Cancel</button>
-      <button id="saveEditBtn" onclick="saveEdit()" style="flex:1; padding:12px; background:var(--orange); color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">💾 Save changes</button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast">✓ You're in! See you there.</div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const eventId = params.get('id');
-const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('id');
+    const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
 
-/* Build nav */
-const navRight = document.getElementById('navRight');
-if (user) {
-  const initial = (user.fname?.[0] || 'P').toUpperCase();
-  navRight.innerHTML = `<a class="nav-profile" href="profile.html"><div class="nav-avatar">${initial}</div><span class="nav-profile-name">${user.fname || 'Player'}</span></a>`;
-} else {
-  navRight.innerHTML = `<a class="nav-login" href="index.html">Log in</a>`;
-}
-
-/* Sport metadata */
-const sportMeta = {
-  football:   { emoji: '⚽', img: 'photo-1551698618-1dfe5d97d256' },
-  basketball: { emoji: '🏀', img: 'photo-1546519638-68e109498ffc' },
-  tennis:     { emoji: '🎾', img: 'photo-1595435934249-5df7ed86e1c0' },
-  badminton:  { emoji: '🏸', img: 'photo-1521537634581-0dced2fee2ef' },
-  running:    { emoji: '🏃', img: 'photo-1461896836934-ffe607ba8211' },
-  swimming:   { emoji: '🏊', img: 'photo-1530549387789-4c1017266635' },
-  pingpong:   { emoji: '🏓', img: 'photo-1611996575749-79a3a250f948' },
-  volleyball: { emoji: '🏐', img: 'photo-1609710228159-0fa9bd7c0827' },
-  yoga:       { emoji: '🧘', img: 'photo-1588286840104-8957b019727f' }
-};
-
-/* Load event from Firestore */
-async function loadEvent() {
-  if (!eventId) {
-    alert('Event not found');
-    window.location.href = '/';
-    return;
-  }
-
-  try {
-    const { doc, getDoc, collection, getDocs } = window._firestore;
-    const eventRef = doc(window._db, 'events', eventId);
-    const eventSnap = await getDoc(eventRef);
-
-    if (!eventSnap.exists()) {
-      alert('Event not found');
-      window.location.href = '/';
-      return;
+    /* Build nav */
+    const navRight = document.getElementById('navRight');
+    if (user) {
+        const initial = (user.fname?.[0] || 'P').toUpperCase();
+        navRight.innerHTML = `<a class="nav-profile" href="profile.html"><div class="nav-avatar">${initial}</div><span class="nav-profile-name">${user.fname || 'Player'}</span></a>`;
+    } else {
+        navRight.innerHTML = `<a class="nav-login" href="index.html">Log in</a>`;
     }
 
-    const eventData = eventSnap.data();
-    eventData.id = eventId;
-    window._currentEventData = eventData;  // make accessible to report/block
+    /* Sport metadata */
+    const sportMeta = {
+        football: {emoji: '⚽', img: 'photo-1551698618-1dfe5d97d256'},
+        basketball: {emoji: '🏀', img: 'photo-1546519638-68e109498ffc'},
+        tennis: {emoji: '🎾', img: 'photo-1595435934249-5df7ed86e1c0'},
+        badminton: {emoji: '🏸', img: 'photo-1521537634581-0dced2fee2ef'},
+        running: {emoji: '🏃', img: 'photo-1461896836934-ffe607ba8211'},
+        swimming: {emoji: '🏊', img: 'photo-1530549387789-4c1017266635'},
+        pingpong: {emoji: '🏓', img: 'photo-1611996575749-79a3a250f948'},
+        volleyball: {emoji: '🏐', img: 'photo-1609710228159-0fa9bd7c0827'},
+        yoga: {emoji: '🧘', img: 'photo-1588286840104-8957b019727f'}
+    };
 
-    populatePage(eventData);
+    /* Load event from Firestore */
+    async function loadEvent() {
+        if (!eventId) {
+            alert('Event not found');
+            window.location.href = '/';
+            return;
+        }
 
-    // Get attendee count
-    const attendeesRef = collection(window._db, 'events', eventId, 'attendees');
-    const attendeesSnap = await getDocs(attendeesRef);
-    document.getElementById('infoGoing').textContent = attendeesSnap.size;
-    document.getElementById('spotsLeft').textContent = eventData.maxPlayers - attendeesSnap.size;
+        try {
+            const {doc, getDoc, collection, getDocs} = window._firestore;
+            const eventRef = doc(window._db, 'events', eventId);
+            const eventSnap = await getDoc(eventRef);
 
-    // Check if user joined
-    // Check if current user already joined (use Firebase Auth uid, not email)
-    const authUser = window._auth.currentUser;
-    if (authUser) {
-      const userAttendanceDoc = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
-      const userAttendanceSnap = await getDoc(userAttendanceDoc);
-      if (userAttendanceSnap.exists()) {
-        document.getElementById('joinBtn').textContent = '✓ You\'re going!';
-        document.getElementById('joinBtn').classList.add('joined');
-        // NOTE: don't disable — button still clickable to LEAVE the event
-      }
+            if (!eventSnap.exists()) {
+                alert('Event not found');
+                window.location.href = '/';
+                return;
+            }
 
-      // Show organizer controls if current user organizes this event
-      const storedUser = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
-      const isOrganizerByUid    = eventData.organizer_id && eventData.organizer_id === authUser.uid;
-      const isOrganizerByEmail  = eventData.organizerEmail && authUser.email && eventData.organizerEmail.toLowerCase() === authUser.email.toLowerCase();
-      const isOrganizerByName   = storedUser && eventData.organizer &&
-                                  eventData.organizer === `${storedUser.fname || ''} ${storedUser.lname || ''}`.trim();
-      if (isOrganizerByUid || isOrganizerByEmail || isOrganizerByName) {
-        document.getElementById('organizerControls').style.display = 'block';
-        // Hide join button (organizers auto-count as going)
-        document.getElementById('joinBtn').style.display = 'none';
-        const joinNote = document.querySelector('.join-note');
-        if (joinNote) joinNote.style.display = 'none';
-        // Hide report/block (can't report yourself)
-        const reportBtn = document.getElementById('reportBtn');
-        const blockBtn = document.getElementById('blockBtn');
-        if (reportBtn) reportBtn.style.display = 'none';
-        if (blockBtn) blockBtn.style.display = 'none';
-      }
+            const eventData = eventSnap.data();
+            eventData.id = eventId;
+            window._currentEventData = eventData;  // make accessible to report/block
+
+            populatePage(eventData);
+
+            // Get attendee count
+            const attendeesRef = collection(window._db, 'events', eventId, 'attendees');
+            const attendeesSnap = await getDocs(attendeesRef);
+            document.getElementById('infoGoing').textContent = attendeesSnap.size;
+            document.getElementById('spotsLeft').textContent = eventData.maxPlayers - attendeesSnap.size;
+
+            // Check if user joined
+            // Check if current user already joined (use Firebase Auth uid, not email)
+            const authUser = window._auth.currentUser;
+            if (authUser) {
+                const userAttendanceDoc = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
+                const userAttendanceSnap = await getDoc(userAttendanceDoc);
+                if (userAttendanceSnap.exists()) {
+                    document.getElementById('joinBtn').textContent = '✓ You\'re going!';
+                    document.getElementById('joinBtn').classList.add('joined');
+                    // NOTE: don't disable — button still clickable to LEAVE the event
+                }
+
+                // Show organizer controls if current user organizes this event
+                const storedUser = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
+                const isOrganizerByUid = eventData.organizer_id && eventData.organizer_id === authUser.uid;
+                const isOrganizerByEmail = eventData.organizerEmail && authUser.email && eventData.organizerEmail.toLowerCase() === authUser.email.toLowerCase();
+                const isOrganizerByName = storedUser && eventData.organizer &&
+                    eventData.organizer === `${storedUser.fname || ''} ${storedUser.lname || ''}`.trim();
+                if (isOrganizerByUid || isOrganizerByEmail || isOrganizerByName) {
+                    document.getElementById('organizerControls').style.display = 'block';
+                    // Hide join button (organizers auto-count as going)
+                    document.getElementById('joinBtn').style.display = 'none';
+                    const joinNote = document.querySelector('.join-note');
+                    if (joinNote) joinNote.style.display = 'none';
+                    // Hide report/block (can't report yourself)
+                    const reportBtn = document.getElementById('reportBtn');
+                    const blockBtn = document.getElementById('blockBtn');
+                    if (reportBtn) reportBtn.style.display = 'none';
+                    if (blockBtn) blockBtn.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading event:', error);
+            showEventError('Could not load this event. Please check your connection and try again.');
+        }
     }
-  } catch (error) {
-    console.error('Error loading event:', error);
-    showEventError('Could not load this event. Please check your connection and try again.');
-  }
-}
 
-function showEventError(msg) {
-  const main = document.querySelector('.page-wrap');
-  if (!main) { alert(msg); return; }
-  main.innerHTML = `
+    function showEventError(msg) {
+        const main = document.querySelector('.page-wrap');
+        if (!main) {
+            alert(msg);
+            return;
+        }
+        main.innerHTML = `
     <div style="max-width:480px; margin:40px auto; padding:40px 28px; background:#fff; border:1px solid var(--border); border-radius:22px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.06);">
       <div style="font-size:3rem; margin-bottom:14px;">😕</div>
       <h1 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; margin-bottom:10px;">Something went wrong</h1>
@@ -453,419 +394,431 @@ function showEventError(msg) {
       </div>
     </div>
   `;
-}
-
-function populatePage(eventData) {
-  const meta = sportMeta[eventData.sport] || sportMeta.football;
-  document.title = `${eventData.title} — MatchUp`;
-  const heroImg = document.getElementById('heroImg');
-heroImg.src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
-heroImg.onload = () => heroImg.style.opacity = '1';
-  document.getElementById('heroSport').textContent = `${meta.emoji} ${eventData.sport.charAt(0).toUpperCase() + eventData.sport.slice(1)}`;
-  document.getElementById('heroTitle').textContent = eventData.title;
-
-  const dateObj = new Date(eventData.date + 'T' + (eventData.time || '12:00'));
-  const dateFmt = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const timeFmt = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-  document.getElementById('heroDate').textContent = dateFmt;
-  document.getElementById('heroTime').textContent = timeFmt;
-  document.getElementById('heroVenue').textContent = eventData.venue || eventData.location;
-
-  document.getElementById('infoDate').textContent = dateFmt;
-  document.getElementById('infoTime').textContent = timeFmt;
-
-  const recurLabels = { once: 'One-time event', weekly: 'Repeats weekly', biweekly: 'Repeats biweekly', monthly: 'Repeats monthly' };
-  document.getElementById('infoRecur').textContent = recurLabels[eventData.recurrence] || 'One-time event';
-
-  const dur = eventData.duration || 90;
-  const durTxt = dur >= 60 ? `${(dur/60).toFixed(1).replace('.5', '½')} hour${dur >= 120 ? 's' : ''}` : `${dur} minutes`;
-  document.getElementById('infoDuration').textContent = durTxt;
-
-  const levelLabels = { all: 'All levels', beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
-  document.getElementById('infoLevel').textContent = levelLabels[eventData.level] || 'All levels';
-
-  document.getElementById('infoMax').textContent = eventData.maxPlayers;
-  document.getElementById('infoMin').textContent = `Min ${eventData.minPlayers} to run`;
-
-  document.getElementById('description').textContent = eventData.description || 'No description provided.';
-
-  document.getElementById('addressLine').textContent = eventData.address || eventData.venue || eventData.location;
-
-  // Pricing
-  const priceEl = document.getElementById('joinPrice');
-  const priceSubEl = document.getElementById('joinPriceSub');
-  if (eventData.priceType === 'free' || !eventData.price) {
-    priceEl.textContent = 'FREE';
-    priceEl.classList.add('free');
-    priceSubEl.textContent = 'for all players 🎉';
-  } else {
-    priceEl.textContent = `CA$${eventData.price.toFixed(2)}`;
-    priceEl.classList.remove('free');
-    priceSubEl.textContent = 'per player';
-  }
-
-  // Spots
-  const going = eventData.going || 1;
-  const max = eventData.maxPlayers;
-  const pct = Math.min(100, (going / max) * 100);
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('spotsTotal').textContent = max;
-
-  // Organizer
-  const orgName = eventData.organizer || 'MatchUp Organizer';
-  document.getElementById('orgName').textContent = orgName;
-  document.getElementById('orgAvatar').textContent = orgName[0].toUpperCase();
-
-  // Attendees (demo - in real app, pull from attendees subcollection)
-  const attendees = document.getElementById('attendees');
-  const names = ['Thomas', 'Camille', 'Marcus', 'Sarah', 'Alex'];
-  const shown = Math.min(5, Math.max(1, going - 1));
-  let html = '';
-  for (let i = 0; i < shown; i++) {
-    const name = names[i % names.length];
-    html += `<div class="attendee"><div class="att-avatar">${name[0]}</div><div class="att-name">${name}</div></div>`;
-  }
-  if (going > shown + 1) {
-    html += `<div class="attendee"><div class="att-avatar">+</div><div class="att-name">${going - shown - 1} more</div></div>`;
-  }
-  attendees.innerHTML = html || '<p style="color:var(--muted);">Be the first to join!</p>';
-
-  // Map
-  const venueCoords = {
-    'mont-royal':   [45.5048, -73.5872],
-    'lafontaine':   [45.5270, -73.5691],
-    'jarry':        [45.5431, -73.6247],
-    'jean-drapeau': [45.5129, -73.5337],
-    'lachine':      [45.4380, -73.6750],
-    'rosemont':     [45.5586, -73.5700]
-  };
-
-  let coords = [45.5048, -73.5872]; // Montreal fallback
-
-  // Prefer geocoded lat/lng saved on the event itself
-  if (typeof eventData.lat === 'number' && typeof eventData.lng === 'number') {
-    coords = [eventData.lat, eventData.lng];
-  } else {
-    // Fallback for old events: match against hardcoded venue list
-    const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
-    for (const key in venueCoords) {
-      if (venueLower.includes(key)) { coords = venueCoords[key]; break; }
-    }
-  }
-
-  const map = L.map('map', { scrollWheelZoom: false }).setView(coords, 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  const orangeIcon = L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="background:#FF5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${meta.emoji}</span></div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 34]
-  });
-  L.marker(coords, { icon: orangeIcon }).addTo(map)
-    .bindPopup(`<strong>${eventData.venue || eventData.location}</strong><br>${eventData.address || ''}`);
-}
-
-async function joinEvent() {
-  const authUser = window._auth.currentUser;
-  if (!authUser) {
-    alert('Please log in first to join this event!');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // Soft-warn unverified users joining events
-  await authUser.reload();
-  if (!authUser.emailVerified) {
-    const proceed = confirm(
-      "⚠️ Your email isn't verified yet.\n\n" +
-      "Unverified users can still join events, but organizers may not trust you as much. " +
-      "We recommend verifying your email first.\n\n" +
-      "Join anyway?"
-    );
-    if (!proceed) {
-      window.location.href = 'verify-email.html';
-      return;
-    }
-  }
-
-  const btn = document.getElementById('joinBtn');
-  if (btn.classList.contains('joined')) return;
-
-  const { doc, setDoc, deleteDoc, updateDoc, increment, getDoc } = window._firestore;
-  const attendeeRef = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
-  const eventRef = doc(window._db, 'events', eventId);
-
-  btn.disabled = true;
-  const originalText = btn.textContent;
-
-  try {
-    // Check: already joined?
-    const existing = await getDoc(attendeeRef);
-
-    if (existing.exists()) {
-      // User is leaving the event
-      await deleteDoc(attendeeRef);
-      await updateDoc(eventRef, { going: increment(-1) });
-
-      btn.textContent = 'Join event';
-      btn.classList.remove('joined');
-      btn.disabled = false;
-
-      const count = Math.max(0, parseInt(document.getElementById('infoGoing').textContent) - 1);
-      document.getElementById('infoGoing').textContent = count;
-      const max = parseInt(document.getElementById('infoMax').textContent);
-      document.getElementById('spotsLeft').textContent = max - count;
-      document.getElementById('progressBar').style.width = (count / max) * 100 + '%';
-
-      const toast = document.getElementById('toast');
-      toast.textContent = '👋 You left the event';
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-        toast.textContent = '✓ You\'re in! See you there.';
-      }, 2000);
-      return;
     }
 
-    // Check: event full?
-    const currentCount = parseInt(document.getElementById('infoGoing').textContent);
-    const maxCount = parseInt(document.getElementById('infoMax').textContent);
-    if (currentCount >= maxCount) {
-      alert('Sorry, this event is full!');
-      btn.disabled = false;
-      return;
+    function populatePage(eventData) {
+        const meta = sportMeta[eventData.sport] || sportMeta.football;
+        document.title = `${eventData.title} — MatchUp`;
+        const heroImg = document.getElementById('heroImg');
+        heroImg.src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
+        heroImg.onload = () => heroImg.style.opacity = '1';
+        document.getElementById('heroSport').textContent = `${meta.emoji} ${eventData.sport.charAt(0).toUpperCase() + eventData.sport.slice(1)}`;
+        document.getElementById('heroTitle').textContent = eventData.title;
+
+        const dateObj = new Date(eventData.date + 'T' + (eventData.time || '12:00'));
+        const dateFmt = dateObj.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
+        const timeFmt = dateObj.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+
+        document.getElementById('heroDate').textContent = dateFmt;
+        document.getElementById('heroTime').textContent = timeFmt;
+        document.getElementById('heroVenue').textContent = eventData.venue || eventData.location;
+
+        document.getElementById('infoDate').textContent = dateFmt;
+        document.getElementById('infoTime').textContent = timeFmt;
+
+        const recurLabels = {once: 'One-time event', weekly: 'Repeats weekly', biweekly: 'Repeats biweekly', monthly: 'Repeats monthly'};
+        document.getElementById('infoRecur').textContent = recurLabels[eventData.recurrence] || 'One-time event';
+
+        const dur = eventData.duration || 90;
+        const durTxt = dur >= 60 ? `${(dur / 60).toFixed(1).replace('.5', '½')} hour${dur >= 120 ? 's' : ''}` : `${dur} minutes`;
+        document.getElementById('infoDuration').textContent = durTxt;
+
+        const levelLabels = {all: 'All levels', beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced'};
+        document.getElementById('infoLevel').textContent = levelLabels[eventData.level] || 'All levels';
+
+        document.getElementById('infoMax').textContent = eventData.maxPlayers;
+        document.getElementById('infoMin').textContent = `Min ${eventData.minPlayers} to run`;
+
+        document.getElementById('description').textContent = eventData.description || 'No description provided.';
+
+        document.getElementById('addressLine').textContent = eventData.address || eventData.venue || eventData.location;
+
+        // Pricing
+        const priceEl = document.getElementById('joinPrice');
+        const priceSubEl = document.getElementById('joinPriceSub');
+        if (eventData.priceType === 'free' || !eventData.price) {
+            priceEl.textContent = 'FREE';
+            priceEl.classList.add('free');
+            priceSubEl.textContent = 'for all players 🎉';
+        } else {
+            priceEl.textContent = `CA$${eventData.price.toFixed(2)}`;
+            priceEl.classList.remove('free');
+            priceSubEl.textContent = 'per player';
+        }
+
+        // Spots
+        const going = eventData.going || 1;
+        const max = eventData.maxPlayers;
+        const pct = Math.min(100, (going / max) * 100);
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('spotsTotal').textContent = max;
+
+        // Organizer
+        const orgName = eventData.organizer || 'MatchUp Organizer';
+        document.getElementById('orgName').textContent = orgName;
+        document.getElementById('orgAvatar').textContent = orgName[0].toUpperCase();
+
+        // Attendees (demo - in real app, pull from attendees subcollection)
+        const attendees = document.getElementById('attendees');
+        const names = ['Thomas', 'Camille', 'Marcus', 'Sarah', 'Alex'];
+        const shown = Math.min(5, Math.max(1, going - 1));
+        let html = '';
+        for (let i = 0; i < shown; i++) {
+            const name = names[i % names.length];
+            html += `<div class="attendee"><div class="att-avatar">${name[0]}</div><div class="att-name">${name}</div></div>`;
+        }
+        if (going > shown + 1) {
+            html += `<div class="attendee"><div class="att-avatar">+</div><div class="att-name">${going - shown - 1} more</div></div>`;
+        }
+        attendees.innerHTML = html || '<p style="color:var(--muted);">Be the first to join!</p>';
+
+        // Map
+        const venueCoords = {
+            'mont-royal': [45.5048, -73.5872],
+            'lafontaine': [45.5270, -73.5691],
+            'jarry': [45.5431, -73.6247],
+            'jean-drapeau': [45.5129, -73.5337],
+            'lachine': [45.4380, -73.6750],
+            'rosemont': [45.5586, -73.5700]
+        };
+
+        let coords = [45.5048, -73.5872]; // Montreal fallback
+
+        // Prefer geocoded lat/lng saved on the event itself
+        if (typeof eventData.lat === 'number' && typeof eventData.lng === 'number') {
+            coords = [eventData.lat, eventData.lng];
+        } else {
+            // Fallback for old events: match against hardcoded venue list
+            const venueLower = (eventData.venue + ' ' + eventData.address).toLowerCase();
+            for (const key in venueCoords) {
+                if (venueLower.includes(key)) {
+                    coords = venueCoords[key];
+                    break;
+                }
+            }
+        }
+
+        const map = L.map('map', {scrollWheelZoom: false}).setView(coords, 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const orangeIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background:#ff5722;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-size:14px;font-weight:800;">${meta.emoji}</span></div>`,
+            iconSize: [34, 34],
+            iconAnchor: [17, 34]
+        });
+        L.marker(coords, {icon: orangeIcon}).addTo(map)
+        .bindPopup(`<strong>${eventData.venue || eventData.location}</strong><br>${eventData.address || ''}`);
     }
 
-    // Join the event
-    await setDoc(attendeeRef, {
-      userId: authUser.uid,
-      userEmail: authUser.email,
-      userName: authUser.displayName || 'Player',
-      joinedAt: new Date()
-    });
-    await updateDoc(eventRef, { going: increment(1) });
+    async function joinEvent() {
+        const authUser = window._auth.currentUser;
+        if (!authUser) {
+            alert('Please log in first to join this event!');
+            window.location.href = 'index.html';
+            return;
+        }
 
-    btn.textContent = '✓ You\'re going!';
-    btn.classList.add('joined');
-    btn.disabled = false;
+        // Soft-warn unverified users joining events
+        await authUser.reload();
+        if (!authUser.emailVerified) {
+            const proceed = confirm(
+                "⚠️ Your email isn't verified yet.\n\n" +
+                "Unverified users can still join events, but organizers may not trust you as much. " +
+                "We recommend verifying your email first.\n\n" +
+                "Join anyway?"
+            );
+            if (!proceed) {
+                window.location.href = 'verify-email.html';
+                return;
+            }
+        }
 
-    const count = currentCount + 1;
-    document.getElementById('infoGoing').textContent = count;
-    document.getElementById('spotsLeft').textContent = maxCount - count;
-    document.getElementById('progressBar').style.width = (count / maxCount) * 100 + '%';
+        const btn = document.getElementById('joinBtn');
+        if (btn.classList.contains('joined')) return;
 
-    const toast = document.getElementById('toast');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
-  } catch (error) {
-    console.error('Error joining/leaving event:', error);
-    alert('Error: ' + error.message);
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
-}
-async function reportOrganizer() {
-  const authUser = window._auth?.currentUser;
-  if (!authUser) { alert('Please log in first.'); return; }
+        const {doc, setDoc, deleteDoc, updateDoc, increment, getDoc} = window._firestore;
+        const attendeeRef = doc(window._db, 'events', eventId, 'attendees', authUser.uid);
+        const eventRef = doc(window._db, 'events', eventId);
 
-  const reason = prompt(
-    "Why are you reporting this event or organizer?\n\n" +
-    "Examples: spam, misleading info, inappropriate content, safety concern…"
-  );
-  if (!reason || !reason.trim()) return;
+        btn.disabled = true;
+        const originalText = btn.textContent;
 
-  try {
-    const { collection, addDoc, serverTimestamp } = window._firestore;
-    await addDoc(collection(window._db, 'reports'), {
-      event_id: eventId,
-      reported_organizer: window._currentEventData?.organizer || 'unknown',
-      reported_organizer_email: window._currentEventData?.organizerEmail || '',
-      reporter_id: authUser.uid,
-      reporter_email: authUser.email,
-      reason: reason.trim(),
-      createdAt: serverTimestamp(),
-      status: 'open'
-    });
-    alert('✓ Report submitted. Our team will review it.');
-  } catch (err) {
-    console.error('[report] failed:', err);
-    alert('Could not submit report: ' + err.message);
-  }
-}
+        try {
+            // Check: already joined?
+            const existing = await getDoc(attendeeRef);
 
-async function blockOrganizer() {
-  const authUser = window._auth?.currentUser;
-  if (!authUser) { alert('Please log in first.'); return; }
+            if (existing.exists()) {
+                // User is leaving the event
+                await deleteDoc(attendeeRef);
+                await updateDoc(eventRef, {going: increment(-1)});
 
-  const organizer = window._currentEventData?.organizer || 'this organizer';
-  if (!confirm(`Block ${organizer}? You won't see their events anymore.`)) return;
+                btn.textContent = 'Join event';
+                btn.classList.remove('joined');
+                btn.disabled = false;
 
-  try {
-    const { doc, setDoc, serverTimestamp } = window._firestore;
-    // blocks/{blockerUid}_{blockedIdentifier}
-    const blockKey = `${authUser.uid}_${encodeURIComponent(window._currentEventData?.organizerEmail || organizer)}`;
-    const blockRef = doc(window._db, 'blocks', blockKey);
-    await setDoc(blockRef, {
-      blocker_id: authUser.uid,
-      blocked_organizer: organizer,
-      blocked_organizer_email: window._currentEventData?.organizerEmail || '',
-      createdAt: serverTimestamp()
-    });
-    alert('✓ Blocked. You can unblock from your profile page.');
-  } catch (err) {
-    console.error('[block] failed:', err);
-    alert('Could not block: ' + err.message);
-  }
-}
-function openInMaps() {
-  const addr = document.getElementById('addressLine').textContent;
-  const q = encodeURIComponent(addr);
-  window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
-}
+                const count = Math.max(0, parseInt(document.getElementById('infoGoing').textContent) - 1);
+                document.getElementById('infoGoing').textContent = count;
+                const max = parseInt(document.getElementById('infoMax').textContent);
+                document.getElementById('spotsLeft').textContent = max - count;
+                document.getElementById('progressBar').style.width = (count / max) * 100 + '%';
 
-function copyAddress() {
-  const addr = document.getElementById('addressLine').textContent;
-  navigator.clipboard.writeText(addr).then(() => {
-    const toast = document.getElementById('toast');
-    toast.textContent = '📋 Address copied!';
-    toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.textContent = '✓ You\'re in! See you there.';
-    }, 2000);
-  });
-}
+                const toast = document.getElementById('toast');
+                toast.textContent = '👋 You left the event';
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.textContent = '✓ You\'re in! See you there.';
+                }, 2000);
+                return;
+            }
 
-function shareEvent() {
-  const url = window.location.href;
-  if (navigator.share) {
-    navigator.share({ title: document.getElementById('heroTitle').textContent, url }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).then(() => {
-      const toast = document.getElementById('toast');
-      toast.textContent = '🔗 Link copied!';
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-        toast.textContent = '✓ You\'re in! See you there.';
-      }, 2000);
-    });
-  }
-}
+            // Check: event full?
+            const currentCount = parseInt(document.getElementById('infoGoing').textContent);
+            const maxCount = parseInt(document.getElementById('infoMax').textContent);
+            if (currentCount >= maxCount) {
+                alert('Sorry, this event is full!');
+                btn.disabled = false;
+                return;
+            }
 
-function saveEvent() {
-  const toast = document.getElementById('toast');
-  toast.textContent = '🔖 Saved to your list!';
-  toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-    toast.textContent = '✓ You\'re in! See you there.';
-  }, 2000);
-}
+            // Join the event
+            await setDoc(attendeeRef, {
+                userId: authUser.uid,
+                userEmail: authUser.email,
+                userName: authUser.displayName || 'Player',
+                joinedAt: new Date()
+            });
+            await updateDoc(eventRef, {going: increment(1)});
 
-function reportEvent() {
-  alert('Thanks for flagging. Our team will review this event.');
-}
+            btn.textContent = '✓ You\'re going!';
+            btn.classList.add('joined');
+            btn.disabled = false;
 
-// Load on page load
-window.addEventListener('load', () => {
-  loadEvent();
-});
+            const count = currentCount + 1;
+            document.getElementById('infoGoing').textContent = count;
+            document.getElementById('spotsLeft').textContent = maxCount - count;
+            document.getElementById('progressBar').style.width = (count / maxCount) * 100 + '%';
 
-/* ── ORGANIZER: EDIT EVENT ── */
-function openEditModal() {
-  const ev = window._currentEventData;
-  if (!ev) return;
-  document.getElementById('editTitle').value = ev.title || '';
-  document.getElementById('editDate').value  = ev.date || '';
-  document.getElementById('editTime').value  = ev.time || '';
-  document.getElementById('editVenue').value = ev.venue || '';
-  document.getElementById('editDesc').value  = ev.description || '';
-  document.getElementById('editMax').value   = ev.maxPlayers || 10;
-  document.getElementById('editPrice').value = ev.price || 0;
-  document.getElementById('editError').style.display = 'none';
-  document.getElementById('editModal').style.display = 'flex';
-}
-
-function closeEditModal() {
-  document.getElementById('editModal').style.display = 'none';
-}
-
-async function saveEdit() {
-  const btn = document.getElementById('saveEditBtn');
-  const errEl = document.getElementById('editError');
-  errEl.style.display = 'none';
-
-  const title = document.getElementById('editTitle').value.trim();
-  const date  = document.getElementById('editDate').value;
-  const time  = document.getElementById('editTime').value;
-  const venue = document.getElementById('editVenue').value.trim();
-  const desc  = document.getElementById('editDesc').value.trim();
-  const max   = parseInt(document.getElementById('editMax').value, 10);
-  const price = parseFloat(document.getElementById('editPrice').value) || 0;
-
-  if (!title || !date || !time || !venue || !max || max < 2) {
-    errEl.textContent = 'Please fill in all fields (max players must be at least 2).';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    const { doc, updateDoc } = window._firestore;
-    const eventRef = doc(window._db, 'events', window._currentEventData.id);
-    await updateDoc(eventRef, {
-      title, date, time, venue, description: desc, maxPlayers: max,
-      price, priceType: price > 0 ? 'paid' : 'free'
-    });
-    const toast = document.getElementById('toast');
-    if (toast) {
-      toast.textContent = '✓ Changes saved!';
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        } catch (error) {
+            console.error('Error joining/leaving event:', error);
+            alert('Error: ' + error.message);
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
-    closeEditModal();
-    setTimeout(() => location.reload(), 900);
-  } catch (err) {
-    console.error('[edit] failed:', err);
-    errEl.textContent = '❌ ' + (err.message || 'Could not save changes.');
-    errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = '💾 Save changes';
-  }
-}
 
-/* ── ORGANIZER: CANCEL EVENT ── */
-async function cancelEvent() {
-  const ev = window._currentEventData;
-  if (!ev) return;
+    async function reportOrganizer() {
+        const authUser = window._auth?.currentUser;
+        if (!authUser) {
+            alert('Please log in first.');
+            return;
+        }
 
-  const confirm1 = confirm(`Cancel "${ev.title}"?\n\nThis will remove the event from the platform. All attendees will lose access to it. This cannot be undone.`);
-  if (!confirm1) return;
+        const reason = prompt(
+            "Why are you reporting this event or organizer?\n\n" +
+            "Examples: spam, misleading info, inappropriate content, safety concern…"
+        );
+        if (!reason || !reason.trim()) return;
 
-  const confirm2 = prompt('Type CANCEL to confirm:');
-  if (!confirm2 || confirm2.trim().toUpperCase() !== 'CANCEL') {
-    alert('Event was NOT cancelled.');
-    return;
-  }
+        try {
+            const {collection, addDoc, serverTimestamp} = window._firestore;
+            await addDoc(collection(window._db, 'reports'), {
+                event_id: eventId,
+                reported_organizer: window._currentEventData?.organizer || 'unknown',
+                reported_organizer_email: window._currentEventData?.organizerEmail || '',
+                reporter_id: authUser.uid,
+                reporter_email: authUser.email,
+                reason: reason.trim(),
+                createdAt: serverTimestamp(),
+                status: 'open'
+            });
+            alert('✓ Report submitted. Our team will review it.');
+        } catch (err) {
+            console.error('[report] failed:', err);
+            alert('Could not submit report: ' + err.message);
+        }
+    }
 
-  try {
-    const { doc, updateDoc } = window._firestore;
-    const eventRef = doc(window._db, 'events', ev.id);
-    await updateDoc(eventRef, { status: 'cancelled' });
-    alert('✓ Event cancelled. Redirecting to your dashboard…');
-    window.location.href = 'dashboard.html';
-  } catch (err) {
-    console.error('[cancel] failed:', err);
-    alert('❌ Could not cancel event: ' + (err.message || 'Unknown error'));
-  }
-}
+    async function blockOrganizer() {
+        const authUser = window._auth?.currentUser;
+        if (!authUser) {
+            alert('Please log in first.');
+            return;
+        }
+
+        const organizer = window._currentEventData?.organizer || 'this organizer';
+        if (!confirm(`Block ${organizer}? You won't see their events anymore.`)) return;
+
+        try {
+            const {doc, setDoc, serverTimestamp} = window._firestore;
+            // blocks/{blockerUid}_{blockedIdentifier}
+            const blockKey = `${authUser.uid}_${encodeURIComponent(window._currentEventData?.organizerEmail || organizer)}`;
+            const blockRef = doc(window._db, 'blocks', blockKey);
+            await setDoc(blockRef, {
+                blocker_id: authUser.uid,
+                blocked_organizer: organizer,
+                blocked_organizer_email: window._currentEventData?.organizerEmail || '',
+                createdAt: serverTimestamp()
+            });
+            alert('✓ Blocked. You can unblock from your profile page.');
+        } catch (err) {
+            console.error('[block] failed:', err);
+            alert('Could not block: ' + err.message);
+        }
+    }
+
+    function openInMaps() {
+        const addr = document.getElementById('addressLine').textContent;
+        const q = encodeURIComponent(addr);
+        window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+    }
+
+    function copyAddress() {
+        const addr = document.getElementById('addressLine').textContent;
+        navigator.clipboard.writeText(addr).then(() => {
+            const toast = document.getElementById('toast');
+            toast.textContent = '📋 Address copied!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.textContent = '✓ You\'re in! See you there.';
+            }, 2000);
+        });
+    }
+
+    function shareEvent() {
+        const url = window.location.href;
+        if (navigator.share) {
+            navigator.share({title: document.getElementById('heroTitle').textContent, url}).catch(() => {
+            });
+        } else {
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById('toast');
+                toast.textContent = '🔗 Link copied!';
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.textContent = '✓ You\'re in! See you there.';
+                }, 2000);
+            });
+        }
+    }
+
+    function saveEvent() {
+        const toast = document.getElementById('toast');
+        toast.textContent = '🔖 Saved to your list!';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.textContent = '✓ You\'re in! See you there.';
+        }, 2000);
+    }
+
+    function reportEvent() {
+        alert('Thanks for flagging. Our team will review this event.');
+    }
+
+    // Load on page load
+    window.addEventListener('load', () => {
+        loadEvent();
+    });
+
+    /* ── ORGANIZER: EDIT EVENT ── */
+    function openEditModal() {
+        const ev = window._currentEventData;
+        if (!ev) return;
+        document.getElementById('editTitle').value = ev.title || '';
+        document.getElementById('editDate').value = ev.date || '';
+        document.getElementById('editTime').value = ev.time || '';
+        document.getElementById('editVenue').value = ev.venue || '';
+        document.getElementById('editDesc').value = ev.description || '';
+        document.getElementById('editMax').value = ev.maxPlayers || 10;
+        document.getElementById('editPrice').value = ev.price || 0;
+        document.getElementById('editError').style.display = 'none';
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEdit() {
+        const btn = document.getElementById('saveEditBtn');
+        const errEl = document.getElementById('editError');
+        errEl.style.display = 'none';
+
+        const title = document.getElementById('editTitle').value.trim();
+        const date = document.getElementById('editDate').value;
+        const time = document.getElementById('editTime').value;
+        const venue = document.getElementById('editVenue').value.trim();
+        const desc = document.getElementById('editDesc').value.trim();
+        const max = parseInt(document.getElementById('editMax').value, 10);
+        const price = parseFloat(document.getElementById('editPrice').value) || 0;
+
+        if (!title || !date || !time || !venue || !max || max < 2) {
+            errEl.textContent = 'Please fill in all fields (max players must be at least 2).';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        try {
+            const {doc, updateDoc} = window._firestore;
+            const eventRef = doc(window._db, 'events', window._currentEventData.id);
+            await updateDoc(eventRef, {
+                title, date, time, venue, description: desc, maxPlayers: max,
+                price, priceType: price > 0 ? 'paid' : 'free'
+            });
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = '✓ Changes saved!';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+            closeEditModal();
+            setTimeout(() => location.reload(), 900);
+        } catch (err) {
+            console.error('[edit] failed:', err);
+            errEl.textContent = '❌ ' + (err.message || 'Could not save changes.');
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '💾 Save changes';
+        }
+    }
+
+    /* ── ORGANIZER: CANCEL EVENT ── */
+    async function cancelEvent() {
+        const ev = window._currentEventData;
+        if (!ev) return;
+
+        const confirm1 = confirm(`Cancel "${ev.title}"?\n\nThis will remove the event from the platform. All attendees will lose access to it. This cannot be undone.`);
+        if (!confirm1) return;
+
+        const confirm2 = prompt('Type CANCEL to confirm:');
+        if (!confirm2 || confirm2.trim().toUpperCase() !== 'CANCEL') {
+            alert('Event was NOT cancelled.');
+            return;
+        }
+
+        try {
+            const {doc, updateDoc} = window._firestore;
+            const eventRef = doc(window._db, 'events', ev.id);
+            await updateDoc(eventRef, {status: 'cancelled'});
+            alert('✓ Event cancelled. Redirecting to your dashboard…');
+            window.location.href = 'dashboard.html';
+        } catch (err) {
+            console.error('[cancel] failed:', err);
+            alert('❌ Could not cancel event: ' + (err.message || 'Unknown error'));
+        }
+    }
 </script>
 </body>
 </html>
