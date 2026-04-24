@@ -222,7 +222,12 @@
   <!-- PROFILE HEADER -->
   <div class="profile-banner"></div>
   <div class="profile-card-wrap">
-    <div class="big-avatar" id="bigAvatar">?<span class="ba-edit" title="Change photo (coming soon)">📷</span></div>
+    <div class="big-avatar" id="bigAvatar" style="overflow:hidden; cursor:pointer; position:relative;" onclick="document.getElementById('avatarInput').click()">
+      <span id="bigAvatarInitial">?</span>
+      <img id="bigAvatarImg" src="" alt="" style="display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+      <span class="ba-edit" title="Change photo">📷</span>
+    </div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewAvatar(event)" />
     <div class="pb-name" id="pbName">Player Name</div>
     <div class="pb-email" id="pbEmail">email@matchup.app</div>
     <div class="pb-badges">
@@ -346,9 +351,21 @@ function renderProfile(user) {
 
   document.getElementById('navAvatar').textContent = initial;
   document.getElementById('navName').textContent   = fname || 'Player';
-  document.getElementById('bigAvatar').firstChild.textContent = initial;
+  document.getElementById('bigAvatarInitial').textContent = initial;
   document.getElementById('pbName').textContent    = lname ? `${fname} ${lname}` : (fname || 'Your name');
   document.getElementById('pbEmail').textContent   = email;
+
+  // Show custom profile photo if user has one
+  const photoImg = document.getElementById('bigAvatarImg');
+  const initialEl = document.getElementById('bigAvatarInitial');
+  if (user.photoData) {
+    photoImg.src = user.photoData;
+    photoImg.style.display = 'block';
+    initialEl.style.display = 'none';
+  } else {
+    photoImg.style.display = 'none';
+    initialEl.style.display = 'block';
+  }
 
   document.getElementById('fname').value = fname;
   document.getElementById('lname').value = lname;
@@ -373,6 +390,38 @@ function renderProfile(user) {
 
 // First paint: use cached localStorage data (instant, no flash of empty fields)
 renderProfile(cachedUser || {});
+
+/* Profile photo upload */
+let _newProfilePhoto = null;
+
+function previewAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Image too large. Please choose one under 2 MB.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 400;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxDim) { h = h * maxDim / w; w = maxDim; }
+      else if (h > maxDim) { w = w * maxDim / h; h = maxDim; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _newProfilePhoto = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('bigAvatarImg').src = _newProfilePhoto;
+      document.getElementById('bigAvatarImg').style.display = 'block';
+      document.getElementById('bigAvatarInitial').style.display = 'none';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 /* Now load the real data from Firestore and overwrite */
 (async function loadProfileFromFirestore() {
@@ -476,7 +525,7 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
     if (authUser && window._firestore) {
       const { doc, setDoc, serverTimestamp } = window._firestore;
       const userRef = doc(window._db, 'users', authUser.uid);
-      await setDoc(userRef, {
+      const payload = {
         fname:  updated.fname,
         lname:  updated.lname,
         email:  updated.email,
@@ -487,7 +536,13 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
         level:  updated.level,
         photoURL: current.photo || '',
         updatedAt: serverTimestamp()
-      }, { merge: true });
+      };
+      if (_newProfilePhoto) {
+        payload.photoData = _newProfilePhoto;
+        updated.photoData = _newProfilePhoto;
+        localStorage.setItem('mu_current_user', JSON.stringify(updated));
+      }
+      await setDoc(userRef, payload, { merge: true });
       console.log('[profile] saved to Firestore for uid:', authUser.uid);
     } else {
       console.warn('[profile] no Firebase Auth user — saved to localStorage only');
@@ -504,7 +559,7 @@ document.getElementById('profileForm').addEventListener('submit', async e => {
   const initial = (updated.fname[0] || 'P').toUpperCase();
   document.getElementById('navAvatar').textContent = initial;
   document.getElementById('navName').textContent   = updated.fname || 'Player';
-  document.getElementById('bigAvatar').firstChild.textContent = initial;
+  document.getElementById('bigAvatarInitial').textContent = initial;
   document.getElementById('pbName').textContent    = updated.lname ? `${updated.fname} ${updated.lname}` : updated.fname;
 
   setTimeout(() => {
