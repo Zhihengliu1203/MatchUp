@@ -55,6 +55,9 @@
           localStorage.setItem('mu_current_user', JSON.stringify({ ...stored, fname: name, email: user.email }));
         }
         if (typeof updateNavForUser === 'function') updateNavForUser(name);
+      } else {
+        // Visitor (not logged in) — clear cache, show login CTA
+        localStorage.removeItem('mu_current_user');
       }
    });
 
@@ -184,8 +187,8 @@
     /* NEW: Filter dropdowns (popovers) */
     .fpill { position: relative; }
     .fpill.active { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
-    .fpill-pop {
-      position: absolute; top: calc(100% + 8px); left: 0; z-index: 200;
+   .fpill-pop {
+      position: absolute; top: calc(100% + 8px); left: 0; z-index: 9999;
       background: #fff; border: 1px solid var(--border); border-radius: 14px;
       box-shadow: 0 10px 32px rgba(0,0,0,.14); padding: 10px; min-width: 200px;
       display: none; flex-direction: column; gap: 4px;
@@ -479,6 +482,9 @@
       footer { grid-template-columns: 1fr 1fr; padding: 40px 24px 0; }
       .main-wrap, #sports, .how-inner, .testi-inner { padding-left: 20px; padding-right: 20px; }
       .cat-strip, #how, #testimonials { padding-left: 20px; padding-right: 20px; }
+    }
+   @media (max-width: 900px) {
+      .search-bar { display: none !important; }
     }
     @media (max-width: 600px) {
       .events-grid, .steps { grid-template-columns: 1fr; }
@@ -1274,8 +1280,17 @@ async function loadEventsFromFirestore() {
       events.push({ id: doc.id, ...doc.data() });
     });
 
-    events.sort((a, b) => new Date(a.date) - new Date(b.date));
-    _allEvents = events;
+    // Filter out past events (yesterday and before)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const futureEvents = events.filter(ev => {
+      if (!ev.date) return false;
+      const eventDate = new Date(ev.date + 'T23:59:59');
+      return eventDate >= today;
+    });
+
+    futureEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+    _allEvents = futureEvents;
 
     applyFilters();
   } catch (error) {
@@ -1325,8 +1340,11 @@ function renderEventCards(events) {
         <div class="no-results" style="display:block;">
           <span class="icon">🔍</span>
           <div style="font-weight:800; margin-bottom:6px;">No events match your filters</div>
-          <div style="font-size:.88rem; margin-bottom:16px; color:var(--muted);">Try widening your search or resetting filters.</div>
-          <button onclick="resetFilters()" style="padding:10px 22px; background:var(--orange); color:#fff; border:none; border-radius:100px; font-weight:800; cursor:pointer;">Reset filters</button>
+          <div style="font-size:.88rem; margin-bottom:16px; color:var(--muted);">Try widening your search or resetting filters — or create your own!</div>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button onclick="resetFilters()" style="padding:10px 22px; background:var(--orange); color:#fff; border-radius:100px; font-weight:800; cursor:pointer; border:none;">Reset filters</button>
+            <a href="create-event.html" style="padding:10px 22px; background:var(--blue); color:#fff; border-radius:100px; text-decoration:none; font-weight:800;">➕ Create event</a>
+          </div>
         </div>`;
     } else {
       // No events at all in the system
@@ -1462,22 +1480,40 @@ function requestGeo() {
   }
   status.textContent = 'Getting your location…';
   status.className = 'geo-status';
+
+  // Try high-accuracy first with a short timeout, then fall back to low-accuracy with a long timeout
+  const onSuccess = (pos) => {
+    _filters.userLat = pos.coords.latitude;
+    _filters.userLng = pos.coords.longitude;
+    status.textContent = '✅ Location locked in';
+    status.className = 'geo-status ok';
+    const v = document.getElementById('distRange').value;
+    document.getElementById('pillDistLabel').textContent = `🗺️ Within ${v} km`;
+    document.getElementById('pillDist').classList.add('active');
+    applyFilters();
+  };
+
+  const onFinalError = (err) => {
+    let msg = 'Could not get location';
+    if (err.code === 1) msg = '❌ Location permission denied';
+    else if (err.code === 2) msg = '❌ Location unavailable';
+    else if (err.code === 3) msg = '❌ Timeout — try again';
+    status.textContent = msg;
+    status.className = 'geo-status err';
+  };
+
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      _filters.userLat = pos.coords.latitude;
-      _filters.userLng = pos.coords.longitude;
-      status.textContent = '✅ Location locked in';
-      status.className = 'geo-status ok';
-      const v = document.getElementById('distRange').value;
-      document.getElementById('pillDistLabel').textContent = `🗺️ Within ${v} km`;
-      document.getElementById('pillDist').classList.add('active');
-      applyFilters();
-    },
+    onSuccess,
     (err) => {
-      status.textContent = '❌ ' + (err.message || 'Permission denied');
-      status.className = 'geo-status err';
+      // First attempt failed — retry with relaxed settings
+      status.textContent = 'Retrying with lower accuracy…';
+      navigator.geolocation.getCurrentPosition(
+        onSuccess,
+        onFinalError,
+        { enableHighAccuracy: false, timeout: 30000, maximumAge: 600000 }
+      );
     },
-    { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
   );
 }
 
@@ -1675,15 +1711,7 @@ window.addEventListener('load', async () => {
     });
   });
 
-  if (!au) {
-    // Not logged in — show a friendly empty state instead of crashing
-    const grid = document.getElementById('eventsGrid');
-    if (grid) {
-      grid.innerHTML = '<div class="no-results" style="display:block;"><span class="icon">👋</span>Log in to browse events and find games near you.</div>';
-    }
-    return;
-  }
-
+  // Events are publicly readable now — always load them (logged in or not)
   loadEventsFromFirestore();
 });
 </script>
