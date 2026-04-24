@@ -115,8 +115,11 @@
 
     /* NAV */
     nav {
-      position: sticky; top: 0; z-index: 300;
-      background: #fff; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
       padding: 0 40px; display: flex; align-items: center; gap: 20px; height: 68px;
     }
     .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -361,7 +364,88 @@
     .f-col a { font-size: .85rem; color: rgba(255,255,255,.48); text-decoration: none; cursor: pointer; transition: color .15s; }
     .f-col a:hover { color: #fff; }
     .foot-bottom { padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.07); font-size: .77rem; color: rgba(255,255,255,.28); background: #111827; }
-
+/* Hero gradient mesh background */
+    .hero-gradient-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(at 20% 30%, rgba(255, 138, 101, 0.25) 0%, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(66, 165, 245, 0.2) 0%, transparent 50%),
+        radial-gradient(at 40% 80%, rgba(255, 204, 128, 0.25) 0%, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(255, 87, 34, 0.15) 0%, transparent 50%);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease-in-out infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 0%; }
+      25% { background-position: 100% 0%; }
+      50% { background-position: 100% 100%; }
+      75% { background-position: 0% 100%; }
+    }
+    #hero.hero-gradient-bg { position: relative; }
+    #hero.hero-gradient-bg > * { position: relative; z-index: 1; }
+    /* Kinetic typography — letter-by-letter reveal */
+    .kinetic-title { animation: none !important; }
+    .kt-word { display: inline-block; white-space: nowrap; }
+    .kt-word > span {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(40px) rotate(8deg);
+      animation: kineticIn .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
+    }
+    @keyframes kineticIn {
+      to { opacity: 1; transform: translateY(0) rotate(0); }
+    }
+    .kinetic-title .kt-word:nth-child(1) > span:nth-child(1) { animation-delay: 0.15s; }
+    .kinetic-title .kt-word:nth-child(1) > span:nth-child(2) { animation-delay: 0.20s; }
+    .kinetic-title .kt-word:nth-child(1) > span:nth-child(3) { animation-delay: 0.25s; }
+    .kinetic-title .kt-word:nth-child(1) > span:nth-child(4) { animation-delay: 0.30s; }
+    .kinetic-title .kt-word:nth-child(2) > span:nth-child(1) { animation-delay: 0.40s; }
+    .kinetic-title .kt-word:nth-child(2) > span:nth-child(2) { animation-delay: 0.45s; }
+    .kinetic-title .kt-word:nth-child(2) > span:nth-child(3) { animation-delay: 0.50s; }
+    .kinetic-title .kt-word:nth-child(2) > span:nth-child(4) { animation-delay: 0.55s; }
+    .kinetic-title .kt-word:nth-child(2) > span:nth-child(5) { animation-delay: 0.60s; }
+    .kinetic-title .kt-word > span { animation-delay: 0.7s; }
+    .kinetic-title .oc .kt-word > span:nth-child(1) { animation-delay: 0.75s; }
+    .kinetic-title .oc .kt-word > span:nth-child(2) { animation-delay: 0.80s; }
+    .kinetic-title .oc .kt-word > span:nth-child(3) { animation-delay: 0.85s; }
+    .kinetic-title .oc .kt-word > span:nth-child(4) { animation-delay: 0.90s; }
+    .kinetic-title .oc .kt-word > span:nth-child(5) { animation-delay: 0.95s; }
+    .kinetic-title .oc .kt-word > span:nth-child(6) { animation-delay: 1.00s; }
+    .kinetic-title .oc .kt-word > span:nth-child(7) { animation-delay: 1.05s; }
+    .kinetic-title .bc .kt-word > span { animation-delay: 1.2s; }
+    /* Rotating words */
+    .rotating-words {
+      display: inline-block;
+      vertical-align: baseline;
+      position: relative;
+      height: 1.4em;
+      overflow: hidden;
+      color: var(--orange);
+      font-weight: 800;
+    }
+    .rw-inner {
+      display: inline-flex;
+      flex-direction: column;
+      animation: rotateWords 12s cubic-bezier(.83,0,.17,1) infinite;
+    }
+    .rw-inner > span {
+      display: block;
+      height: 1.4em;
+      line-height: 1.4em;
+      white-space: nowrap;
+    }
+    @keyframes rotateWords {
+      0%, 16%  { transform: translateY(0); }
+      20%, 36% { transform: translateY(-1.4em); }
+      40%, 56% { transform: translateY(-2.8em); }
+      60%, 76% { transform: translateY(-4.2em); }
+      80%, 96% { transform: translateY(-5.6em); }
+      100%     { transform: translateY(-7em); }
+    }
     /* REVEAL */
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -1104,7 +1188,7 @@
 </div>
 
 <!-- HERO -->
-<section id="hero">
+<section id="hero" class="hero-gradient-bg">
   <!-- Ambient background orbs -->
   <div class="ambient-orbs" aria-hidden="true">
     <div class="orb orb-1"></div>
@@ -1117,8 +1201,14 @@
       Live in Montréal, Toronto &amp; Vancouver
       <span class="live-count"><span class="lc-dot"></span><span class="live-count-num" id="liveCountNum">247</span> online now</span>
     </div>
-    <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
-    <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
+    <h1 class="hero-h1 kinetic-title">
+  <span class="kt-word"><span>P</span><span>l</span><span>a</span><span>y</span></span>
+  <span class="kt-word"><span>m</span><span>o</span><span>r</span><span>e</span><span>.</span></span>
+  <br><span class="oc"><span class="kt-word"><span>C</span><span>o</span><span>n</span><span>n</span><span>e</span><span>c</span><span>t</span></span></span>
+  <span class="kt-word"><span>w</span><span>i</span><span>t</span><span>h</span></span>
+  <br><span class="bc"><span class="kt-word"><span>y</span><span>o</span><span>u</span><span>r</span></span> <span class="kt-word"><span>s</span><span>q</span><span>u</span><span>a</span><span>d</span><span>.</span></span></span>
+</h1>
+    <p class="hero-sub">MatchUp finds you <span class="rotating-words"><span class="rw-inner"><span>teammates</span><span>tennis partners</span><span>football buddies</span><span>running crews</span><span>yoga friends</span></span></span>, courts, and events that match your sport, level, and schedule.</p>
     <div class="hero-actions">
       <button class="btn-orange" onclick="openModal()">Join for free</button>
       <a class="btn-ob" href="#how">How it works</a>
