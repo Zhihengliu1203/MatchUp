@@ -154,6 +154,7 @@
       .info-list { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
 
@@ -167,7 +168,17 @@
   <div class="nav-right" id="navRight">
     <a class="nav-login" href="index.html">Log in</a>
   </div>
+<button class="mu-hamburger" id="muHamburger" aria-label="Menu" onclick="document.getElementById('muMobileMenu').classList.toggle('open')">☰</button>
 </nav>
+
+<div class="mu-mobile-menu" id="muMobileMenu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="index.html">🗓️ Browse events</a>
+  <a href="create-event.html">➕ Create event</a>
+  <div class="divider"></div>
+  <a href="profile.html">👤 My profile</a>
+  <button onclick="if(window._fbSignOut){window._fbSignOut();}localStorage.removeItem('mu_current_user');location.href='index.html';">🚪 Log out</button>
+</div>
 
 <!-- HERO BANNER -->
 <div class="event-hero">
