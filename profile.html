@@ -180,6 +180,7 @@
       .btn-cancel, .btn-save { flex: 1; text-align: center; }
     }
   </style>
+  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
 
@@ -199,7 +200,17 @@
       <span class="nav-profile-name" id="navName">Player</span>
     </a>
   </div>
+<button class="mu-hamburger" id="muHamburger" aria-label="Menu" onclick="document.getElementById('muMobileMenu').classList.toggle('open')">☰</button>
 </nav>
+
+<div class="mu-mobile-menu" id="muMobileMenu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="index.html">🗓️ Browse events</a>
+  <a href="create-event.html">➕ Create event</a>
+  <div class="divider"></div>
+  <a href="profile.html">👤 My profile</a>
+  <button onclick="if(window._fbSignOut){window._fbSignOut();}localStorage.removeItem('mu_current_user');location.href='index.html';">🚪 Log out</button>
+</div>
 
 <div class="page-wrap">
   <div class="breadcrumb">
