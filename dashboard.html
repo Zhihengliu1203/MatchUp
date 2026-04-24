@@ -162,6 +162,7 @@
       .stats-row { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
 
@@ -181,7 +182,17 @@
       <span class="nav-profile-name" id="navName">Player</span>
     </a>
   </div>
+<button class="mu-hamburger" id="muHamburger" aria-label="Menu" onclick="document.getElementById('muMobileMenu').classList.toggle('open')">☰</button>
 </nav>
+
+<div class="mu-mobile-menu" id="muMobileMenu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="index.html">🗓️ Browse events</a>
+  <a href="create-event.html">➕ Create event</a>
+  <div class="divider"></div>
+  <a href="profile.html">👤 My profile</a>
+  <button onclick="if(window._fbSignOut){window._fbSignOut();}localStorage.removeItem('mu_current_user');location.href='index.html';">🚪 Log out</button>
+</div>
 
 <div class="dash-wrap">
   <div id="verifyBanner" style="display:none; background:#FEF3C7; border:1px solid #F59E0B; color:#78350F; padding:14px 22px; border-radius:14px; margin-bottom:20px; font-size:.9rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
