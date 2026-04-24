@@ -296,7 +296,59 @@
     </aside>
   </div>
 </div>
+  <!-- REPORT MODAL -->
+<div id="reportModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(10,10,30,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:22px; width:100%; max-width:480px; padding:30px 28px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+      <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem;">🚩 Report this event</h2>
+      <button onclick="closeReportModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted);">✕</button>
+    </div>
 
+    <p style="color:var(--muted); font-size:.9rem; margin-bottom:16px; line-height:1.5;">Help us keep MatchUp safe. Reports are anonymous to the organizer.</p>
+
+    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Category</label>
+    <select id="reportCategory" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem; margin-bottom:14px; background:#fff;">
+      <option value="">Select a reason…</option>
+      <option value="harassment">Harassment or bullying</option>
+      <option value="inappropriate">Inappropriate content</option>
+      <option value="spam">Spam or fake event</option>
+      <option value="misleading">Misleading information</option>
+      <option value="noshow">Organizer didn't show up</option>
+      <option value="safety">Safety concern</option>
+      <option value="other">Other</option>
+    </select>
+
+    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Tell us more</label>
+    <textarea id="reportReason" rows="4" placeholder="Please describe what happened (minimum 10 characters)…" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem; resize:vertical;"></textarea>
+
+    <div id="reportError" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:10px; margin-top:10px; font-size:.82rem; font-weight:700;"></div>
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button onclick="closeReportModal()" style="flex:1; padding:12px; background:var(--off); color:var(--text); border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">Cancel</button>
+      <button id="submitReportBtn" onclick="submitReport()" style="flex:1; padding:12px; background:var(--orange); color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">🚩 Submit report</button>
+    </div>
+  </div>
+</div>
+<!-- CANCEL EVENT CONFIRMATION MODAL -->
+<div id="cancelModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(10,10,30,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:22px; width:100%; max-width:420px; padding:30px 28px;">
+    <div style="text-align:center; margin-bottom:18px;">
+      <div style="font-size:2.8rem; margin-bottom:8px;">🗑️</div>
+      <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; margin-bottom:8px;">Cancel this event?</h2>
+      <p style="color:var(--muted); font-size:.9rem; line-height:1.5;">You are about to cancel <strong id="cancelModalTitle" style="color:var(--text);">—</strong>. All attendees will lose access to this event. This cannot be undone.</p>
+    </div>
+
+    <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Type <span style="color:#B91C1C;">CANCEL</span> to confirm:</label>
+    <input id="cancelInput" type="text" placeholder="CANCEL" style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em;" />
+
+    <div id="cancelError" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:10px; margin-top:10px; font-size:.82rem; font-weight:700;"></div>
+
+    <div style="display:flex; gap:10px; margin-top:22px;">
+      <button onclick="closeCancelModal()" style="flex:1; padding:13px; background:var(--off); color:var(--text); border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">Keep event</button>
+      <button id="confirmCancelBtn" onclick="confirmCancelEvent()" style="flex:1; padding:13px; background:#DC2626; color:#fff; border:none; border-radius:100px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800;">🗑️ Yes, cancel</button>
+    </div>
+  </div>
+</div>
 <!-- EDIT EVENT MODAL -->
 <div id="editModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(10,10,30,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;">
   <div style="background:#fff; border-radius:22px; width:100%; max-width:520px; max-height:calc(100vh - 40px); overflow-y:auto; padding:30px 28px;">
@@ -308,6 +360,19 @@
     <div id="editError" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:.85rem; font-weight:700;"></div>
 
     <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Event photo</label>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:4px;">
+          <img id="editPhotoPreview" src="" alt="" style="display:none; width:72px; height:72px; border-radius:10px; object-fit:cover; border:1.5px solid var(--border);" />
+          <label style="flex:1; padding:11px 14px; border:1.5px dashed var(--border); border-radius:10px; cursor:pointer; text-align:center; font-weight:800; font-size:.85rem; color:var(--muted);">
+            📸 Choose photo
+            <input type="file" id="editPhotoInput" accept="image/*" style="display:none;" onchange="previewEditPhoto(event)" />
+          </label>
+          <button type="button" onclick="clearEditPhoto()" style="padding:11px 14px; background:var(--off); border:none; border-radius:10px; cursor:pointer; font-weight:800; font-size:.85rem;">Clear</button>
+        </div>
+        <small style="color:var(--muted); font-size:.72rem;">Leave empty to use default sport image.</small>
+      </div>
+
       <div>
         <label style="display:block; font-size:.82rem; font-weight:800; margin-bottom:6px;">Title</label>
         <input id="editTitle" type="text" maxlength="80" style="width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;" />
@@ -407,11 +472,19 @@ async function loadEvent() {
 
     populatePage(eventData);
 
-    // Get attendee count
+    // Get REAL attendee count from subcollection (ignores stale cached count)
     const attendeesRef = collection(window._db, 'events', eventId, 'attendees');
     const attendeesSnap = await getDocs(attendeesRef);
-    document.getElementById('infoGoing').textContent = attendeesSnap.size;
-    document.getElementById('spotsLeft').textContent = eventData.maxPlayers - attendeesSnap.size;
+    const realCount = attendeesSnap.size;
+    document.getElementById('infoGoing').textContent = realCount;
+    document.getElementById('spotsLeft').textContent = eventData.maxPlayers - realCount;
+
+    // Update progress bar with REAL count
+    const pct = Math.min(100, (realCount / eventData.maxPlayers) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+
+    // Override cached 'going' for the rest of populatePage
+    eventData.going = realCount;
 
     // Check if user joined
     // Check if current user already joined (use Firebase Auth uid, not email)
@@ -437,11 +510,16 @@ async function loadEvent() {
         document.getElementById('joinBtn').style.display = 'none';
         const joinNote = document.querySelector('.join-note');
         if (joinNote) joinNote.style.display = 'none';
-        // Hide report/block (can't report yourself)
+        // Hide report/block on the map section
         const reportBtn = document.getElementById('reportBtn');
         const blockBtn = document.getElementById('blockBtn');
         if (reportBtn) reportBtn.style.display = 'none';
         if (blockBtn) blockBtn.style.display = 'none';
+
+        // Hide the Report button in the sidebar share-row too
+        document.querySelectorAll('.share-btn').forEach(b => {
+          if (b.textContent.includes('Report')) b.style.display = 'none';
+        });
       }
     }
   } catch (error) {
@@ -470,8 +548,8 @@ function populatePage(eventData) {
   const meta = sportMeta[eventData.sport] || sportMeta.football;
   document.title = `${eventData.title} — MatchUp`;
   const heroImg = document.getElementById('heroImg');
-heroImg.src = `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
-heroImg.onload = () => heroImg.style.opacity = '1';
+  heroImg.src = eventData.photoData || `https://images.unsplash.com/${meta.img}?w=1400&h=600&fit=crop&auto=format`;
+  heroImg.onload = () => heroImg.style.opacity = '1';
   document.getElementById('heroSport').textContent = `${meta.emoji} ${eventData.sport.charAt(0).toUpperCase() + eventData.sport.slice(1)}`;
   document.getElementById('heroTitle').textContent = eventData.title;
 
@@ -497,7 +575,8 @@ heroImg.onload = () => heroImg.style.opacity = '1';
   document.getElementById('infoLevel').textContent = levelLabels[eventData.level] || 'All levels';
 
   document.getElementById('infoMax').textContent = eventData.maxPlayers;
-  document.getElementById('infoMin').textContent = `Min ${eventData.minPlayers} to run`;
+  const minP = eventData.minPlayers;
+  document.getElementById('infoMin').textContent = (minP && minP > 0) ? `Min ${minP} to run` : 'No minimum';
 
   document.getElementById('description').textContent = eventData.description || 'No description provided.';
 
@@ -679,34 +758,66 @@ async function joinEvent() {
     btn.disabled = false;
   }
 }
-async function reportOrganizer() {
+function reportOrganizer() {
+  const authUser = window._auth?.currentUser;
+  if (!authUser) { alert('Please log in first.'); return; }
+  document.getElementById('reportCategory').value = '';
+  document.getElementById('reportReason').value = '';
+  document.getElementById('reportError').style.display = 'none';
+  document.getElementById('reportModal').style.display = 'flex';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+}
+
+async function submitReport() {
   const authUser = window._auth?.currentUser;
   if (!authUser) { alert('Please log in first.'); return; }
 
-  const reason = prompt(
-    "Why are you reporting this event or organizer?\n\n" +
-    "Examples: spam, misleading info, inappropriate content, safety concern…"
-  );
-  if (!reason || !reason.trim()) return;
+  const category = document.getElementById('reportCategory').value;
+  const reason = document.getElementById('reportReason').value.trim();
+  const errEl = document.getElementById('reportError');
+
+  if (!category) {
+    errEl.textContent = 'Please select a category.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (reason.length < 10) {
+    errEl.textContent = 'Please describe the issue (at least 10 characters).';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('submitReportBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
 
   try {
     const { collection, addDoc, serverTimestamp } = window._firestore;
     await addDoc(collection(window._db, 'reports'), {
-      event_id: eventId,
-      reported_organizer: window._currentEventData?.organizer || 'unknown',
-      reported_organizer_email: window._currentEventData?.organizerEmail || '',
       reporter_id: authUser.uid,
       reporter_email: authUser.email,
-      reason: reason.trim(),
-      createdAt: serverTimestamp(),
-      status: 'open'
+      reported_event_id: eventId,
+      reported_organizer: window._currentEventData?.organizer || 'unknown',
+      reported_organizer_email: window._currentEventData?.organizerEmail || '',
+      category: category,
+      reason: reason,
+      createdAt: serverTimestamp()
     });
-    alert('✓ Report submitted. Our team will review it.');
+    closeReportModal();
+    alert('✓ Thank you. Our team will review this report.');
   } catch (err) {
     console.error('[report] failed:', err);
-    alert('Could not submit report: ' + err.message);
+    errEl.textContent = '❌ ' + (err.message || 'Could not submit');
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '🚩 Submit report';
   }
 }
+
+function reportEvent() { reportOrganizer(); }
 
 async function blockOrganizer() {
   const authUser = window._auth?.currentUser;
@@ -778,9 +889,7 @@ function saveEvent() {
   }, 2000);
 }
 
-function reportEvent() {
-  alert('Thanks for flagging. Our team will review this event.');
-}
+
 
 // Load on page load
 window.addEventListener('load', () => {
@@ -788,6 +897,8 @@ window.addEventListener('load', () => {
 });
 
 /* ── ORGANIZER: EDIT EVENT ── */
+let _editPhotoData = null; // base64 string of new photo, or null if no change
+
 function openEditModal() {
   const ev = window._currentEventData;
   if (!ev) return;
@@ -799,7 +910,54 @@ function openEditModal() {
   document.getElementById('editMax').value   = ev.maxPlayers || 10;
   document.getElementById('editPrice').value = ev.price || 0;
   document.getElementById('editError').style.display = 'none';
+
+  // Photo preview
+  _editPhotoData = null;
+  const preview = document.getElementById('editPhotoPreview');
+  if (ev.photoData) {
+    preview.src = ev.photoData;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+
   document.getElementById('editModal').style.display = 'flex';
+}
+
+function previewEditPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Image too large. Please choose one under 2 MB.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    // Compress image via canvas to ~600px max dimension
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 800;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxDim) { h = h * maxDim / w; w = maxDim; }
+      else if (h > maxDim) { w = w * maxDim / h; h = maxDim; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _editPhotoData = canvas.toDataURL('image/jpeg', 0.82);
+      const preview = document.getElementById('editPhotoPreview');
+      preview.src = _editPhotoData;
+      preview.style.display = 'block';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearEditPhoto() {
+  _editPhotoData = 'CLEAR';
+  document.getElementById('editPhotoPreview').style.display = 'none';
+  document.getElementById('editPhotoInput').value = '';
 }
 
 function closeEditModal() {
@@ -831,10 +989,16 @@ async function saveEdit() {
   try {
     const { doc, updateDoc } = window._firestore;
     const eventRef = doc(window._db, 'events', window._currentEventData.id);
-    await updateDoc(eventRef, {
+    const payload = {
       title, date, time, venue, description: desc, maxPlayers: max,
       price, priceType: price > 0 ? 'paid' : 'free'
-    });
+    };
+    if (_editPhotoData === 'CLEAR') {
+      payload.photoData = null;
+    } else if (_editPhotoData) {
+      payload.photoData = _editPhotoData;
+    }
+    await updateDoc(eventRef, payload);
     const toast = document.getElementById('toast');
     if (toast) {
       toast.textContent = '✓ Changes saved!';
@@ -852,29 +1016,46 @@ async function saveEdit() {
   }
 }
 
-/* ── ORGANIZER: CANCEL EVENT ── */
-async function cancelEvent() {
+/* ── ORGANIZER: CANCEL EVENT (custom modal) ── */
+function cancelEvent() {
   const ev = window._currentEventData;
   if (!ev) return;
+  document.getElementById('cancelModalTitle').textContent = ev.title;
+  document.getElementById('cancelInput').value = '';
+  document.getElementById('cancelError').style.display = 'none';
+  document.getElementById('cancelModal').style.display = 'flex';
+}
 
-  const confirm1 = confirm(`Cancel "${ev.title}"?\n\nThis will remove the event from the platform. All attendees will lose access to it. This cannot be undone.`);
-  if (!confirm1) return;
+function closeCancelModal() {
+  document.getElementById('cancelModal').style.display = 'none';
+}
 
-  const confirm2 = prompt('Type CANCEL to confirm:');
-  if (!confirm2 || confirm2.trim().toUpperCase() !== 'CANCEL') {
-    alert('Event was NOT cancelled.');
+async function confirmCancelEvent() {
+  const input = document.getElementById('cancelInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('cancelError');
+  if (input !== 'CANCEL') {
+    errEl.textContent = 'Please type CANCEL (all caps) to confirm.';
+    errEl.style.display = 'block';
     return;
   }
 
+  const btn = document.getElementById('confirmCancelBtn');
+  btn.disabled = true;
+  btn.textContent = 'Cancelling…';
+
   try {
     const { doc, updateDoc } = window._firestore;
-    const eventRef = doc(window._db, 'events', ev.id);
+    const eventRef = doc(window._db, 'events', window._currentEventData.id);
     await updateDoc(eventRef, { status: 'cancelled' });
+    closeCancelModal();
     alert('✓ Event cancelled. Redirecting to your dashboard…');
     window.location.href = 'dashboard.html';
   } catch (err) {
     console.error('[cancel] failed:', err);
-    alert('❌ Could not cancel event: ' + (err.message || 'Unknown error'));
+    errEl.textContent = '❌ ' + (err.message || 'Could not cancel');
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '🗑️ Yes, cancel event';
   }
 }
 </script>
