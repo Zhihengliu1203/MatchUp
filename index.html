@@ -387,50 +387,8 @@
     }
     #hero.hero-gradient-bg { position: relative; }
     #hero.hero-gradient-bg > * { position: relative; z-index: 1; }
-    /* Kinetic typography — letter-by-letter reveal */
-    .kinetic-title { animation: none !important; }
-    .kt-word { display: inline-block; white-space: nowrap; }
-    .kt-word > span {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(40px) rotate(8deg);
-      animation: kineticIn .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
-    }
-    @keyframes kineticIn {
-      to { opacity: 1; transform: translateY(0) rotate(0); }
-    }
-    /* Each letter gets its own delay via inline --i variable */
-    .kt-word > span { animation-delay: calc(var(--i, 0) * 0.05s) !important; }
-    /* Rotating words */
-    .rotating-words {
-      display: inline-flex;
-      align-items: baseline;
-      vertical-align: baseline;
-      position: relative;
-      height: 1.4em;
-      overflow: hidden;
-      color: var(--orange);
-      font-weight: 800;
-    }
-    .rw-inner {
-      display: inline-flex;
-      flex-direction: column;
-      animation: rotateWords 12s cubic-bezier(.83,0,.17,1) infinite;
-    }
-    .rw-inner > span {
-      display: block;
-      height: 1.4em;
-      line-height: 1.4em;
-      white-space: nowrap;
-    }
-    @keyframes rotateWords {
-      0%, 16%  { transform: translateY(0); }
-      20%, 36% { transform: translateY(-1.4em); }
-      40%, 56% { transform: translateY(-2.8em); }
-      60%, 76% { transform: translateY(-4.2em); }
-      80%, 96% { transform: translateY(-5.6em); }
-      100%     { transform: translateY(-7em); }
-    }
+    
+    
     /* REVEAL */
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -1186,14 +1144,8 @@
       Live in Montréal
       <span class="live-count"><span class="lc-dot"></span><span class="live-count-num" id="liveCountNum">247</span>&nbsp;online</span>
     </div>
-   <h1 class="hero-h1 kinetic-title">
-  <span class="kt-word"><span style="--i:1">P</span><span style="--i:2">l</span><span style="--i:3">a</span><span style="--i:4">y</span></span>
-  <span class="kt-word"><span style="--i:6">m</span><span style="--i:7">o</span><span style="--i:8">r</span><span style="--i:9">e</span><span style="--i:10">.</span></span>
-  <br><span class="oc"><span class="kt-word"><span style="--i:12">C</span><span style="--i:13">o</span><span style="--i:14">n</span><span style="--i:15">n</span><span style="--i:16">e</span><span style="--i:17">c</span><span style="--i:18">t</span></span></span>
-  <span class="kt-word"><span style="--i:20">w</span><span style="--i:21">i</span><span style="--i:22">t</span><span style="--i:23">h</span></span>
-  <br><span class="bc"><span class="kt-word"><span style="--i:25">y</span><span style="--i:26">o</span><span style="--i:27">u</span><span style="--i:28">r</span></span> <span class="kt-word"><span style="--i:30">s</span><span style="--i:31">q</span><span style="--i:32">u</span><span style="--i:33">a</span><span style="--i:34">d</span><span style="--i:35">.</span></span></span>
-</h1>
-    <p class="hero-sub">MatchUp finds you <span class="rotating-words"><span class="rw-inner"><span>teammates</span><span>tennis partners</span><span>football buddies</span><span>running crews</span><span>yoga friends</span></span></span>, courts, and events that match your sport, level, and schedule.</p>
+   <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
+    <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
     <div class="hero-actions">
       <button class="btn-orange" onclick="openModal()">Join for free</button>
       <a class="btn-ob" href="#how">How it works</a>
