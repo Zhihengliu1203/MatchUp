@@ -492,6 +492,7 @@
       .form-row { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
 
@@ -620,7 +621,17 @@
     <li><a onclick="openModal(); switchTab('login')">Log in</a></li>
     <li><a class="btn-su" onclick="openModal()">Sign up</a></li>
   </ul>
+  
+<button class="mu-hamburger" id="muHamburger" aria-label="Menu" onclick="document.getElementById('muMobileMenu').classList.toggle('open')">☰</button>
 </nav>
+
+<div class="mu-mobile-menu" id="muMobileMenu">
+  <a href="#events" onclick="document.getElementById('muMobileMenu').classList.remove('open');">🗓️ Browse events</a>
+  <a href="#how" onclick="document.getElementById('muMobileMenu').classList.remove('open');">ℹ️ How it works</a>
+  <a href="#sports" onclick="document.getElementById('muMobileMenu').classList.remove('open');">🏆 Sports</a>
+  <div class="divider"></div>
+  <button onclick="document.getElementById('authModal').classList.add('show'); document.getElementById('muMobileMenu').classList.remove('open');">🔑 Log in / Sign up</button>
+</div>
 
 <!-- HERO -->
 <section id="hero">
