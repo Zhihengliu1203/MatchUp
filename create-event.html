@@ -132,6 +132,22 @@
     }
     .price-input-wrap input { padding-left: 48px; }
 
+    /* PHOTO UPLOAD */
+    .photo-upload { display: flex; gap: 12px; align-items: center; }
+    .photo-upload img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; }
+    .photo-upload .photo-drop {
+      flex: 1; padding: 18px 14px; border: 1.5px dashed var(--border); border-radius: 12px;
+      cursor: pointer; text-align: center; font-weight: 800; font-size: .88rem;
+      color: var(--muted); transition: border-color .15s, background .15s, color .15s;
+    }
+    .photo-upload .photo-drop:hover { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
+    .photo-upload .photo-clear {
+      padding: 0; width: 40px; height: 40px; background: var(--off); border: none;
+      border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--muted);
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .photo-upload .photo-clear:hover { background: #FEE2E2; color: #B91C1C; }
+
     /* RECURRENCE */
     .recur-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .recur-opt { padding: 10px 6px; border-radius: 10px; border: 1.5px solid var(--border); cursor: pointer; text-align: center; font-size: .8rem; font-weight: 800; background: #fff; transition: border-color .15s, background .15s, color .15s; }
@@ -228,6 +244,19 @@
           <button type="button" class="sport-opt" data-sport="yoga">🧘 Yoga</button>
         </div>
         <div class="field-error" id="err-sport">Please pick a sport</div>
+      </div>
+
+      <div class="form-group">
+        <label>Event photo <span style="color:var(--muted);font-weight:600;font-size:.76rem;">(optional, max 2MB)</span></label>
+        <div class="photo-upload">
+          <img id="photoPreview" src="" alt="" style="display:none;" />
+          <label class="photo-drop" id="photoDropLabel">
+            📸 Choose a photo
+            <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+          </label>
+          <button type="button" class="photo-clear" onclick="clearPhoto()" title="Clear photo">✕</button>
+        </div>
+        <div class="hint">Leave empty to use the default sport image.</div>
       </div>
 
       <div class="form-group">
@@ -485,7 +514,14 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
   }
 
   if (!valid) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to the FIRST visible error (not the top of the page)
+    const firstError = document.querySelector('.field-error.show, input.error');
+    if (firstError) {
+      const y = firstError.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     return;
   }
 
@@ -542,6 +578,7 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
       organizer: `${user.fname} ${user.lname || ''}`.trim(),
       organizerEmail: user.email,
       organizer_id: authUser?.uid || null,
+      photoData: _newPhotoData || null,
       going: 1,
       status: 'active',
       created: new Date()
@@ -561,6 +598,48 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
     alert('❌ Could not create event: ' + msg);
   }
 });
+
+/* Photo upload */
+let _newPhotoData = null;
+
+function handlePhotoChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Image too large. Please choose one under 2 MB.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 800;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxDim) { h = h * maxDim / w; w = maxDim; }
+      else if (h > maxDim) { w = w * maxDim / h; h = maxDim; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _newPhotoData = canvas.toDataURL('image/jpeg', 0.82);
+      const preview = document.getElementById('photoPreview');
+      preview.src = _newPhotoData;
+      preview.style.display = 'block';
+      document.getElementById('photoDropLabel').childNodes[0].textContent = '✓ Photo selected — click to change';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('photoInput').addEventListener('change', handlePhotoChange);
+
+function clearPhoto() {
+  _newPhotoData = null;
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoInput').value = '';
+  document.getElementById('photoDropLabel').childNodes[0].textContent = '📸 Choose a photo';
+}
 </script>
   <script src="js/geocoding.js"></script>
 </body>
