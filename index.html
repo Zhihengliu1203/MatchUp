@@ -399,24 +399,8 @@
     @keyframes kineticIn {
       to { opacity: 1; transform: translateY(0) rotate(0); }
     }
-    .kinetic-title .kt-word:nth-child(1) > span:nth-child(1) { animation-delay: 0.15s; }
-    .kinetic-title .kt-word:nth-child(1) > span:nth-child(2) { animation-delay: 0.20s; }
-    .kinetic-title .kt-word:nth-child(1) > span:nth-child(3) { animation-delay: 0.25s; }
-    .kinetic-title .kt-word:nth-child(1) > span:nth-child(4) { animation-delay: 0.30s; }
-    .kinetic-title .kt-word:nth-child(2) > span:nth-child(1) { animation-delay: 0.40s; }
-    .kinetic-title .kt-word:nth-child(2) > span:nth-child(2) { animation-delay: 0.45s; }
-    .kinetic-title .kt-word:nth-child(2) > span:nth-child(3) { animation-delay: 0.50s; }
-    .kinetic-title .kt-word:nth-child(2) > span:nth-child(4) { animation-delay: 0.55s; }
-    .kinetic-title .kt-word:nth-child(2) > span:nth-child(5) { animation-delay: 0.60s; }
-    .kinetic-title .kt-word > span { animation-delay: 0.7s; }
-    .kinetic-title .oc .kt-word > span:nth-child(1) { animation-delay: 0.75s; }
-    .kinetic-title .oc .kt-word > span:nth-child(2) { animation-delay: 0.80s; }
-    .kinetic-title .oc .kt-word > span:nth-child(3) { animation-delay: 0.85s; }
-    .kinetic-title .oc .kt-word > span:nth-child(4) { animation-delay: 0.90s; }
-    .kinetic-title .oc .kt-word > span:nth-child(5) { animation-delay: 0.95s; }
-    .kinetic-title .oc .kt-word > span:nth-child(6) { animation-delay: 1.00s; }
-    .kinetic-title .oc .kt-word > span:nth-child(7) { animation-delay: 1.05s; }
-    .kinetic-title .bc .kt-word > span { animation-delay: 1.2s; }
+    /* Each letter gets its own delay via inline --i variable */
+    .kt-word > span { animation-delay: calc(var(--i, 0) * 0.05s); }
     /* Rotating words */
     .rotating-words {
       display: inline-block;
@@ -1196,17 +1180,17 @@
     <div class="orb orb-3"></div>
   </div>
   <div class="hero-text">
-    <div class="hero-badge">
+    <div class="hero-badge" style="white-space:nowrap; overflow:hidden; max-width:100%;">
       <span class="live-dot"></span>
-      Live in Montréal, Toronto &amp; Vancouver
-      <span class="live-count"><span class="lc-dot"></span><span class="live-count-num" id="liveCountNum">247</span> online now</span>
+      Live in Montréal
+      <span class="live-count"><span class="lc-dot"></span><span class="live-count-num" id="liveCountNum">247</span> online</span>
     </div>
-    <h1 class="hero-h1 kinetic-title">
-  <span class="kt-word"><span>P</span><span>l</span><span>a</span><span>y</span></span>
-  <span class="kt-word"><span>m</span><span>o</span><span>r</span><span>e</span><span>.</span></span>
-  <br><span class="oc"><span class="kt-word"><span>C</span><span>o</span><span>n</span><span>n</span><span>e</span><span>c</span><span>t</span></span></span>
-  <span class="kt-word"><span>w</span><span>i</span><span>t</span><span>h</span></span>
-  <br><span class="bc"><span class="kt-word"><span>y</span><span>o</span><span>u</span><span>r</span></span> <span class="kt-word"><span>s</span><span>q</span><span>u</span><span>a</span><span>d</span><span>.</span></span></span>
+   <h1 class="hero-h1 kinetic-title">
+  <span class="kt-word"><span style="--i:1">P</span><span style="--i:2">l</span><span style="--i:3">a</span><span style="--i:4">y</span></span>
+  <span class="kt-word"><span style="--i:6">m</span><span style="--i:7">o</span><span style="--i:8">r</span><span style="--i:9">e</span><span style="--i:10">.</span></span>
+  <br><span class="oc"><span class="kt-word"><span style="--i:12">C</span><span style="--i:13">o</span><span style="--i:14">n</span><span style="--i:15">n</span><span style="--i:16">e</span><span style="--i:17">c</span><span style="--i:18">t</span></span></span>
+  <span class="kt-word"><span style="--i:20">w</span><span style="--i:21">i</span><span style="--i:22">t</span><span style="--i:23">h</span></span>
+  <br><span class="bc"><span class="kt-word"><span style="--i:25">y</span><span style="--i:26">o</span><span style="--i:27">u</span><span style="--i:28">r</span></span> <span class="kt-word"><span style="--i:30">s</span><span style="--i:31">q</span><span style="--i:32">u</span><span style="--i:33">a</span><span style="--i:34">d</span><span style="--i:35">.</span></span></span>
 </h1>
     <p class="hero-sub">MatchUp finds you <span class="rotating-words"><span class="rw-inner"><span>teammates</span><span>tennis partners</span><span>football buddies</span><span>running crews</span><span>yoga friends</span></span></span>, courts, and events that match your sport, level, and schedule.</p>
     <div class="hero-actions">
