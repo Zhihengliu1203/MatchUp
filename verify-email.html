@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Verify your email — MatchUp</title>
- 
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut, sendEmailVerification }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
- 
+
     const firebaseConfig = {
       apiKey:            "AIzaSyBVK43y-2BlF8lue18LqhZAFRP021GI01Y",
       authDomain:        "matchup-165ee.firebaseapp.com",
@@ -27,8 +27,9 @@
     });
     window._fbSignOut = () => signOut(auth);
   </script>
- 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/mobile.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -40,64 +41,231 @@
     }
     html, body { height: 100%; }
     body {
-      font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text);
-      display: flex; align-items: center; justify-content: center; padding: 20px;
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #FF7043 0%, #FF5722 50%, #FF8A65 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      min-height: 100vh;
     }
-    .card {
-      background: #fff; border: 1px solid var(--border); border-radius: 22px;
-      padding: 40px 36px; max-width: 440px; width: 100%; text-align: center;
-      box-shadow: 0 14px 44px rgba(0,0,0,.08);
+
+    /* macOS-style window */
+    .window {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.1);
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
     }
+
+    /* Title bar with traffic lights */
+    .titlebar {
+      background: linear-gradient(to bottom, #F6F6F6, #E8E8E8);
+      border-bottom: 1px solid #D0D0D0;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+    .traffic-lights { display: flex; gap: 8px; }
+    .light {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 0.5px solid rgba(0,0,0,.15);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .light:hover { opacity: .7; }
+    .light.close  { background: #FF5F57; }
+    .light.min    { background: #FFBD2E; }
+    .light.max    { background: #28C940; }
+    .title-text {
+      position: absolute; left: 0; right: 0;
+      text-align: center;
+      font-size: .82rem;
+      color: #555;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* Address bar / breadcrumb */
+    .addr-bar {
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .addr-bar .dot { color: var(--orange); }
+
+    /* Content */
+    .content { padding: 32px 32px 28px; text-align: center; }
+
     .icon {
-      width: 78px; height: 78px; border-radius: 22px;
+      width: 82px; height: 82px;
+      border-radius: 22px;
       background: linear-gradient(135deg, var(--orange), #FF8A65);
-      color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem; margin: 0 auto 20px;
-      box-shadow: 0 8px 24px rgba(255,87,34,.3);
+      color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 2.3rem;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 30px rgba(255,87,34,.4);
     }
-    h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
-    p  { color: var(--muted); font-size: .92rem; line-height: 1.55; margin-bottom: 16px; }
-    .email { font-weight: 800; color: var(--text); word-break: break-all; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.55rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: .94rem;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .email-chip {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--off);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-all;
+      border: 1px solid var(--border);
+    }
+
     .status {
-      margin: 18px 0; padding: 12px 14px; border-radius: 12px;
-      font-size: .85rem; font-weight: 700;
-      background: var(--blue-bg); color: var(--blue);
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: .88rem;
+      font-weight: 700;
+      background: var(--blue-bg);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
-    .status.ok { background: var(--green-bg); color: var(--green); }
+    .status.ok  { background: var(--green-bg); color: var(--green); }
     .status.err { background: #FEE2E2; color: #B91C1C; }
-    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
-    button {
-      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem;
-      padding: 12px 20px; border-radius: 100px; border: none; cursor: pointer;
-      transition: transform .15s, background .15s;
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      flex-shrink: 0;
     }
-    .btn-primary { background: var(--orange); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--orange-lt); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
-    .btn-secondary { background: var(--off); color: var(--text); }
-    .btn-secondary:hover { background: var(--border); }
-    .tip { font-size: .78rem; color: var(--muted); margin-top: 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: .9rem;
+      padding: 13px 20px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s, background .15s, box-shadow .15s;
+    }
+    button:active { transform: scale(.98); }
+    .btn-primary {
+      background: var(--orange); color: #fff;
+      box-shadow: 0 4px 14px rgba(255,87,34,.3);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--orange-lt); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+    .btn-secondary {
+      background: #F6F6F6; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #EDEDED; }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      font-size: .82rem; padding: 8px;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    .tip {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 18px;
+      line-height: 1.5;
+    }
+
+    .footer-bar {
+      background: #FAFAFA;
+      border-top: 1px solid var(--border);
+      padding: 8px 16px;
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      .content { padding: 24px 22px; }
+      h1 { font-size: 1.3rem; }
+    }
   </style>
-  <link rel="stylesheet" href="css/mobile.css" />
 </head>
 <body>
-  <div class="card">
-    <div class="icon">📬</div>
-    <h1>Check your email</h1>
-    <p>We sent a verification link to <span class="email" id="userEmail">your inbox</span>.<br>
-    Click the link to activate your account.</p>
- 
-    <div class="status" id="status">⏳ Waiting for verification…</div>
- 
-    <div class="actions">
-      <button class="btn-primary" id="resendBtn">Resend email</button>
-      <button class="btn-secondary" id="checkBtn">I verified — check now</button>
-      <button class="btn-secondary" onclick="doLogOut()">Log out</button>
+  <div class="window">
+    <div class="titlebar">
+      <div class="traffic-lights">
+        <div class="light close" onclick="doLogOut()" title="Log out"></div>
+        <div class="light min" title="Minimize"></div>
+        <div class="light max" title="Maximize"></div>
+      </div>
+      <div class="title-text">MatchUp — Verify your email</div>
     </div>
- 
-    <p class="tip">Didn't get it? Check your spam folder. Verification link expires in 24 hours.</p>
+
+    <div class="addr-bar">
+      <span class="dot">●</span> matchup-165ee.firebaseapp.com/verify-email
+    </div>
+
+    <div class="content">
+      <div class="icon">📬</div>
+      <h1>Check your email</h1>
+      <p class="subtitle">We sent a verification link to:</p>
+      <div class="email-chip" id="userEmail">loading…</div>
+
+      <div class="status" id="status">
+        <span class="spinner"></span>
+        <span>Waiting for verification…</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="resendBtn">📧 Resend email</button>
+        <button class="btn-secondary" id="checkBtn">✓ I verified — check now</button>
+        <button class="btn-ghost" onclick="doLogOut()">← Log out</button>
+      </div>
+
+      <p class="tip">Didn't get it? Check your spam folder.<br>The link expires in 24 hours.</p>
+    </div>
+
+    <div class="footer-bar">ready</div>
   </div>
- 
+
 <script>
 (async function main() {
   let tries = 0;
@@ -106,11 +274,10 @@
     tries++;
   }
   if (!window._auth) {
-    document.getElementById('status').className = 'status err';
-    document.getElementById('status').textContent = '⚠️ Firebase did not load.';
+    setStatus('err', '⚠️ Firebase did not load.');
     return;
   }
- 
+
   let user = window._auth.currentUser;
   if (!user) {
     user = await new Promise(resolve => {
@@ -121,85 +288,86 @@
       });
     });
   }
- 
+
   if (!user) {
     window.location.href = 'index.html';
     return;
   }
- 
+
   if (user.emailVerified) {
-    document.getElementById('status').className = 'status ok';
-    document.getElementById('status').textContent = '✅ Already verified! Redirecting…';
+    setStatus('ok', '✅ Already verified! Redirecting…');
     setTimeout(() => window.location.href = 'dashboard.html', 1000);
     return;
   }
- 
+
   document.getElementById('userEmail').textContent = user.email || 'your inbox';
- 
+
   const resendBtn = document.getElementById('resendBtn');
   let cooldown = 0;
   resendBtn.addEventListener('click', async () => {
     if (cooldown > 0) return;
     resendBtn.disabled = true;
-    document.getElementById('status').className = 'status';
-    document.getElementById('status').textContent = '📧 Sending…';
+    setStatus('', '<span class="spinner"></span><span>Sending…</span>');
     try {
       await window._fbSendVerification(user);
-      document.getElementById('status').className = 'status ok';
-      document.getElementById('status').textContent = '✅ Email sent! Check your inbox.';
+      setStatus('ok', '✅ Email sent! Check your inbox.');
       cooldown = 60;
       const tick = setInterval(() => {
         cooldown--;
         if (cooldown <= 0) {
           clearInterval(tick);
           resendBtn.disabled = false;
-          resendBtn.textContent = 'Resend email';
+          resendBtn.textContent = '📧 Resend email';
         } else {
           resendBtn.textContent = `Resend in ${cooldown}s`;
         }
       }, 1000);
     } catch (err) {
-      document.getElementById('status').className = 'status err';
-      document.getElementById('status').textContent = '❌ ' + (err.message || 'Failed to send');
+      setStatus('err', '❌ ' + (err.message || 'Failed to send'));
       resendBtn.disabled = false;
     }
   });
- 
+
   document.getElementById('checkBtn').addEventListener('click', async () => {
-    document.getElementById('status').className = 'status';
-    document.getElementById('status').textContent = '⏳ Checking…';
+    setStatus('', '<span class="spinner"></span><span>Checking…</span>');
     try {
+      // Force a fresh token — this is critical
       await user.reload();
-      if (user.emailVerified) {
-        document.getElementById('status').className = 'status ok';
-        document.getElementById('status').textContent = '✅ Verified! Redirecting…';
+      const refreshed = window._auth.currentUser;
+      if (refreshed && refreshed.emailVerified) {
+        setStatus('ok', '✅ Verified! Redirecting…');
         setTimeout(() => window.location.href = 'dashboard.html', 800);
       } else {
-        document.getElementById('status').className = 'status err';
-        document.getElementById('status').textContent = 'Still not verified. Click the link in the email.';
+        setStatus('err', 'Still not verified. Click the link in the email first.');
       }
     } catch (err) {
-      document.getElementById('status').className = 'status err';
-      document.getElementById('status').textContent = '❌ ' + err.message;
+      setStatus('err', '❌ ' + err.message);
     }
   });
- 
+
+  // Aggressive polling with force-reload (every 3s instead of 5s)
   let pollCount = 0;
   const poll = setInterval(async () => {
     pollCount++;
     if (pollCount > 240) { clearInterval(poll); return; }
     try {
       await user.reload();
-      if (user.emailVerified) {
+      const refreshed = window._auth.currentUser;
+      if (refreshed && refreshed.emailVerified) {
         clearInterval(poll);
-        document.getElementById('status').className = 'status ok';
-        document.getElementById('status').textContent = '✅ Verified! Redirecting…';
+        setStatus('ok', '✅ Verified! Redirecting…');
         setTimeout(() => window.location.href = 'dashboard.html', 800);
       }
     } catch (_) {}
-  }, 5000);
+  }, 3000);
 })();
- 
+
+function setStatus(cls, html) {
+  const el = document.getElementById('status');
+  el.className = 'status' + (cls ? ' ' + cls : '');
+  el.innerHTML = html;
+}
+
 function doLogOut() {
   localStorage.removeItem('mu_current_user');
   if (window._fbSignOut) window._fbSignOut();
