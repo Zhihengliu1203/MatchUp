@@ -1107,11 +1107,11 @@
 
 <nav>
   <a class="nav-logo" href="#"><span class="logo-icon"><svg class="logo-svg" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle class="logo-ball-1" cx="11" cy="16" r="5" fill="#fff"/><circle class="logo-ball-2" cx="21" cy="16" r="5" fill="#fff" opacity=".85"/><path class="logo-bolt" d="M16 7 L13 15 L16 15 L14 25 L20 15 L17 15 L19 7 Z" fill="#FFD54F"/></svg></span>MatchUp</a>
-  <div class="search-bar">
-    <input type="text" placeholder="Search sports, events, players…" />
+  <div class="search-bar" id="navSearchBar">
+    <input type="text" id="navSearchInput" placeholder="Search sports, events, players…" onkeydown="if(event.key==='Enter')doNavSearch()" />
     <div class="sb-div"></div>
     <input class="loc" type="text" value="Montréal, QC" />
-    <button class="search-btn">🔍</button>
+    <button class="search-btn" onclick="doNavSearch()">🔍</button>
   </div>
   <ul class="nav-links">
     <li><a href="#how">How it works</a></li>
@@ -1774,6 +1774,31 @@ function updateNavForUser(fname) {
       <li><a href="profile.html">👤 Profile</a></li>
       <li><span style="padding:8px 14px;font-size:.88rem;font-weight:800;color:var(--text)">👋 ${fname}</span></li>
       <li><a class="btn-su" href="#" onclick="logOut();return false;">Log out</a></li>`;
+  }
+  // Hide search bar when logged in (dashboard/browse have their own search/filters)
+  const sb = document.getElementById('navSearchBar');
+  if (sb) sb.style.display = 'none';
+}
+
+/* ── NAV SEARCH (visitors only) ── */
+function doNavSearch() {
+  const q = (document.getElementById('navSearchInput')?.value || '').trim();
+  // Scroll to the events section
+  const target = document.getElementById('events') || document.getElementById('sports');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // If a sport filter exists in the browse section, try to apply the query
+  if (q) {
+    setTimeout(() => {
+      const sportFilter = document.getElementById('filterSport');
+      if (sportFilter) {
+        const lower = q.toLowerCase();
+        const match = Array.from(sportFilter.options).find(o => o.value.toLowerCase().includes(lower) || o.text.toLowerCase().includes(lower));
+        if (match) {
+          sportFilter.value = match.value;
+          if (typeof applyFilters === 'function') applyFilters();
+        }
+      }
+    }, 400);
   }
 }
   
