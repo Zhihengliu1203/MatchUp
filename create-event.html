@@ -94,6 +94,31 @@
       border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,87,34,.12);
     }
     .form-group input.error { border-color: #e53e3e; }
+    /* Style time + date inputs for consistency */
+    .form-group input[type="time"],
+    .form-group input[type="date"] {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .form-group input[type="time"]::-webkit-calendar-picker-indicator,
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity .15s;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .form-group input[type="time"]:hover::-webkit-calendar-picker-indicator,
+    .form-group input[type="date"]:hover::-webkit-calendar-picker-indicator {
+      opacity: 1;
+    }
+    .form-group input[type="time"]:focus,
+    .form-group input[type="date"]:focus {
+      box-shadow: 0 0 0 3px rgba(255,87,34,.12);
+    }
     .form-group textarea { resize: vertical; min-height: 100px; }
     .form-group .hint { font-size: .74rem; color: var(--muted); margin-top: 4px; }
     .form-group .char-count { float: right; font-size: .72rem; color: var(--muted); font-weight: 700; }
@@ -314,14 +339,14 @@
       </div>
 
       <div class="form-group">
-        <label for="venue">Venue name</label>
+        <label for="venue">Venue name <span style="color:var(--muted); font-weight:600; font-size:.78rem;">(optional)</span></label>
         <input type="text" id="venue" placeholder="e.g. Parc Jarry — Field 3" />
-        <div class="field-error" id="err-venue">Add a venue name</div>
       </div>
 
       <div class="form-group">
         <label for="address">Address</label>
         <input type="text" id="address" placeholder="e.g. 285 Rue Gary Carter, Montréal, QC" />
+        <div class="field-error" id="err-address">Add a street address so people can find the spot</div>
         <div class="hint">Exact address helps players find you. Hidden from non-attendees until they join.</div>
       </div>
     </div>
@@ -507,9 +532,11 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
   if (!time) { document.getElementById('err-time').classList.add('show'); valid = false; }
 
   const venue = document.getElementById('venue').value.trim();
-  if (!venue) {
-    document.getElementById('venue').classList.add('error');
-    document.getElementById('err-venue').classList.add('show');
+  // Venue name is optional — no validation here
+  const address = document.getElementById('address').value.trim();
+  if (!address) {
+    document.getElementById('address').classList.add('error');
+    document.getElementById('err-address').classList.add('show');
     valid = false;
   }
 
@@ -542,7 +569,8 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
     // Geocode the address
     const addressInput = document.getElementById('address').value.trim();
     const venueInput = venue;
-    const searchAddress = addressInput ? `${venueInput}, ${addressInput}` : `${venueInput}, Montreal, QC`;
+    // Address is now the primary search key, venue is optional context
+    const searchAddress = venueInput ? `${venueInput}, ${addressInput}` : addressInput;
 
     btn.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle; margin-right:8px;"></span>Finding location…';
     const geo = await window.geocodeAddress(searchAddress);
@@ -565,7 +593,7 @@ document.getElementById('eventForm').addEventListener('submit', async function(e
       time,
       duration: parseInt(document.getElementById('duration').value),
       recurrence: document.querySelector('.recur-opt.sel')?.dataset.recur || 'once',
-      venue,
+      venue: venue || addressInput.split(',')[0].trim() || 'TBD',
       address: addressInput,
       lat: geo.lat,
       lng: geo.lng,
