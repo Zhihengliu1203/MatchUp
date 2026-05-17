@@ -1724,6 +1724,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 /* ── GOOGLE SIGN-IN ── */
 async function googleSignIn() {
   clearAlert();
+  // Waiver gate — Google flow doesn't show the email-signup checkbox
+  const waiverOK = await showGoogleWaiverModal();
+  if (!waiverOK) return;
   try {
     const result = await window._fbGoogle();
     const user   = result.user;
@@ -1746,7 +1749,9 @@ async function googleSignIn() {
         phone: '',
         bio: '',
         level: '',
-        photoURL: user.photoURL || ''
+        photoURL: user.photoURL || '',
+        waiverAccepted: true,
+        waiverAcceptedAt: new Date().toISOString()
       });
     }
 
@@ -1861,11 +1866,37 @@ async function loadEventsFromFirestore() {
     // Filter out past events (yesterday and before)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const futureEvents = events.filter(ev => {
+    let futureEvents = events.filter(ev => {
       if (!ev.date) return false;
       const eventDate = new Date(ev.date + 'T23:59:59');
       return eventDate >= today;
     });
+
+    // Filter out events from blocked organizers (only if user is logged in)
+    const authUser = window._auth?.currentUser;
+    if (authUser) {
+      try {
+        const blocksRef = collection(window._db, 'blocks');
+        const blocksQ = query(blocksRef, where('blocker_id', '==', authUser.uid));
+        const blocksSnap = await getDocs(blocksQ);
+        const blockedEmails = new Set();
+        blocksSnap.forEach(d => {
+          const data = d.data();
+          if (data.blocked_organizer_email) {
+            blockedEmails.add(data.blocked_organizer_email.toLowerCase());
+          }
+        });
+        if (blockedEmails.size > 0) {
+          futureEvents = futureEvents.filter(ev => {
+            const orgEmail = (ev.organizerEmail || '').toLowerCase();
+            return !blockedEmails.has(orgEmail);
+          });
+        }
+      } catch (blockErr) {
+        console.warn('[blocks] could not load block list:', blockErr);
+        // continue without block filtering rather than fail the whole page
+      }
+    }
 
     futureEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
     _allEvents = futureEvents;
@@ -2360,5 +2391,62 @@ window.addEventListener('load', async () => {
     <a href="mailto:support@matchup.app" style="color:#6B7280; text-decoration:none;">Contact</a>
   </div>
 </footer>
+<!-- ============ Google Sign-In Waiver Modal ============ -->
+<div id="googleWaiverModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:16px; max-width:480px; width:100%; padding:28px; font-family:'Nunito',sans-serif; max-height:90vh; overflow-y:auto;">
+    <h2 style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; margin-bottom:12px; color:#1A1A2E;">
+      ⚠️ Before you continue
+    </h2>
+    <p style="color:#374151; font-size:.95rem; line-height:1.6; margin-bottom:14px;">
+      Sports involve real risk of injury. By creating a MatchUp account you confirm that you have read and agree to our <a href="terms.html" target="_blank" style="color:#FF5722; font-weight:700;">Terms of Service</a> (including the liability waiver in Section 6) and <a href="privacy.html" target="_blank" style="color:#FF5722; font-weight:700;">Privacy Policy</a>.
+    </p>
+    <label style="display:flex; align-items:flex-start; gap:10px; padding:14px; background:#FFF3EF; border-radius:10px; cursor:pointer; font-size:.92rem; color:#1A1A2E; margin-bottom:16px;">
+      <input type="checkbox" id="googleWaiverCheck" style="margin-top:3px; width:18px; height:18px; cursor:pointer; flex-shrink:0; accent-color:#FF5722;">
+      <span>I have read and accept the Terms of Service and Privacy Policy. I voluntarily assume all risks of participating in sports events organized through this platform.</span>
+    </label>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button id="googleWaiverCancel" style="padding:11px 22px; border-radius:100px; border:1px solid #E5E7EB; background:#F6F6F6; color:#1A1A2E; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; font-size:.9rem;">Cancel</button>
+      <button id="googleWaiverAccept" disabled style="padding:11px 22px; border-radius:100px; border:none; background:#FF5722; color:#fff; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; font-size:.9rem; opacity:.5;">Continue with Google</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showGoogleWaiverModal() {
+  return new Promise((resolve) => {
+    const modal  = document.getElementById('googleWaiverModal');
+    const check  = document.getElementById('googleWaiverCheck');
+    const accept = document.getElementById('googleWaiverAccept');
+    const cancel = document.getElementById('googleWaiverCancel');
+    if (!modal) { resolve(true); return; }
+
+    check.checked = false;
+    accept.disabled = true;
+    accept.style.opacity = '.5';
+    modal.style.display = 'flex';
+
+    const onCheck  = () => {
+      accept.disabled = !check.checked;
+      accept.style.opacity = check.checked ? '1' : '.5';
+    };
+    const cleanup = () => {
+      check.removeEventListener('change', onCheck);
+      accept.removeEventListener('click', onAccept);
+      cancel.removeEventListener('click', onCancel);
+      modal.style.display = 'none';
+    };
+    const onAccept = () => {
+      if (!check.checked) return;
+      cleanup();
+      resolve(true);
+    };
+    const onCancel = () => { cleanup(); resolve(false); };
+
+    check.addEventListener('change', onCheck);
+    accept.addEventListener('click', onAccept);
+    cancel.addEventListener('click', onCancel);
+  });
+}
+</script>
 </body>
 </html>
