@@ -4,50 +4,164 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Terms of Service — MatchUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --orange:#FF5722; --off:#F8F9FA;
+      --orange:#FF5722; --orange-lt:#FF7043;
+      --off:#F8F9FA;
       --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
+      --warn-bg:#FEF3C7; --warn-border:#F59E0B; --warn-text:#78350F;
     }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text);
-      line-height: 1.65;
+      font-family: 'Nunito', sans-serif;
+      background: var(--off);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
     }
     nav {
-      background: #fff; border-bottom: 1px solid var(--border); padding: 18px 40px;
-      display: flex; align-items: center; gap: 20px;
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex; align-items: center;
+      height: 68px;
     }
     .nav-logo {
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem;
-      color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.5rem;
+      color: var(--orange);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
     }
     .logo-icon {
-      width: 34px; height: 34px; border-radius: 9px; background: var(--orange);
-      display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff;
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: #fff;
     }
-    .wrap { max-width: 780px; margin: 0 auto; padding: 40px 32px 100px; }
+
+    .wrap { max-width: 820px; margin: 0 auto; padding: 50px 32px 100px; }
+
     h1 {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: 2rem; margin-bottom: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
-    .updated { color: var(--muted); font-size: .85rem; margin-bottom: 28px; }
-    .placeholder-warning {
-      background: #FEF3C7; border: 1px solid #F59E0B; color: #78350F;
-      padding: 16px 20px; border-radius: 12px; font-size: .9rem; margin-bottom: 32px;
+    .updated {
+      color: var(--muted);
+      font-size: .88rem;
+      margin-bottom: 28px;
+    }
+
+    .important-notice {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+      color: var(--warn-text);
+      padding: 18px 22px;
+      border-radius: 10px;
+      margin-bottom: 36px;
+      font-size: .92rem;
       font-weight: 600;
+      line-height: 1.6;
     }
+    .important-notice strong { font-weight: 800; }
+
+    /* Table of contents */
+    .toc {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+    .toc-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .toc ol { padding-left: 22px; }
+    .toc li { margin-bottom: 4px; font-size: .92rem; }
+    .toc a { color: var(--text); text-decoration: none; }
+    .toc a:hover { color: var(--orange); text-decoration: underline; }
+
     h2 {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.25rem;
-      margin-top: 32px; margin-bottom: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      margin: 38px 0 12px;
+      color: var(--text);
+      scroll-margin-top: 90px;
     }
-    p { margin-bottom: 14px; color: var(--text); font-size: .95rem; }
+
+    p, li {
+      font-size: .98rem;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; margin-bottom: 14px; }
+    li { margin-bottom: 8px; }
+
+    strong { font-weight: 800; }
+
+    a { color: var(--orange); }
+    a:hover { text-decoration: underline; }
+
+    /* Critical risk acknowledgment box */
+    .risk-box {
+      background: #FEF2F2;
+      border: 2px solid #FCA5A5;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .risk-box h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      color: #991B1B;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .risk-box p, .risk-box li {
+      color: #7F1D1D;
+      font-size: .94rem;
+      margin-bottom: 8px;
+    }
+
     .back {
-      display: inline-block; margin-top: 30px; color: var(--orange);
-      text-decoration: none; font-weight: 800; font-size: .9rem;
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 40px;
+      color: var(--orange);
+      text-decoration: none;
+      font-weight: 800; font-size: .95rem;
+      padding: 10px 18px;
+      border-radius: 100px;
+      border: 2px solid var(--orange);
+      transition: all .2s;
     }
-    .back:hover { text-decoration: underline; }
+    .back:hover {
+      background: var(--orange); color: #fff;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .wrap { padding: 30px 20px 70px; }
+      h1 { font-size: 1.9rem; }
+      h2 { font-size: 1.2rem; }
+    }
   </style>
 </head>
 <body>
@@ -59,55 +173,132 @@
 
   <div class="wrap">
     <h1>Terms of Service</h1>
-    <div class="updated">Last updated: <em>—</em></div>
+    <div class="updated">Last updated: November 1, 2025</div>
 
-    <div class="placeholder-warning">
-      ⚠️ <strong>PLACEHOLDER CONTENT.</strong> Replace this entire section with real Terms of Service
-      generated by Termly, iubenda, or drafted by a lawyer. Do not publish this page publicly
-      with placeholder text.
+    <div class="important-notice">
+      ⚠️ <strong>Please read these Terms carefully before using MatchUp.</strong> By creating an account or joining any event, you agree to be bound by these Terms, including the <a href="#waiver">liability waiver and assumption of risk</a> in Section 6. If you do not agree, do not use the Service.
     </div>
 
-    <!-- ============================================================
-         REPLACE EVERYTHING BETWEEN THIS COMMENT AND THE CLOSING
-         </section> TAG WITH YOUR REAL TERMS OF SERVICE TEXT.
-         ============================================================ -->
-    <section id="tos-content">
-      <h2>1. Acceptance of Terms</h2>
-      <p>Placeholder: By accessing or using MatchUp, you agree to be bound by these Terms.</p>
+    <div class="toc">
+      <div class="toc-title">📑 Contents</div>
+      <ol>
+        <li><a href="#acceptance">Acceptance of Terms</a></li>
+        <li><a href="#service">Description of the Service</a></li>
+        <li><a href="#eligibility">Eligibility &amp; Account Registration</a></li>
+        <li><a href="#user-responsibilities">User Responsibilities &amp; Conduct</a></li>
+        <li><a href="#events">User-Organized Events</a></li>
+        <li><a href="#waiver">Assumption of Risk &amp; Liability Waiver</a></li>
+        <li><a href="#content">User Content</a></li>
+        <li><a href="#termination">Account Suspension and Termination</a></li>
+        <li><a href="#disclaimers">Disclaimers</a></li>
+        <li><a href="#liability">Limitation of Liability</a></li>
+        <li><a href="#indemnity">Indemnification</a></li>
+        <li><a href="#changes">Changes to the Service or Terms</a></li>
+        <li><a href="#governing-law">Governing Law &amp; Dispute Resolution</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </div>
 
-      <h2>2. Description of Service</h2>
-      <p>Placeholder: MatchUp is a platform for discovering and organizing amateur sports events.</p>
+    <h2 id="acceptance">1. Acceptance of Terms</h2>
+    <p>These Terms of Service ("<strong>Terms</strong>") form a binding legal agreement between you ("<strong>you</strong>", "<strong>user</strong>") and MatchUp ("<strong>MatchUp</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>"), operator of the website located at <a href="https://zhihengliu1203.github.io/MatchUp/">zhihengliu1203.github.io/MatchUp/</a> and any related services (collectively, the "<strong>Service</strong>").</p>
+    <p>By accessing or using the Service, you confirm that you have read, understood, and agree to be bound by these Terms and our <a href="privacy.html">Privacy Policy</a>. If you do not agree, you must not use the Service.</p>
 
-      <h2>3. User Responsibilities</h2>
-      <p>Placeholder: You are responsible for your own conduct and safety at events. MatchUp does
-      not supervise, organize, or insure the events listed on this platform.</p>
+    <h2 id="service">2. Description of the Service</h2>
+    <p>MatchUp is an online platform that allows users to discover, organize, and join amateur sports events in their local area. We provide a venue for users to connect with each other; <strong>we do not organize, supervise, sponsor, host, insure, or otherwise participate in any event listed on the Service</strong>. Events are created and managed entirely by users.</p>
+    <p>MatchUp does not verify the identity, qualifications, skill level, or background of any user, and does not inspect or approve any venue, location, or activity associated with an event.</p>
 
-      <h2>4. Assumption of Risk</h2>
-      <p>Placeholder: Sports activities carry inherent risks of injury. By joining any event on MatchUp,
-      you voluntarily assume all risks and release MatchUp from any liability for injuries, losses,
-      or damages suffered during your participation.</p>
+    <h2 id="eligibility">3. Eligibility &amp; Account Registration</h2>
+    <ul>
+      <li>You must be at least <strong>18 years of age</strong> (or the age of majority in your jurisdiction) to use the Service.</li>
+      <li>You must provide accurate, current, and complete information when registering an account, and keep that information up to date.</li>
+      <li>You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account.</li>
+      <li>You agree to notify us immediately of any unauthorized access to or use of your account.</li>
+      <li>You may not create an account using false identity, impersonate another person, or create multiple accounts to evade suspension.</li>
+    </ul>
 
-      <h2>5. Content and Conduct</h2>
-      <p>Placeholder: You agree not to post harmful, illegal, or misleading content, and not to harass
-      other users.</p>
+    <h2 id="user-responsibilities">4. User Responsibilities &amp; Conduct</h2>
+    <p>You agree that you will not:</p>
+    <ul>
+      <li>Use the Service for any unlawful, fraudulent, harmful, or abusive purpose.</li>
+      <li>Harass, threaten, stalk, defame, or discriminate against any user.</li>
+      <li>Post content that is illegal, sexually explicit, hateful, violent, deceptive, or that infringes any third party's rights.</li>
+      <li>Solicit money, sell goods or services, or run any commercial activity through the Service without our written permission.</li>
+      <li>Misrepresent the nature, skill level, cost, or safety of an event you organize.</li>
+      <li>Attempt to gain unauthorized access to the Service, other users' accounts, or our systems.</li>
+      <li>Use bots, scrapers, or other automated tools to access or extract data from the Service.</li>
+      <li>Use the Service in any way that could damage, disable, or impair its operation.</li>
+    </ul>
+    <p>You are solely responsible for your conduct, communications, and any consequences arising from your use of the Service.</p>
 
-      <h2>6. Account Termination</h2>
-      <p>Placeholder: We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+    <h2 id="events">5. User-Organized Events</h2>
+    <p><strong>Events are organized by users, not by MatchUp.</strong> By creating or joining an event, you acknowledge and agree that:</p>
+    <ul>
+      <li>MatchUp is not a party to any agreement, arrangement, or interaction between event organizers and participants.</li>
+      <li>MatchUp does not screen, supervise, or guarantee the safety, legality, quality, accuracy, or suitability of any event, venue, organizer, or participant.</li>
+      <li>Event organizers are solely responsible for their events, including selecting safe and legal venues, ensuring participants understand the activity, complying with any applicable rules, regulations, permits, or insurance requirements, and conducting themselves responsibly.</li>
+      <li>Participants are solely responsible for evaluating whether an event is appropriate for their skill level, fitness, and circumstances, and for their own conduct during the event.</li>
+      <li>Any payments between organizers and participants (where applicable) are made directly between them; MatchUp does not handle, process, or guarantee any payments and is not liable for any payment disputes.</li>
+    </ul>
 
-      <h2>7. Disclaimer of Warranties</h2>
-      <p>Placeholder: MatchUp is provided "as is" without warranties of any kind.</p>
+    <h2 id="waiver">6. Assumption of Risk &amp; Liability Waiver</h2>
 
-      <h2>8. Limitation of Liability</h2>
-      <p>Placeholder: To the fullest extent permitted by law, MatchUp shall not be liable for any
-      indirect, incidental, or consequential damages.</p>
+    <div class="risk-box">
+      <h3>⚠️ PLEASE READ — THIS SECTION AFFECTS YOUR LEGAL RIGHTS</h3>
+      <p><strong>Sports and physical activities involve inherent and significant risks of physical injury, including but not limited to: sprains, fractures, concussions, cardiovascular events, paralysis, and in rare cases, death.</strong> Risks may arise from your own actions, the actions of other participants, the condition of the venue, equipment failure, or other circumstances.</p>
+    </div>
 
-      <h2>9. Governing Law</h2>
-      <p>Placeholder: These Terms are governed by the laws of Quebec, Canada.</p>
+    <p>By using the Service and by creating or joining any event, <strong>you voluntarily and knowingly assume all risks</strong> — known and unknown, foreseeable and unforeseeable — associated with your participation, including risks of personal injury, illness, death, property damage, theft, or financial loss.</p>
 
-      <h2>10. Contact</h2>
-      <p>Placeholder: Questions? Email us at support@matchup.app</p>
-    </section>
-    <!-- ============================================================ -->
+    <p>To the fullest extent permitted by applicable law, <strong>you hereby release, waive, and forever discharge</strong> MatchUp, its founders, officers, employees, contractors, agents, and affiliates (collectively, the "<strong>Released Parties</strong>") from any and all claims, demands, actions, liabilities, costs, and expenses (including legal fees) of any kind arising out of or related to:</p>
+    <ul>
+      <li>Your participation in any event listed on the Service;</li>
+      <li>The conduct of any other user, event organizer, or participant;</li>
+      <li>The condition or suitability of any venue, equipment, or location;</li>
+      <li>Any injury, illness, death, loss, or damage suffered by you or caused by you;</li>
+      <li>Disputes between you and other users.</li>
+    </ul>
+
+    <p>You acknowledge that you participate in events <strong>at your own risk</strong> and are responsible for: assessing your own physical fitness and skill level; bringing or arranging any necessary equipment; obtaining any necessary medical clearance; and maintaining your own health, accident, and liability insurance.</p>
+
+    <p>You agree not to sue, bring a claim against, or otherwise hold the Released Parties responsible for any injury, loss, or damage covered by this waiver. This waiver is binding upon you, your heirs, executors, administrators, and assigns.</p>
+
+    <p><em>Note: Some jurisdictions do not permit the exclusion of certain warranties or limitation of liability for gross negligence or willful misconduct. To the extent any provision of this Section is unenforceable in your jurisdiction, the remaining provisions remain in full effect, and the unenforceable provision shall be limited to the minimum extent necessary.</em></p>
+
+    <h2 id="content">7. User Content</h2>
+    <p>You retain ownership of any content you submit to the Service (event descriptions, photos, profile information, messages — collectively, "<strong>User Content</strong>"). By submitting User Content, you grant MatchUp a <strong>worldwide, royalty-free, non-exclusive, transferable license</strong> to host, store, reproduce, display, adapt, and distribute that content solely for the purpose of operating, improving, and promoting the Service.</p>
+    <p>You represent and warrant that you own or have all necessary rights to the User Content you submit, and that it does not infringe on any third party's rights or violate any law.</p>
+    <p>We may, but are not obligated to, review, moderate, or remove User Content that we believe violates these Terms or applicable law, in our sole discretion and without notice.</p>
+
+    <h2 id="termination">8. Account Suspension and Termination</h2>
+    <p>We may suspend or terminate your account, with or without notice, at any time and in our sole discretion, including if we believe you have violated these Terms, engaged in harmful behavior, or for any other reason we deem appropriate to protect the Service or its users.</p>
+    <p>You may delete your account at any time by contacting us at the email below. Upon termination, your right to use the Service ends immediately. Sections that by their nature should survive termination (including Sections 6, 9, 10, 11, and 13) will survive.</p>
+
+    <h2 id="disclaimers">9. Disclaimers</h2>
+    <p>The Service is provided <strong>"as is" and "as available"</strong>, without warranties of any kind, whether express, implied, or statutory, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy, reliability, or uninterrupted operation.</p>
+    <p>We do not warrant that the Service will be error-free, secure, free of viruses, or available at all times. We do not warrant the accuracy of any event listing, user profile, or any other information on the Service.</p>
+
+    <h2 id="liability">10. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by applicable law, in no event shall MatchUp or the Released Parties be liable for any <strong>indirect, incidental, special, consequential, exemplary, or punitive damages</strong>, or for any loss of profits, revenues, data, goodwill, or other intangible losses, arising out of or related to your use of the Service, even if we have been advised of the possibility of such damages.</p>
+    <p>Where liability cannot be excluded by law, our aggregate liability to you for all claims relating to the Service is limited to the greater of (a) the total amount you have paid to us in the twelve (12) months preceding the claim, or (b) <strong>one hundred Canadian dollars (CAD $100)</strong>.</p>
+
+    <h2 id="indemnity">11. Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless MatchUp and the Released Parties from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable legal fees) arising out of or related to: (a) your use of the Service; (b) your User Content; (c) your violation of these Terms or any law; (d) your participation in or organization of any event; or (e) your interaction with any other user.</p>
+
+    <h2 id="changes">12. Changes to the Service or Terms</h2>
+    <p>We may modify, suspend, or discontinue any part of the Service at any time, with or without notice. We may also update these Terms from time to time. If we make material changes, we will provide notice (such as via the Service or by email). Continued use of the Service after changes take effect constitutes your acceptance of the updated Terms.</p>
+
+    <h2 id="governing-law">13. Governing Law &amp; Dispute Resolution</h2>
+    <p>These Terms are governed by and construed in accordance with the <strong>laws of the Province of Quebec</strong> and the federal laws of Canada applicable therein, without regard to conflict-of-laws principles.</p>
+    <p>Any dispute, claim, or controversy arising out of or relating to these Terms or the Service shall be brought exclusively in the <strong>courts located in the judicial district of Montréal, Quebec, Canada</strong>, and you consent to the jurisdiction of those courts.</p>
+    <p>If you are a consumer residing in Quebec, nothing in these Terms removes any non-waivable rights you may have under the Quebec <em>Consumer Protection Act</em> or other applicable consumer protection laws.</p>
+
+    <h2 id="contact">14. Contact</h2>
+    <p>If you have questions about these Terms, or wish to exercise any right hereunder, please contact us at:</p>
+    <p>
+      <strong>MatchUp</strong><br>
+      Montréal, Quebec, Canada<br>
+      Email: <a href="mailto:[YOUR_EMAIL]">[YOUR_EMAIL]</a>
+    </p>
 
     <a href="index.html" class="back">← Back to MatchUp</a>
   </div>
