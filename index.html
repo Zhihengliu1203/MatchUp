@@ -975,8 +975,12 @@
       .main-wrap, #sports, .how-inner, .testi-inner { padding-left: 20px; padding-right: 20px; }
       .cat-strip, #how, #testimonials { padding-left: 20px; padding-right: 20px; }
     }
-   @media (max-width: 900px) {
+   @media (max-width: 700px) {
       .search-bar { display: none !important; }
+    }
+   @media (min-width: 701px) and (max-width: 900px) {
+      .search-bar .loc, .search-bar .sb-div { display: none; }
+      .search-bar { max-width: 320px; }
     }
     @media (max-width: 600px) {
       .events-grid, .steps { grid-template-columns: 1fr; }
@@ -1103,8 +1107,7 @@
 </div>
 
 <!-- PAGE -->
-<div class="topbar">🎉 Beta launch — First 3 months FREE for early members! <a onclick="openModal()">Claim your spot →</a></div>
-
+<div class="topbar" id="topbar">🎉 Beta launch — First 3 months FREE for early members! <a onclick="smartCTA()">Claim your spot →</a></div>
 <nav>
   <a class="nav-logo" href="#"><span class="logo-icon"><svg class="logo-svg" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle class="logo-ball-1" cx="11" cy="16" r="5" fill="#fff"/><circle class="logo-ball-2" cx="21" cy="16" r="5" fill="#fff" opacity=".85"/><path class="logo-bolt" d="M16 7 L13 15 L16 15 L14 25 L20 15 L17 15 L19 7 Z" fill="#FFD54F"/></svg></span>MatchUp</a>
   <div class="search-bar" id="navSearchBar">
@@ -1148,7 +1151,7 @@
    <h1 class="hero-h1">Play more.<br><span class="oc">Connect</span> with<br><span class="bc">your squad.</span></h1>
     <p class="hero-sub">MatchUp finds you teammates, courts, and events that match your sport, level, and schedule — all at a price that actually makes sense.</p>
     <div class="hero-actions">
-      <button class="btn-orange" onclick="openModal()">Join for free</button>
+      <button class="btn-orange" id="heroCTA" onclick="smartCTA()">Join for free</button>
       <a class="btn-ob" href="#how">How it works</a>
     </div>
     <div class="hero-trust">
@@ -1424,7 +1427,7 @@
   <h2 class="reveal-scale">Ready to play?</h2>
   <p class="reveal-up delay-1">Join thousands of players already using MatchUp to find their perfect game — free forever, no credit card required.</p>
   <div class="cta-btns reveal-up delay-2">
-    <button class="btn-ws" onclick="openModal()">Create your free account →</button>
+    <button class="btn-ws" id="finalCTA" onclick="smartCTA()">Create your free account →</button>
     <a class="btn-gw" href="#how">Learn more</a>
   </div>
 </section>
@@ -1462,10 +1465,10 @@
   <div class="f-col">
     <h4>Legal</h4>
     <ul>
-      <li><a href="#">Privacy policy</a></li>
-      <li><a href="#">Terms of use</a></li>
-      <li><a href="#">Cookies</a></li>
-      <li><a href="#">Contact</a></li>
+      <li><a href="privacy.html">Privacy policy</a></li>
+      <li><a href="terms.html">Terms of use</a></li>
+      <li><a href="privacy.html#cookies">Cookies</a></li>
+      <li><a href="mailto:liuzhiheng1203@gmail.com">Contact</a></li>
     </ul>
   </div>
 </footer>
@@ -1489,6 +1492,16 @@
 
 <script>
 /* ── MODAL ── */
+// Smart CTA: if logged in, go to dashboard. Otherwise open signup.
+function smartCTA() {
+  const u = window._auth?.currentUser;
+  if (u) {
+    window.location.href = 'dashboard.html';
+  } else {
+    openModal();
+  }
+}
+
 function openModal() {
   const user = JSON.parse(localStorage.getItem('mu_current_user') || 'null');
   if (user && user.fname) {
@@ -1780,9 +1793,17 @@ function updateNavForUser(fname) {
       <li><span style="padding:8px 14px;font-size:.88rem;font-weight:800;color:var(--text)">👋 ${fname}</span></li>
       <li><a class="btn-su" href="#" onclick="logOut();return false;">Log out</a></li>`;
   }
-  // Hide search bar when logged in (dashboard/browse have their own search/filters)
-  const sb = document.getElementById('navSearchBar');
-  if (sb) sb.style.display = 'none';
+  // Update CTA buttons for logged-in state
+  const heroCTA = document.getElementById('heroCTA');
+  if (heroCTA) heroCTA.textContent = 'Go to dashboard →';
+  const finalCTA = document.getElementById('finalCTA');
+  if (finalCTA) finalCTA.textContent = 'Go to your dashboard →';
+  // Update topbar message
+  const topbar = document.getElementById('topbar');
+  if (topbar) topbar.innerHTML = `👋 Welcome back, ${fname}! <a onclick="smartCTA()">Go to your dashboard →</a>`;
+  // Hide mobile menu's Log in / Sign up button when logged in
+  const mobileAuth = document.querySelector('.mu-mobile-menu button');
+  if (mobileAuth) mobileAuth.style.display = 'none';
 }
 
 /* ── NAV SEARCH (visitors only) ── */
