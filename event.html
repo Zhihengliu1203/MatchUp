@@ -607,20 +607,49 @@ function populatePage(eventData) {
   document.getElementById('orgName').textContent = orgName;
   document.getElementById('orgAvatar').textContent = orgName[0].toUpperCase();
 
-  // Attendees (demo - in real app, pull from attendees subcollection)
+  // Real attendees from subcollection
   const attendees = document.getElementById('attendees');
-  const names = ['Thomas', 'Camille', 'Marcus', 'Sarah', 'Alex'];
-  const shown = Math.min(5, Math.max(1, going - 1));
-  let html = '';
-  for (let i = 0; i < shown; i++) {
-    const name = names[i % names.length];
-    html += `<div class="attendee"><div class="att-avatar">${name[0]}</div><div class="att-name">${name}</div></div>`;
-  }
-  if (going > shown + 1) {
-    html += `<div class="attendee"><div class="att-avatar">+</div><div class="att-name">${going - shown - 1} more</div></div>`;
-  }
-  attendees.innerHTML = html || '<p style="color:var(--muted);">Be the first to join!</p>';
+  attendees.innerHTML = '<p style="color:var(--muted); font-size:.85rem;">Loading…</p>';
+  try {
+    const attRef = collection(window._db, 'events', eventId, 'attendees');
+    const attSnap = await getDocs(attRef);
+    const attUids = [];
+    attSnap.forEach(d => attUids.push(d.id));
 
+    if (attUids.length === 0) {
+      attendees.innerHTML = '<p style="color:var(--muted);">Be the first to join!</p>';
+    } else {
+      // Fetch each attendee's user doc for name + photo (cap at 8 to avoid huge reads)
+      const maxShow = 8;
+      const toFetch = attUids.slice(0, maxShow);
+      const userDocs = await Promise.all(toFetch.map(uid =>
+        getDoc(doc(window._db, 'users', uid)).catch(() => null)
+      ));
+      let html2 = '';
+      userDocs.forEach((snap, i) => {
+        if (snap && snap.exists()) {
+          const u = snap.data();
+          const display = (u.fname || 'Player') + (u.lname ? ' ' + u.lname[0] + '.' : '');
+          const initial = (u.fname || 'P')[0].toUpperCase();
+          const photo = u.photoData || u.photoURL || '';
+          const avatar = photo
+            ? `<div class="att-avatar" style="background-image:url('${photo}'); background-size:cover; background-position:center; color:transparent;">${initial}</div>`
+            : `<div class="att-avatar">${initial}</div>`;
+          html2 += `<div class="attendee">${avatar}<div class="att-name">${display}</div></div>`;
+        } else {
+          // Fallback for attendees with missing/unreadable user docs
+          html2 += `<div class="attendee"><div class="att-avatar">?</div><div class="att-name">Player</div></div>`;
+        }
+      });
+      if (attUids.length > maxShow) {
+        html2 += `<div class="attendee"><div class="att-avatar">+</div><div class="att-name">${attUids.length - maxShow} more</div></div>`;
+      }
+      attendees.innerHTML = html2;
+    }
+  } catch (attErr) {
+    console.warn('[attendees] failed to load:', attErr);
+    attendees.innerHTML = '<p style="color:var(--muted);">Attendee list unavailable.</p>';
+  }
   // Map
   const venueCoords = {
     'mont-royal':   [45.5048, -73.5872],
@@ -998,6 +1027,22 @@ async function saveEdit() {
     } else if (_editPhotoData) {
       payload.photoData = _editPhotoData;
     }
+
+    // Re-geocode if venue changed
+    const oldVenue = (window._currentEventData?.venue || '').trim().toLowerCase();
+    if (venue.toLowerCase() !== oldVenue && window.geocodeAddress) {
+      btn.textContent = 'Geocoding…';
+      const city = window._currentEventData?.city || 'Montreal';
+      const geo = await window.geocodeAddress(`${venue}, ${city}`);
+      if (geo) {
+        payload.lat = geo.lat;
+        payload.lng = geo.lng;
+        payload.address = geo.formatted;
+        if (geo.city) payload.city = geo.city;
+      }
+      btn.textContent = 'Saving…';
+    }
+
     await updateDoc(eventRef, payload);
     const toast = document.getElementById('toast');
     if (toast) {
@@ -1059,5 +1104,6 @@ async function confirmCancelEvent() {
   }
 }
 </script>
+<script src="js/geocoding.js"></script>
 </body>
 </html>
