@@ -10,25 +10,171 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --orange:#FF5722; --off:#F8F9FA; --text:#1A1A2E;
-      --muted:#6B7280; --border:#E5E7EB;
+      --orange:#FF5722; --orange-lt:#FF7043;
+      --off:#F8F9FA;
+      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB;
+      --info-bg:#E0F2FE; --info-border:#0EA5E9; --info-text:#0C4A6E;
     }
-    body { font-family: 'Nunito', sans-serif; background: var(--off); color: var(--text); min-height: 100vh; }
-    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; height: 68px; }
-    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--orange); text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--orange); display: flex; align-items: center; justify-content: center; color: #fff; }
-    .wrap { max-width: 820px; margin: 0 auto; padding: 40px 30px 80px; }
-    .wrap h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; }
-    .wrap .updated { color: var(--muted); font-size: .85rem; margin-bottom: 30px; }
-    .wrap h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; margin: 32px 0 12px; }
-    .wrap p, .wrap li { font-size: .98rem; line-height: 1.7; margin-bottom: 12px; }
-    .wrap ul { padding-left: 22px; }
-    .placeholder-warning {
-      background: #FFF3CD; border-left: 4px solid #FFC107;
-      padding: 16px 20px; border-radius: 8px; margin-bottom: 28px;
-      font-weight: 700; font-size: .92rem;
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--off);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
     }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex; align-items: center;
+      height: 68px;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.5rem;
+      color: var(--orange);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: #fff;
+    }
+
+    .wrap { max-width: 820px; margin: 0 auto; padding: 50px 32px 100px; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .updated {
+      color: var(--muted);
+      font-size: .88rem;
+      margin-bottom: 28px;
+    }
+
+    .intro-notice {
+      background: var(--info-bg);
+      border-left: 4px solid var(--info-border);
+      color: var(--info-text);
+      padding: 18px 22px;
+      border-radius: 10px;
+      margin-bottom: 36px;
+      font-size: .94rem;
+      line-height: 1.65;
+    }
+    .intro-notice strong { font-weight: 800; }
+
+    .toc {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+    .toc-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .toc ol { padding-left: 22px; }
+    .toc li { margin-bottom: 4px; font-size: .92rem; }
+    .toc a { color: var(--text); text-decoration: none; }
+    .toc a:hover { color: var(--orange); text-decoration: underline; }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      margin: 38px 0 12px;
+      color: var(--text);
+      scroll-margin-top: 90px;
+    }
+    h3 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin: 22px 0 8px;
+      color: var(--text);
+    }
+
+    p, li {
+      font-size: .98rem;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    ul, ol { padding-left: 24px; margin-bottom: 14px; }
+    li { margin-bottom: 8px; }
+
+    strong { font-weight: 800; }
     a { color: var(--orange); }
+    a:hover { text-decoration: underline; }
+
+    /* Data table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: .9rem;
+    }
+    .data-table th {
+      background: #F3F4F6;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      font-size: .85rem;
+    }
+    .data-table td {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .data-table tr:nth-child(even) td {
+      background: #FAFAFA;
+    }
+
+    .back {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 40px;
+      color: var(--orange);
+      text-decoration: none;
+      font-weight: 800; font-size: .95rem;
+      padding: 10px 18px;
+      border-radius: 100px;
+      border: 2px solid var(--orange);
+      transition: all .2s;
+    }
+    .back:hover {
+      background: var(--orange); color: #fff;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .wrap { padding: 30px 20px 70px; }
+      h1 { font-size: 1.9rem; }
+      h2 { font-size: 1.2rem; }
+      .data-table { font-size: .82rem; }
+      .data-table th, .data-table td { padding: 10px 12px; }
+    }
   </style>
 </head>
 <body>
@@ -40,52 +186,223 @@
 
   <div class="wrap">
     <h1>Privacy Policy</h1>
-    <div class="updated">Last updated: [DATE]</div>
+    <div class="updated">Last updated: November 1, 2025</div>
 
-    <div class="placeholder-warning">
-      ⚠️ PLACEHOLDER CONTENT — Replace this section with a real Privacy Policy generated from Termly/iubenda, or drafted by a lawyer familiar with Quebec's Law 25 / Canadian PIPEDA. What follows is NOT legally sufficient.
+    <div class="intro-notice">
+      🔒 <strong>Your privacy matters to us.</strong> This policy explains what personal information we collect, how we use it, who we share it with, and what rights you have. We follow Quebec's <em>Act respecting the protection of personal information in the private sector</em> (Law 25) and Canada's <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA).
     </div>
 
-    <h2>1. Information We Collect</h2>
+    <div class="toc">
+      <div class="toc-title">📑 Contents</div>
+      <ol>
+        <li><a href="#who">Who we are</a></li>
+        <li><a href="#what">What information we collect</a></li>
+        <li><a href="#why">How we use your information</a></li>
+        <li><a href="#legal-basis">Legal basis for processing</a></li>
+        <li><a href="#sharing">Who we share information with</a></li>
+        <li><a href="#third-parties">Third-party services</a></li>
+        <li><a href="#storage">Where your data is stored</a></li>
+        <li><a href="#retention">How long we keep your data</a></li>
+        <li><a href="#rights">Your rights</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#cookies">Cookies &amp; local storage</a></li>
+        <li><a href="#children">Children's privacy</a></li>
+        <li><a href="#changes">Changes to this policy</a></li>
+        <li><a href="#contact">Contact &amp; Privacy Officer</a></li>
+      </ol>
+    </div>
+
+    <h2 id="who">1. Who we are</h2>
+    <p>This privacy policy applies to MatchUp (referred to as "<strong>MatchUp</strong>", "<strong>we</strong>", "<strong>us</strong>", or "<strong>our</strong>"), operator of the website at <a href="https://zhihengliu1203.github.io/MatchUp/">zhihengliu1203.github.io/MatchUp/</a> (the "<strong>Service</strong>").</p>
+    <p>For any privacy-related question or request, see <a href="#contact">Section 14</a>.</p>
+
+    <h2 id="what">2. What information we collect</h2>
+    <p>We collect the following categories of personal information:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>What it includes</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Account information</strong></td>
+          <td>First name, last name, email address, password (encrypted), and (if you sign in with Google) the basic profile information Google shares with us.</td>
+          <td>You / Google</td>
+        </tr>
+        <tr>
+          <td><strong>Profile information</strong></td>
+          <td>City, phone number (optional), bio, preferred sports, skill level, profile photo (optional).</td>
+          <td>You</td>
+        </tr>
+        <tr>
+          <td><strong>Event content</strong></td>
+          <td>Events you create or join, including titles, sport, dates, venue addresses, descriptions, photos, and pricing.</td>
+          <td>You</td>
+        </tr>
+        <tr>
+          <td><strong>Location-related data</strong></td>
+          <td>Venue addresses you submit, which we geocode into approximate latitude/longitude. Optionally, your <em>device's approximate location</em> if you grant browser permission to use the "near me" filter (used in-session only, never stored on our servers).</td>
+          <td>You / Browser</td>
+        </tr>
+        <tr>
+          <td><strong>Communications &amp; safety</strong></td>
+          <td>Reports you file about other users or events (category, reason, reporter ID), and users you have blocked.</td>
+          <td>You</td>
+        </tr>
+        <tr>
+          <td><strong>Authentication metadata</strong></td>
+          <td>Email verification status, account creation date, last sign-in timestamp. Managed by Firebase Authentication.</td>
+          <td>System</td>
+        </tr>
+        <tr>
+          <td><strong>Technical data</strong></td>
+          <td>Standard server logs from our hosting and infrastructure providers (IP address, browser type, request timestamps). We do not run our own custom analytics.</td>
+          <td>Browser</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><strong>We do not collect:</strong> payment information, government IDs, biometric data, health data, or precise GPS coordinates (unless you explicitly grant the browser geolocation prompt for the "near me" feature).</p>
+
+    <h2 id="why">3. How we use your information</h2>
     <ul>
-      <li><strong>Account info:</strong> Name, email address, and optional profile details (bio, sports, skill level)</li>
-      <li><strong>Event data:</strong> Events you create or join, including addresses you provide</li>
-      <li><strong>Usage data:</strong> Pages you visit and interactions with the Service</li>
+      <li><strong>To provide the Service:</strong> create your account, display events, let you join and organize events, and match you with relevant events near you.</li>
+      <li><strong>To communicate with you:</strong> account-related emails (such as email verification, password reset).</li>
+      <li><strong>To keep the Service safe:</strong> review reports, enforce these Terms, prevent abuse, fraud, and harassment.</li>
+      <li><strong>To improve the Service:</strong> understand how features are used (in aggregate) and fix bugs.</li>
+      <li><strong>To comply with legal obligations:</strong> respond to lawful requests from authorities, enforce our agreements, and protect our rights or those of users.</li>
+    </ul>
+    <p>We do <strong>not</strong> sell your personal information to anyone, ever. We do not use your information for advertising profiling or targeted advertising.</p>
+
+    <h2 id="legal-basis">4. Legal basis for processing</h2>
+    <p>Under applicable Canadian and Quebec law, we process your personal information on the following legal bases:</p>
+    <ul>
+      <li><strong>Performance of a contract</strong> — to deliver the Service you have signed up for.</li>
+      <li><strong>Your consent</strong> — for optional features such as browser geolocation, profile photo upload, and marketing communications (if any).</li>
+      <li><strong>Legitimate interests</strong> — to operate, secure, and improve the Service, and to prevent fraud or abuse.</li>
+      <li><strong>Legal obligation</strong> — to comply with laws and lawful requests from public authorities.</li>
     </ul>
 
-    <h2>2. How We Use Your Information</h2>
+    <h2 id="sharing">5. Who we share information with</h2>
+    <p>Your personal information is shared only in the following situations:</p>
     <ul>
-      <li>To provide and improve the Service</li>
-      <li>To match you with relevant events</li>
-      <li>To communicate with you about your account</li>
-      <li>To comply with legal obligations</li>
+      <li><strong>With other users (public profile content):</strong> Your first name, last initial, profile photo, and the events you organize are visible to other users (and to non-logged-in visitors) so they can find and join events.</li>
+      <li><strong>With event participants and organizers:</strong> If you join an event, the organizer can see that you have joined. If you organize an event, participants can see your name and contact info you choose to share within the event description.</li>
+      <li><strong>With service providers:</strong> Trusted third parties who help us run the Service (see <a href="#third-parties">Section 6</a>). These providers process data only as needed to perform their function.</li>
+      <li><strong>For legal reasons:</strong> If required by law, court order, or to protect the safety, rights, or property of MatchUp, our users, or the public.</li>
+      <li><strong>In a business transfer:</strong> If MatchUp is involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will provide notice before that happens.</li>
     </ul>
 
-    <h2>3. Third-Party Services</h2>
-    <p>We use the following services that may process your data:</p>
+    <h2 id="third-parties">6. Third-party services we use</h2>
+    <p>We rely on the following service providers, each of which has its own privacy practices:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Purpose</th>
+          <th>Data shared</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Google Firebase</strong><br>(Google LLC — USA)</td>
+          <td>Authentication, database (Firestore), hosting infrastructure.</td>
+          <td>Account info, profile, events, photos, reports, blocks.</td>
+        </tr>
+        <tr>
+          <td><strong>Google Sign-In</strong><br>(Google LLC — USA)</td>
+          <td>Optional federated login.</td>
+          <td>Your Google profile (name, email, photo) — only if you choose to sign in with Google.</td>
+        </tr>
+        <tr>
+          <td><strong>GitHub Pages</strong><br>(GitHub, Inc. — USA)</td>
+          <td>Hosting the public-facing website.</td>
+          <td>Standard web server logs (IP, browser, request).</td>
+        </tr>
+        <tr>
+          <td><strong>OpenRouteService</strong><br>(HeiGIT, Germany)</td>
+          <td>Geocoding venue addresses you submit into map coordinates.</td>
+          <td>Address text you submit.</td>
+        </tr>
+        <tr>
+          <td><strong>OpenStreetMap</strong><br>(OpenStreetMap Foundation — UK)</td>
+          <td>Displaying map tiles.</td>
+          <td>Standard map-tile request logs (IP, viewport).</td>
+        </tr>
+        <tr>
+          <td><strong>Google Fonts</strong><br>(Google LLC — USA)</td>
+          <td>Web fonts.</td>
+          <td>Standard request logs (IP).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>We do not control how these providers process data; we recommend reviewing their privacy policies for further details.</p>
+
+    <h2 id="storage">7. Where your data is stored</h2>
+    <p>Our database (Google Firestore) is hosted in Google Cloud regions, which may include locations outside Canada (such as the United States or the European Union). By using the Service, you understand and agree that your personal information may be transferred to, stored, and processed outside Quebec and Canada. We rely on the contractual and technical safeguards Google provides for such transfers.</p>
+    <p>Pursuant to Quebec's Law 25, before transferring your personal information outside Quebec, we have assessed that the third-party providers above offer protection considered adequate.</p>
+
+    <h2 id="retention">8. How long we keep your data</h2>
     <ul>
-      <li><strong>Google Firebase</strong> — authentication, database, hosting</li>
-      <li><strong>OpenRouteService</strong> — address geocoding</li>
-      <li><strong>OpenStreetMap</strong> — map tiles</li>
+      <li><strong>Account &amp; profile:</strong> kept for as long as your account is active. If you delete your account, we will delete or anonymize your personal data within 60 days, except where retention is required by law.</li>
+      <li><strong>Event records:</strong> kept indefinitely for safety, history, and integrity of the Service, but personally identifying fields (your name, email) are anonymized when you delete your account.</li>
+      <li><strong>Reports and safety records:</strong> kept for as long as needed to enforce our Terms and protect the community, typically up to 3 years.</li>
+      <li><strong>Server logs:</strong> kept by our infrastructure providers per their standard retention (typically 30–90 days).</li>
     </ul>
 
-    <h2>4. Data Retention</h2>
-    <p>We retain your data as long as your account is active. You may request deletion by contacting us.</p>
+    <h2 id="rights">9. Your rights</h2>
+    <p>Depending on your jurisdiction, you have the following rights regarding your personal information:</p>
+    <ul>
+      <li><strong>Right of access:</strong> request a copy of the personal information we hold about you.</li>
+      <li><strong>Right of rectification:</strong> ask us to correct inaccurate or incomplete information. You can edit most of your information directly on your profile page.</li>
+      <li><strong>Right of deletion / erasure:</strong> ask us to delete your account and personal information.</li>
+      <li><strong>Right to withdraw consent:</strong> withdraw any consent you have given (for example, by revoking browser location permission, or removing your photo).</li>
+      <li><strong>Right to portability:</strong> request your data in a structured, machine-readable format.</li>
+      <li><strong>Right to object or restrict:</strong> object to or limit certain processing of your information.</li>
+      <li><strong>Right to lodge a complaint:</strong> if you live in Quebec, you may contact the <em>Commission d'accès à l'information du Québec</em> (<a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noopener">cai.gouv.qc.ca</a>). Elsewhere in Canada, the Office of the Privacy Commissioner of Canada (<a href="https://www.priv.gc.ca/" target="_blank" rel="noopener">priv.gc.ca</a>).</li>
+    </ul>
+    <p>To exercise any of these rights, contact us using the details in <a href="#contact">Section 14</a>. We will respond within 30 days. We may need to verify your identity before fulfilling the request.</p>
 
-    <h2>5. Your Rights</h2>
-    <p>Depending on your jurisdiction, you may have the right to access, correct, delete, or port your personal data. Contact us to exercise these rights.</p>
+    <h2 id="security">10. Security</h2>
+    <p>We take reasonable technical and organizational measures to protect your personal information against unauthorized access, disclosure, alteration, and destruction. These measures include:</p>
+    <ul>
+      <li>Encrypted connections (HTTPS) for all traffic to and from the Service.</li>
+      <li>Industry-standard Firebase Authentication with hashed passwords.</li>
+      <li>Database access controlled by Firestore security rules that limit access on a per-user basis.</li>
+      <li>Limited administrative access on a need-to-know basis.</li>
+    </ul>
+    <p>However, <strong>no method of transmission or storage is 100% secure</strong>. We cannot guarantee absolute security. In the event of a privacy incident likely to cause serious harm, we will notify affected users and the relevant regulator without undue delay, as required by Quebec Law 25 and PIPEDA.</p>
 
-    <h2>6. Cookies</h2>
-    <p>We use essential cookies and local storage to keep you logged in. We do not currently use third-party advertising cookies.</p>
+    <h2 id="cookies">11. Cookies &amp; local storage</h2>
+    <p>We use only the following types of browser storage, all essential for the operation of the Service:</p>
+    <ul>
+      <li><strong>Firebase Auth session tokens</strong> — to keep you logged in.</li>
+      <li><strong>localStorage</strong> — to remember your session and cache geocoded addresses (avoids re-querying the same address).</li>
+    </ul>
+    <p>We do <strong>not</strong> use third-party advertising cookies, behavioural tracking pixels, or cross-site tracking technologies.</p>
 
-    <h2>7. Children's Privacy</h2>
-    <p>MatchUp is not intended for users under 18. We do not knowingly collect data from minors.</p>
+    <h2 id="children">12. Children's privacy</h2>
+    <p>The Service is intended for users <strong>18 years of age and older</strong>. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal information, please contact us and we will delete it.</p>
 
-    <h2>8. Changes to This Policy</h2>
-    <p>We may update this policy. Material changes will be announced via email or in-app notice.</p>
+    <h2 id="changes">13. Changes to this policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we make material changes, we will update the "Last updated" date at the top, and we will provide additional notice (such as via the Service or by email) where required by law. Continued use of the Service after the changes take effect constitutes acceptance of the updated policy.</p>
 
-    <h2>9. Contact</h2>
-    <p>Questions about your data? Email [your-email@example.com].</p>
+    <h2 id="contact">14. Contact &amp; Privacy Officer</h2>
+    <p>If you have questions about this Privacy Policy, or wish to exercise any of your rights, please contact our Privacy Officer:</p>
+    <p>
+      <strong>MatchUp — Privacy Officer</strong><br>
+      Montréal, Quebec, Canada<br>
+      Email: <a href="mailto:[YOUR_EMAIL]">[YOUR_EMAIL]</a>
+    </p>
+    <p>We will acknowledge your request within 5 business days and respond substantively within 30 days, as required by Quebec Law 25.</p>
+
+    <a href="index.html" class="back">← Back to MatchUp</a>
   </div>
 </body>
 </html>
