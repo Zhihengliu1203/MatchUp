@@ -920,8 +920,21 @@ function saveEvent() {
 
 
 
-// Load on page load
-window.addEventListener('load', () => {
+// Load on page load — wait for Firebase to be ready first
+async function waitForFirebase() {
+  let tries = 0;
+  while ((!window._auth || !window._db || !window._firestore) && tries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  return !!(window._auth && window._db && window._firestore);
+}
+window.addEventListener('load', async () => {
+  const ok = await waitForFirebase();
+  if (!ok) {
+    showEventError('Could not connect to MatchUp. Please refresh the page or check your connection.');
+    return;
+  }
   loadEvent();
 });
 
