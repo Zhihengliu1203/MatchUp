@@ -452,6 +452,27 @@ async function loadDashboard() {
     document.getElementById('statUpcoming').textContent = upcoming.length;
     document.getElementById('statAttended').textContent = past.length;
 
+    // Real "Players met" stat — count unique attendees across user's past events
+    try {
+      const { collection: _coll, getDocs: _gd } = window._firestore;
+      const uniquePlayers = new Set();
+      for (const ev of past) {
+        try {
+          const attRef = _coll(window._db, 'events', ev.id, 'attendees');
+          const attSnap = await _gd(attRef);
+          attSnap.forEach(a => {
+            const uid = a.id;
+            if (uid && uid !== window._auth?.currentUser?.uid) uniquePlayers.add(uid);
+          });
+        } catch (_) { /* skip events we can't read */ }
+      }
+      document.getElementById('statPlayers').textContent = uniquePlayers.size;
+    } catch (_) {
+      document.getElementById('statPlayers').textContent = '0';
+    }
+    // Rating stays as '—' until reviews feature is built (Tier 4)
+    document.getElementById('statRating').textContent = past.length > 0 ? '—' : '—';
+
     // 5. Render event list
     const listEl = document.getElementById('eventList');
     if (upcoming.length === 0) {
